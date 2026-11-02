@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArchiveMind - Hybrid SQL-Vector Archival Search Engine</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        .font-serif-title { font-family: 'Cinzel', serif; }
+        .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Top Header -->
+    <header class="bg-slate-950/80 border-b border-slate-800 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-amber-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <i data-lucide="scroll" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xl font-bold font-serif-title tracking-wider text-amber-300">ArchiveMind</span>
+                        <span class="px-2 py-0.5 text-xs font-semibold rounded bg-indigo-900/60 text-indigo-300 border border-indigo-700/50">DBMS UE23CS351A</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Hybrid SQL-Vector Engine & Handwriting Forensics | PES University</p>
+                </div>
+            </div>
+
+            <!-- Role Badge & Switcher -->
+            <div class="flex items-center space-x-3">
+                <span class="text-xs text-slate-400 hidden sm:inline">Active Role:</span>
+                <select id="role-selector" class="bg-slate-800 text-amber-200 border border-slate-700 text-xs rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-amber-500 outline-none">
+                    <option value="archivist">👑 Dr. Shilpa S (Head Archivist)</option>
+                    <option value="researcher_sheiman" selected>🔬 A Sheiman Joshi (Lead Database Researcher)</option>
+                    <option value="researcher_abhiroop">🔍 Abhiroop (Vector & Forensics Researcher)</option>
+                    <option value="tech">📷 Pi Scanner Tech (Ingestion)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-800/80 flex space-x-1 sm:space-x-4 overflow-x-auto">
+            <button onclick="switchTab('search')" id="tab-btn-search" class="nav-tab active-tab px-4 py-3 text-sm font-medium border-b-2 border-amber-400 text-amber-300 flex items-center space-x-2">
+                <i data-lucide="search" class="w-4 h-4"></i>
+                <span>Hybrid Search</span>
+            </button>
+            <button onclick="switchTab('document')" id="tab-btn-document" class="nav-tab px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+                <i data-lucide="file-text" class="w-4 h-4"></i>
+                <span>Manuscript Inspector</span>
+            </button>
+            <button onclick="switchTab('provenance')" id="tab-btn-provenance" class="nav-tab px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+                <i data-lucide="git-fork" class="w-4 h-4"></i>
+                <span>Provenance Graph</span>
+            </button>
+            <button onclick="switchTab('ingest')" id="tab-btn-ingest" class="nav-tab px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+                <i data-lucide="cpu" class="w-4 h-4"></i>
+                <span>Pi 3B+ Ingestion</span>
+            </button>
+            <button onclick="switchTab('queries')" id="tab-btn-queries" class="nav-tab px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+                <i data-lucide="database" class="w-4 h-4"></i>
+                <span class="text-emerald-400 font-semibold">DBMS Evaluation Queries</span>
+            </button>
+            <button onclick="switchTab('audit')" id="tab-btn-audit" class="nav-tab px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                <span>Audit & Triggers</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- ============================================================= -->
+        <!-- TAB 1: HYBRID SEARCH -->
+        <!-- ============================================================= -->
+        <section id="tab-search" class="space-y-6">
+            <!-- Search Controls Box -->
+            <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl space-y-4">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1 relative">
+                        <i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-3.5 text-slate-400"></i>
+                        <input type="text" id="search-query" placeholder="Search OCR transcripts (e.g. 'gravitation', 'imitation game', 'theta functions', 'bernoulli')..."
+                               class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+                    <button onclick="performSearch()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-6 py-3 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg shadow-amber-500/20">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        <span>Search Archive</span>
+                    </button>
+                </div>
+
+                <!-- Hybrid Fusion & Handwriting Style Controls -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 border-t border-slate-700/60">
+                    <!-- Alpha Fusion Slider -->
+                    <div>
+                        <div class="flex justify-between items-center text-xs mb-1.5">
+                            <span class="text-indigo-400 font-medium">Vector (Handwriting)</span>
+                            <span id="alpha-label" class="text-amber-400 font-mono font-bold">Hybrid: 50% SQL / 50% Vec</span>
+                            <span class="text-emerald-400 font-medium">SQL (Full-Text)</span>
+                        </div>
+                        <input type="range" id="alpha-slider" min="0" max="1" step="0.05" value="0.5" 
+                               oninput="updateAlphaLabel(this.value)"
+                               class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-400">
+                    </div>
+
+                    <!-- Handwriting Style Selector -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1.5">Handwriting Forensic Reference Vector</label>
+                        <select id="style-selector" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-amber-200 outline-none focus:ring-1 focus:ring-amber-500">
+                            <option value="">-- No Handwriting Filter (Text Only) --</option>
+                            <option value="newton_quill_flourish">Isaac Newton (Latin Cursive / Flourished Quill)</option>
+                            <option value="davinci_left_mirror_dense">Leonardo da Vinci (Italian Mirror Script / Left-Handed)</option>
+                            <option value="ramanujan_fine_nib_slanted">Srinivasa Ramanujan (Slanted Mathematical Formulae)</option>
+                            <option value="turing_fast_slant_draft">Alan Turing (Bletchley Park Draft Handwriting)</option>
+                            <option value="lovelace_copperplate_cursive">Ada Lovelace (Victorian Copperplate Script)</option>
+                            <option value="babbage_geometric_sharp">Charles Babbage (Angular Geometric Script)</option>
+                        </select>
+                    </div>
+
+                    <!-- Collection Filter -->
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1.5">Archival Collection Filter</label>
+                        <select id="filter-collection" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-300 outline-none focus:ring-1 focus:ring-amber-500">
+                            <option value="">All Collections</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Results Summary -->
+            <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+                <span id="results-count">Showing 10 preserved manuscripts</span>
+                <span class="flex items-center space-x-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span>Database Online | FTS5 + Cosine Index Active</span>
+                </span>
+            </div>
+
+            <!-- Results Grid -->
+            <div id="results-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- TAB 2: MANUSCRIPT INSPECTOR & CITATION GENERATOR -->
+        <!-- ============================================================= -->
+        <section id="tab-document" class="space-y-6 hidden">
+            <div id="doc-detail-view" class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl">
+                <p class="text-slate-400 text-sm">Select any manuscript from the Hybrid Search tab to inspect its forensic details, OCR transcript, and generate citations.</p>
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- TAB 3: PROVENANCE GRAPH -->
+        <!-- ============================================================= -->
+        <section id="tab-provenance" class="space-y-6 hidden">
+            <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                        <h2 class="text-lg font-bold font-serif-title text-amber-300">Document Provenance & Relational Graph</h2>
+                        <p class="text-xs text-slate-400">Traces relationships: Historical Author $\rightarrow$ Manuscript $\rightarrow$ Archival Collection $\rightarrow$ Institution $\rightarrow$ Audit Log</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <label class="text-xs text-slate-400">Inspect Document:</label>
+                        <select id="prov-doc-select" onchange="loadProvenanceGraph(this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-3 py-1.5 text-amber-300 outline-none">
+                            <option value="1">Principia Mathematica (Newton)</option>
+                            <option value="3">Codex Atlanticus (Da Vinci)</option>
+                            <option value="5">Mock Theta Functions (Ramanujan)</option>
+                            <option value="7">Enigma Cryptanalysis (Turing)</option>
+                            <option value="9">Analytical Engine Notes (Lovelace)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Canvas Graph Container -->
+                <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 relative overflow-hidden h-[480px]">
+                    <canvas id="provenance-canvas" class="w-full h-full"></canvas>
+                    <div id="graph-legend" class="absolute bottom-3 left-3 bg-slate-900/90 border border-slate-800 p-3 rounded-lg text-xs space-y-1">
+                        <div class="font-semibold text-slate-300 mb-1">Graph Legend</div>
+                        <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span><span>Document</span></div>
+                        <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span><span>Person / Author</span></div>
+                        <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span><span>Archival Collection</span></div>
+                        <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-purple-500 inline-block"></span><span>Institution / Repository</span></div>
+                        <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-cyan-500 inline-block"></span><span>Access Audit View</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- TAB 4: PI 3B+ DIGITIZATION STATION -->
+        <!-- ============================================================= -->
+        <section id="tab-ingest" class="space-y-6 hidden">
+            <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl space-y-6">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                            <i data-lucide="camera" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold font-serif-title text-emerald-400">Raspberry Pi 3B+ Ingestion & OCR Pipeline</h2>
+                            <p class="text-xs text-slate-400">Hardware Edge Capture $\rightarrow$ Deskewing $\rightarrow$ SHA-256 Checksum $\rightarrow$ Forensic Vector Extraction $\rightarrow$ SQL Ingestion</p>
+                        </div>
+                    </div>
+                    <span class="px-2.5 py-1 text-xs rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700">Pi Camera Online</span>
+                </div>
+
+                <form id="ingest-form" onsubmit="handleIngest(event)" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Manuscript Title</label>
+                            <input type="text" id="ingest-title" required value="Lectiones Opticae: Prismatic Ray Theorems" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:ring-1 focus:ring-emerald-500">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Author / Contributor</label>
+                                <input type="text" id="ingest-author" required value="Sir Isaac Newton" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Date Written</label>
+                                <input type="text" id="ingest-date" required value="1670" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100 outline-none">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Collection</label>
+                                <select id="ingest-collection" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 outline-none">
+                                    <option value="1">Newtonian Scientific Manuscripts</option>
+                                    <option value="2">Da Vinci Codex & Anatomy</option>
+                                    <option value="3">Ramanujan Lost Notebook</option>
+                                    <option value="4">Turing Decryption Dispatches</option>
+                                    <option value="5">Victorian Analytical Engine Papers</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Document Type</label>
+                                <select id="ingest-type" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 outline-none">
+                                    <option value="Manuscript">Manuscript</option>
+                                    <option value="Letter">Letter</option>
+                                    <option value="Notebook">Notebook</option>
+                                    <option value="Mathematical Treatise">Mathematical Treatise</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Physical Condition</label>
+                                <select id="ingest-condition" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 outline-none">
+                                    <option value="Pristine">Pristine</option>
+                                    <option value="Good" selected>Good</option>
+                                    <option value="Fragile">Fragile</option>
+                                    <option value="Critical-Decay">Critical-Decay</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Forensic Style Seed</label>
+                                <input type="text" id="ingest-seed" value="newton_quill_flourish" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 flex flex-col justify-between">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Optical Character Recognition (OCR) Transcript</label>
+                            <textarea id="ingest-ocr" rows="6" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs text-slate-200 outline-none focus:ring-1 focus:ring-emerald-500 font-mono-code leading-relaxed">Propositiones de refrangibilitate radiorum: Light consisting of rays differing in degree of refrangibility produces chromatic aberration when focused through spherical glass lenses.</textarea>
+                        </div>
+
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg shadow-emerald-600/20">
+                            <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                            <span>Process & Ingest to ArchiveMind Database</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div id="ingest-result" class="hidden rounded-xl p-4 border text-xs font-mono-code"></div>
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- TAB 5: DBMS EVALUATION QUERIES (PES University Grading Criteria) -->
+        <!-- ============================================================= -->
+        <section id="tab-queries" class="space-y-6 hidden">
+            <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700 pb-4">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h2 class="text-lg font-bold font-serif-title text-amber-300">DBMS Evaluation Queries Sandbox</h2>
+                            <span class="px-2 py-0.5 text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 rounded">PES Lab Viva Suite</span>
+                        </div>
+                        <p class="text-xs text-slate-400">All 5 mandatory query categories for UE23CS351A evaluation: Simple with Group By, Update, Delete, Correlated, Nested.</p>
+                    </div>
+                </div>
+
+                <!-- Query Buttons Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <button onclick="runQueryKey('7.1')" id="btn-q-7.1" class="q-btn bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl p-3 text-left transition space-y-1">
+                        <div class="text-xs font-bold text-amber-400">7.1 Simple + Group By</div>
+                        <div class="text-[11px] text-slate-400">Era & Condition Aggregation</div>
+                    </button>
+                    <button onclick="runQueryKey('7.2')" id="btn-q-7.2" class="q-btn bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl p-3 text-left transition space-y-1">
+                        <div class="text-xs font-bold text-emerald-400">7.2 UPDATE Operation</div>
+                        <div class="text-[11px] text-slate-400">Conservation Checksum State</div>
+                    </button>
+                    <button onclick="runQueryKey('7.3')" id="btn-q-7.3" class="q-btn bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl p-3 text-left transition space-y-1">
+                        <div class="text-xs font-bold text-rose-400">7.3 DELETE Operation</div>
+                        <div class="text-[11px] text-slate-400">Temp Audit Scrub</div>
+                    </button>
+                    <button onclick="runQueryKey('7.4')" id="btn-q-7.4" class="q-btn bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl p-3 text-left transition space-y-1">
+                        <div class="text-xs font-bold text-indigo-400">7.4 Correlated Subquery</div>
+                        <div class="text-[11px] text-slate-400">Collection Length Relative</div>
+                    </button>
+                    <button onclick="runQueryKey('7.5')" id="btn-q-7.5" class="q-btn bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl p-3 text-left transition space-y-1">
+                        <div class="text-xs font-bold text-purple-400">7.5 Nested Subquery</div>
+                        <div class="text-[11px] text-slate-400">Multi-Collection Authors</div>
+                    </button>
+                </div>
+
+                <!-- Query Details & SQL View -->
+                <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span id="query-active-title" class="text-sm font-semibold text-slate-200">Select a query above</span>
+                        <span id="query-runtime" class="text-xs font-mono text-emerald-400"></span>
+                    </div>
+                    <pre id="query-sql-display" class="font-mono-code text-xs text-amber-200/90 bg-slate-900/80 p-3 rounded-lg overflow-x-auto border border-slate-800">-- SQL Statement will appear here</pre>
+                </div>
+
+                <!-- Result Table -->
+                <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden">
+                    <div class="p-3 bg-slate-900/60 border-b border-slate-800 flex justify-between items-center text-xs text-slate-400">
+                        <span>Database Result Set</span>
+                        <span id="query-result-meta">0 rows returned</span>
+                    </div>
+                    <div id="query-table-container" class="overflow-x-auto max-h-96">
+                        <div class="p-6 text-center text-slate-500 text-xs">Run a query to inspect live database output.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <!-- TAB 6: AUDIT TRAIL & TRIGGER VERIFICATION -->
+        <!-- ============================================================= -->
+        <section id="tab-audit" class="space-y-6 hidden">
+            <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-4">
+                    <div>
+                        <h2 class="text-lg font-bold font-serif-title text-amber-300">Chain-of-Custody & View Audit Trail</h2>
+                        <p class="text-xs text-slate-400">Maintained automatically via SQL Triggers on document inspection events.</p>
+                    </div>
+                    <button onclick="loadAuditTrail()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs flex items-center space-x-1.5 text-slate-200">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                        <span>Refresh Trail</span>
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-800">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-900 text-slate-400 border-b border-slate-800">
+                            <tr>
+                                <th class="p-3">View ID</th>
+                                <th class="p-3">Manuscript</th>
+                                <th class="p-3">Audited Access Timestamp</th>
+                                <th class="p-3">IP Address</th>
+                                <th class="p-3">User / Identity</th>
+                                <th class="p-3">Security Role</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-table-body" class="divide-y divide-slate-800/60 font-mono-code">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-800 py-4 text-center text-xs text-slate-500">
+        <p>ArchiveMind: A Hybrid SQL-Vector Semantic Search Engine | PES University Dept of CSE | Authors: A Sheiman Joshi (PES2UG24CS003) & Abhiroop (PES2UG24CS024) | Guide: Dr. Shilpa S</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        let currentDocuments = [];
+        let metadata = {};
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab').forEach(b => {
+                b.classList.remove('border-amber-400', 'text-amber-300');
+                b.classList.add('border-transparent', 'text-slate-400');
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('border-amber-400', 'text-amber-300');
+                activeBtn.classList.remove('border-transparent', 'text-slate-400');
+            }
+            if (tabId === 'provenance') {
+                loadProvenanceGraph(document.getElementById('prov-doc-select').value);
+            } else if (tabId === 'audit') {
+                loadAuditTrail();
+            } else if (tabId === 'queries') {
+                runQueryKey('7.1');
+            }
+        }
+
+        function updateAlphaLabel(val) {
+            const v = parseFloat(val);
+            const sqlPct = Math.round(v * 100);
+            const vecPct = 100 - sqlPct;
+            document.getElementById('alpha-label').textContent = `Hybrid: ${sqlPct}% SQL / ${vecPct}% Vec`;
+        }
+
+        // Initialize Metadata
+        async function initApp() {
+            try {
+                const res = await fetch('/api/meta');
+                metadata = await res.json();
+                
+                // Populate Collections dropdowns
+                const colSelect = document.getElementById('filter-collection');
+                const ingestColSelect = document.getElementById('ingest-collection');
+                metadata.collections.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.collection_id;
+                    opt.textContent = `${c.name} (${c.era})`;
+                    colSelect.appendChild(opt);
+                });
+
+                // Load Initial Search
+                await performSearch();
+            } catch (err) {
+                console.error("Init Error:", err);
+            }
+        }
+
+        // Perform Hybrid Search
+        async function performSearch() {
+            const queryText = document.getElementById('search-query').value;
+            const alpha = parseFloat(document.getElementById('alpha-slider').value);
+            const styleSeed = document.getElementById('style-selector').value;
+            const collectionId = document.getElementById('filter-collection').value || null;
+
+            const grid = document.getElementById('results-grid');
+            grid.innerHTML = '<div class="col-span-2 text-center py-12 text-slate-400">Executing hybrid SQL-Vector ranking...</div>';
+
+            try {
+                const res = await fetch('/api/search/hybrid', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query_text: queryText,
+                        alpha: alpha,
+                        style_seed: styleSeed,
+                        collection_id: collectionId ? parseInt(collectionId) : null
+                    })
+                });
+                const data = await res.json();
+                renderSearchResults(data.results);
+                document.getElementById('results-count').textContent = `Found ${data.count} manuscripts matching criteria`;
+            } catch (err) {
+                grid.innerHTML = `<div class="col-span-2 text-red-400 py-8 text-center">Search failed: ${err.message}</div>`;
+            }
+        }
+
+        function renderSearchResults(docs) {
+            currentDocuments = docs;
+            const grid = document.getElementById('results-grid');
+            if (!docs || docs.length === 0) {
+                grid.innerHTML = '<div class="col-span-2 text-center py-12 text-slate-400">No archival documents found matching query and vector parameters.</div>';
+                return;
+            }
+
+            grid.innerHTML = docs.map(doc => {
+                const conditionColor = {
+                    'Pristine': 'bg-emerald-950 text-emerald-300 border-emerald-800',
+                    'Good': 'bg-blue-950 text-blue-300 border-blue-800',
+                    'Fragile': 'bg-amber-950 text-amber-300 border-amber-800',
+                    'Critical-Decay': 'bg-rose-950 text-rose-300 border-rose-800'
+                }[doc.physical_condition] || 'bg-slate-800 text-slate-300';
+
+                return `
+                    <div class="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 rounded-2xl p-5 shadow-lg flex flex-col justify-between transition group">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-start gap-2">
+                                <span class="px-2.5 py-0.5 text-[11px] rounded-full border ${conditionColor}">${doc.physical_condition}</span>
+                                <span class="text-xs font-mono text-slate-400">${doc.date_written || 'Circa unknown'}</span>
+                            </div>
+
+                            <div>
+                                <h3 class="text-base font-bold text-slate-100 group-hover:text-amber-300 transition">${doc.title}</h3>
+                                <p class="text-xs text-amber-400/90 font-medium mt-0.5">Author(s): ${doc.authors}</p>
+                            </div>
+
+                            <p class="text-xs text-slate-300/80 line-clamp-3 bg-slate-900/60 p-3 rounded-lg border border-slate-800 font-mono-code">
+                                "${doc.ocr_snippet}"
+                            </p>
+
+                            <div class="text-[11px] text-slate-400 space-y-0.5">
+                                <div><span class="text-slate-500">Collection:</span> ${doc.collection_name}</div>
+                                <div><span class="text-slate-500">Archive:</span> ${doc.archive_name} (${doc.institution})</div>
+                            </div>
+                        </div>
+
+                        <!-- Scores & Action -->
+                        <div class="mt-4 pt-4 border-t border-slate-700/60 flex items-center justify-between">
+                            <div class="flex items-center space-x-3 text-xs font-mono">
+                                <div title="FTS Score"><span class="text-slate-500">FTS:</span> <span class="text-emerald-400 font-bold">${doc.fts_score}</span></div>
+                                <div title="Handwriting Cosine Similarity"><span class="text-slate-500">Vec:</span> <span class="text-indigo-400 font-bold">${doc.vector_similarity}</span></div>
+                                <div title="Hybrid Fusion Rank"><span class="text-slate-500">Score:</span> <span class="text-amber-300 font-bold">${doc.hybrid_score}</span></div>
+                            </div>
+                            <button onclick="inspectDocument(${doc.document_id})" class="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 rounded-lg text-xs font-semibold transition flex items-center space-x-1">
+                                <span>Inspect</span>
+                                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        // Inspect Document Detail
+        async function inspectDocument(docId) {
+            switchTab('document');
+            const container = document.getElementById('doc-detail-view');
+            container.innerHTML = '<div class="text-center py-12 text-slate-400">Loading manuscript details and registering view audit trigger...</div>';
+
+            try {
+                const res = await fetch(`/api/documents/${docId}`);
+                const data = await res.json();
+                const doc = data.document;
+
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-700 pb-4">
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">ID #${doc.document_id}</span>
+                                    <span class="text-xs px-2.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">${doc.doc_type}</span>
+                                    <span class="text-xs px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">${doc.physical_condition}</span>
+                                </div>
+                                <h1 class="text-xl font-bold font-serif-title text-slate-100 mt-2">${doc.title}</h1>
+                                <p class="text-xs text-amber-300 mt-0.5">Author(s): ${doc.authors} | Language: ${doc.language} | Date: ${doc.date_written}</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="triggerCitation(${doc.document_id}, 'Chicago-Archival')" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-semibold text-slate-200">
+                                    + Chicago Citation
+                                </button>
+                                <button onclick="triggerCitation(${doc.document_id}, 'MLA')" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-semibold text-slate-200">
+                                    + MLA Citation
+                                </button>
+                                <button onclick="triggerCitation(${doc.document_id}, 'APA')" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-semibold text-slate-200">
+                                    + APA Citation
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 3-Column Inspector Grid -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Column 1: Archival Provenance & Checksum -->
+                            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
+                                <h3 class="font-bold text-amber-300 border-b border-slate-800 pb-2">Archival Repository Provenance</h3>
+                                <div><span class="text-slate-400">Collection:</span> <span class="text-slate-200">${doc.collection_name}</span></div>
+                                <div><span class="text-slate-400">Historical Era:</span> <span class="text-slate-200">${doc.era}</span></div>
+                                <div><span class="text-slate-400">Repository:</span> <span class="text-slate-200">${doc.archive_name}</span></div>
+                                <div><span class="text-slate-400">Institution:</span> <span class="text-slate-200">${doc.institution} (${doc.location})</span></div>
+                                <div><span class="text-slate-400">Digitized By:</span> <span class="text-slate-200">${doc.digitized_by_name || 'Station Pi'}</span></div>
+
+                                <div class="pt-2 border-t border-slate-800">
+                                    <div class="font-semibold text-slate-300 mb-1">Cryptographic Checksum (SHA-256):</div>
+                                    <div class="font-mono-code text-[10px] break-all bg-slate-950 p-2 rounded text-emerald-400 border border-slate-800">
+                                        ${doc.checksum_value}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Column 2: Full OCR Transcript -->
+                            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3 lg:col-span-2 text-xs">
+                                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                                    <h3 class="font-bold text-emerald-400">Decoded OCR Transcript (Full-Text Virtual Table)</h3>
+                                    <span class="text-[10px] text-slate-400 font-mono">Status: ${doc.ocr_status}</span>
+                                </div>
+                                <div class="bg-slate-950 p-4 rounded-lg font-mono-code text-xs text-slate-200 leading-relaxed border border-slate-800 whitespace-pre-wrap max-h-64 overflow-y-auto">
+${doc.ocr_text_cache}
+                                </div>
+
+                                <!-- Citation Display Box -->
+                                <div class="pt-2 border-t border-slate-800">
+                                    <h4 class="font-semibold text-amber-300 mb-1">Registered Academic Citations:</h4>
+                                    <div id="citation-list" class="space-y-1.5">
+                                        ${data.citations.map(c => `
+                                            <div class="bg-slate-950 p-2 rounded border border-slate-800 text-slate-300 text-[11px] font-serif">
+                                                <span class="text-amber-400 font-mono font-bold mr-1">[${c.citation_style}]</span> ${c.citation_text}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+            } catch (err) {
+                container.innerHTML = `<div class="text-red-400">Error loading manuscript: ${err.message}</div>`;
+            }
+        }
+
+        // Trigger Citation Generator Procedure
+        async function triggerCitation(docId, style) {
+            try {
+                const res = await fetch(`/api/documents/${docId}/citation`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ style: style })
+                });
+                const citation = await res.json();
+                const list = document.getElementById('citation-list');
+                const newElem = document.createElement('div');
+                newElem.className = 'bg-slate-950 p-2 rounded border border-emerald-800/80 text-emerald-200 text-[11px] font-serif animate-pulse';
+                newElem.innerHTML = `<span class="text-amber-400 font-mono font-bold mr-1">[${citation.citation_style}]</span> ${citation.citation_text}`;
+                list.prepend(newElem);
+            } catch (err) {
+                alert("Citation generation error: " + err.message);
+            }
+        }
+
+        // Ingest Document Handler (Pi Pipeline)
+        async function handleIngest(e) {
+            e.preventDefault();
+            const resultBox = document.getElementById('ingest-result');
+            resultBox.classList.remove('hidden');
+            resultBox.innerHTML = 'Connecting to Pi Station, computing SHA-256 checksum and vector embeddings...';
+
+            const payload = {
+                title: document.getElementById('ingest-title').value,
+                author_name: document.getElementById('ingest-author').value,
+                date_written: document.getElementById('ingest-date').value,
+                collection_id: parseInt(document.getElementById('ingest-collection').value),
+                doc_type: document.getElementById('ingest-type').value,
+                physical_condition: document.getElementById('ingest-condition').value,
+                style_seed: document.getElementById('ingest-seed').value,
+                ocr_text: document.getElementById('ingest-ocr').value
+            };
+
+            try {
+                const res = await fetch('/api/documents/ingest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                resultBox.className = 'rounded-xl p-4 border border-emerald-700 bg-emerald-950/60 text-emerald-300 font-mono-code text-xs space-y-1';
+                resultBox.innerHTML = `
+                    <div class="font-bold text-sm text-emerald-400">✓ Ingestion Transaction Committed to ArchiveMind!</div>
+                    <div>Document ID: #${data.document_id}</div>
+                    <div>Cryptographic Checksum: ${data.checksum}</div>
+                    <div>Vector ID: ${data.vector_id}</div>
+                    <div>Full-Text Search FTS5 Virtual Table Synchronized.</div>
+                `;
+            } catch (err) {
+                resultBox.className = 'rounded-xl p-4 border border-rose-700 bg-rose-950 text-rose-300 font-mono-code text-xs';
+                resultBox.innerHTML = `Ingestion Failed: ${err.message}`;
+            }
+        }
+
+        // Run DBMS Evaluation Queries (Tab 5)
+        async function runQueryKey(key) {
+            document.querySelectorAll('.q-btn').forEach(b => b.classList.remove('ring-2', 'ring-amber-500'));
+            const activeBtn = document.getElementById(`btn-q-${key}`);
+            if (activeBtn) activeBtn.classList.add('ring-2', 'ring-amber-500');
+
+            const titleElem = document.getElementById('query-active-title');
+            const sqlElem = document.getElementById('query-sql-display');
+            const metaElem = document.getElementById('query-result-meta');
+            const tableContainer = document.getElementById('query-table-container');
+            const runtimeElem = document.getElementById('query-runtime');
+
+            titleElem.textContent = `Executing Query ${key}...`;
+            tableContainer.innerHTML = '<div class="p-6 text-center text-slate-400 text-xs">Executing relational query and calculating plan...</div>';
+
+            const startT = performance.now();
+            try {
+                const res = await fetch('/api/queries/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query_key: key })
+                });
+                const data = await res.json();
+                const elapsed = (performance.now() - startT).toFixed(2);
+
+                titleElem.textContent = data.name;
+                sqlElem.textContent = data.sql;
+                runtimeElem.textContent = `Executed in ${elapsed} ms`;
+
+                const rows = data.results || [];
+                metaElem.textContent = `${rows.length} records returned ${data.rows_affected ? `(${data.rows_affected} rows affected)` : ''}`;
+
+                if (rows.length === 0) {
+                    tableContainer.innerHTML = '<div class="p-6 text-center text-slate-500 text-xs">Query executed successfully. Result set empty or operation completed.</div>';
+                    return;
+                }
+
+                const columns = Object.keys(rows[0]);
+                let tableHtml = `
+                    <table class="w-full text-left text-xs font-mono-code">
+                        <thead class="bg-slate-900 text-amber-300 border-b border-slate-800">
+                            <tr>${columns.map(c => `<th class="p-2.5 whitespace-nowrap">${c}</th>`).join('')}</tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800">
+                            ${rows.map(r => `
+                                <tr class="hover:bg-slate-900/60 transition">
+                                    ${columns.map(c => `<td class="p-2.5 text-slate-200 whitespace-nowrap">${r[c] !== null ? r[c] : '<span class="text-slate-600">NULL</span>'}</td>`).join('')}
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                tableContainer.innerHTML = tableHtml;
+            } catch (err) {
+                tableContainer.innerHTML = `<div class="p-6 text-rose-400 text-xs">Query Error: ${err.message}</div>`;
+            }
+        }
+
+        // Load Audit Trail
+        async function loadAuditTrail() {
+            const tbody = document.getElementById('audit-table-body');
+            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Loading audit records...</td></tr>';
+            try {
+                const res = await fetch('/api/audit/views');
+                const views = await res.json();
+                tbody.innerHTML = views.map(v => `
+                    <tr class="hover:bg-slate-900/50">
+                        <td class="p-3 text-amber-400 font-bold">#${v.view_id}</td>
+                        <td class="p-3 text-slate-200 font-sans">${v.title}</td>
+                        <td class="p-3 text-slate-400">${v.viewed_at}</td>
+                        <td class="p-3 text-emerald-400">${v.ip_address}</td>
+                        <td class="p-3 text-slate-300 font-sans">${v.viewer_name}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300">${v.role_name || 'Guest'}</span></td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-red-400">${err.message}</td></tr>`;
+            }
+        }
+
+        // Interactive Provenance Graph (Canvas-based)
+        async function loadProvenanceGraph(docId) {
+            const canvas = document.getElementById('provenance-canvas');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#94a3b8";
+            ctx.font = "12px sans-serif";
+            ctx.fillText("Rendering provenance graph nodes...", 20, 30);
+
+            try {
+                const res = await fetch(`/api/provenance/${docId}`);
+                const data = await res.json();
+                renderCanvasGraph(ctx, canvas.width, canvas.height, data.nodes, data.edges);
+            } catch (err) {
+                ctx.fillText("Failed to load provenance: " + err.message, 20, 30);
+            }
+        }
+
+        function renderCanvasGraph(ctx, width, height, nodes, edges) {
+            ctx.clearRect(0, 0, width, height);
+            if (!nodes || nodes.length === 0) return;
+
+            const colorMap = {
+                document: '#f59e0b',
+                person: '#6366f1',
+                collection: '#10b981',
+                archive: '#a855f7',
+                audit: '#06b6d4'
+            };
+
+            // Layout coordinates around center
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const docNode = nodes.find(n => n.type === 'document') || nodes[0];
+            docNode.x = centerX;
+            docNode.y = centerY;
+
+            const otherNodes = nodes.filter(n => n !== docNode);
+            const radius = Math.min(width, height) * 0.38;
+            const angleStep = (2 * Math.PI) / (otherNodes.length || 1);
+
+            otherNodes.forEach((node, i) => {
+                const angle = i * angleStep;
+                node.x = centerX + radius * Math.cos(angle);
+                node.y = centerY + radius * Math.sin(angle);
+            });
+
+            // Draw Edges
+            edges.forEach(edge => {
+                const s = nodes.find(n => n.id === edge.source);
+                const t = nodes.find(n => n.id === edge.target);
+                if (s && t) {
+                    ctx.beginPath();
+                    ctx.moveTo(s.x, s.y);
+                    ctx.lineTo(t.x, t.y);
+                    ctx.strokeStyle = '#334155';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+
+                    // Edge label
+                    const midX = (s.x + t.x) / 2;
+                    const midY = (s.y + t.y) / 2;
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '9px monospace';
+                    ctx.fillText(edge.label, midX - 20, midY);
+                }
+            });
+
+            // Draw Nodes
+            nodes.forEach(node => {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, node.type === 'document' ? 22 : 16, 0, 2 * Math.PI);
+                ctx.fillStyle = colorMap[node.type] || '#64748b';
+                ctx.fill();
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Text
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(node.label.length > 22 ? node.label.slice(0, 20) + '...' : node.label, node.x, node.y - 22);
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '9px monospace';
+                ctx.fillText(node.details || '', node.x, node.y + 28);
+            });
+        }
+
+        // Start App
+        window.addEventListener('DOMContentLoaded', () => {
+            initApp();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
+
