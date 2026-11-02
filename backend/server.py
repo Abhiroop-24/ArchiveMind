@@ -95,7 +95,8 @@ class OCRUpdateRequest(BaseModel):
     corrected_text: str
 
 class AssistantAskRequest(BaseModel):
-    question: str
+    question: Optional[str] = None
+    query: Optional[str] = None
 
 class CitationRequest(BaseModel):
     style: str = "Chicago-Archival"
@@ -485,7 +486,8 @@ def ask_assistant_api(req: AssistantAskRequest):
     """
     conn = db.get_connection()
     try:
-        response = rag_service.ask_archival_assistant(conn, req.question)
+        user_q = (req.question or req.query or "").strip()
+        response = rag_service.ask_archival_assistant(conn, user_q)
         return response
     finally:
         conn.close()
