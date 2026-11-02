@@ -27,7 +27,7 @@ def ping(host: str) -> bool:
 
 def run_full_system_test():
     print("=" * 76)
-    print("🏛️  ARCHIVEMIND (VDUI) — FULL END-TO-END SYSTEM INTEGRATION TEST")
+    print("  ARCHIVEMIND (VDUI) -- FULL END-TO-END SYSTEM INTEGRATION TEST")
     print("=" * 76)
 
     # -------------------------------------------------------------
@@ -226,7 +226,7 @@ def run_full_system_test():
             server_proc.kill()
 
     print("\n" + "=" * 76)
-    print("🎯 FULL MASTER TEST COMPLETED: ALL 6 SUBSYSTEMS 100% OPERATIONAL!")
+    print("  FULL MASTER TEST COMPLETED: ALL 6 SUBSYSTEMS 100% OPERATIONAL!")
     print("=" * 76)
 
 

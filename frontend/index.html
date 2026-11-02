@@ -1262,7 +1262,7 @@
                                         LAPTOP WEBCAM
                                     </button>
                                 </div>
-                                <span id="preview-status-badge" class="tag-stark" style="color: var(--accent-green); border-color: #00ff66;">🟢 PI 5MP LIVE STREAM</span>
+                                <span id="preview-status-badge" class="tag-stark" style="color: var(--accent-green); border-color: #00ff66;">[LIVE] PI 5MP STREAM</span>
                             </div>
 
                             <!-- Mobile Camera Viewfinder with YOLO Overlay -->
@@ -1468,7 +1468,7 @@
                     <!-- Query Vector Projection Controls -->
                     <div style="background: #000; border: 1px solid var(--border-mid); padding: 14px; margin-bottom: 14px;">
                         <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: #fff; margin-bottom: 8px; display: flex; justify-content: space-between;">
-                            <span>⚡ LIVE DYNAMIC QUERY VECTOR PROJECTION</span>
+                            <span>LIVE DYNAMIC QUERY VECTOR PROJECTION</span>
                             <span style="color: var(--accent-green);">REAL-TIME LATENT COSINE MAPPING</span>
                         </div>
                         <div style="display: flex; gap: 10px; margin-bottom: 10px;">
@@ -2069,12 +2069,12 @@
                 }
 
                 if (statusBadge) {
-                    statusBadge.textContent = '🟢 PI 5MP LIVE STREAM';
+                    statusBadge.textContent = '[LIVE] PI 5MP STREAM';
                     statusBadge.style.color = 'var(--accent-green)';
                     statusBadge.style.borderColor = '#00ff66';
                 }
                 if (hudRes) hudRes.textContent = '1080p60 · ov5647';
-                showRoleToast("✓ Switched to Raspberry Pi 5MP Hardware Camera (10.42.0.116)");
+                showRoleToast("[OK] Switched to Raspberry Pi 5MP Hardware Camera (10.42.0.116)");
             } else {
                 if (btnWebcam) {
                     btnWebcam.style.background = 'var(--accent-green)';
@@ -2107,12 +2107,12 @@
                 }
 
                 if (statusBadge) {
-                    statusBadge.textContent = '🟢 LAPTOP WEBCAM';
+                    statusBadge.textContent = '[LIVE] LAPTOP WEBCAM';
                     statusBadge.style.color = '#fff';
                     statusBadge.style.borderColor = '#fff';
                 }
                 if (hudRes) hudRes.textContent = '720p30 · Laptop';
-                showRoleToast("✓ Switched to Laptop Webcam");
+                showRoleToast("[OK] Switched to Laptop Webcam");
             }
 
             if (!isCameraFrozen) {
@@ -2403,7 +2403,7 @@
                     // 4. Detected A4 Sheet Header Tag
                     ctx.save();
                     ctx.font = 'bold 11px monospace';
-                    const tagText = `[🟢 YOLO-A4: DETECTED · ${(yoloConfidence * 100).toFixed(1)}% CONF]`;
+                    const tagText = `[YOLO-A4: DETECTED · ${(yoloConfidence * 100).toFixed(1)}% CONF]`;
                     const textWidth = ctx.measureText(tagText).width;
 
                     ctx.fillStyle = '#00ff66';
@@ -2608,14 +2608,14 @@
                 if (piImg) {
                     piImg.src = `/api/devices/pi_stream?t=${Date.now()}`;
                 }
-                statusBadge.textContent = '🟢 PI 5MP LIVE STREAM';
+                statusBadge.textContent = '[LIVE] PI 5MP STREAM';
                 statusBadge.style.color = 'var(--accent-green)';
                 statusBadge.style.borderColor = '#00ff66';
             } else {
                 if (video && video.paused) {
                     video.play().catch(() => {});
                 }
-                statusBadge.textContent = '🟢 LAPTOP WEBCAM';
+                statusBadge.textContent = '[LIVE] LAPTOP WEBCAM';
                 statusBadge.style.color = '#ffffff';
                 statusBadge.style.borderColor = '#ffffff';
             }
@@ -2624,7 +2624,7 @@
             btnRefresh.style.display = 'none';
 
             startRealtimeYoloLoop();
-            showRoleToast("✓ Live camera stream refreshed. YOLO tracking active.");
+            showRoleToast("[OK] Live camera stream refreshed. YOLO tracking active.");
         }
 
         // Maintain triggerPiCapture alias for top button
@@ -2783,7 +2783,7 @@
                             <span style="font-family: var(--font-mono); font-size: 9px; color: #666;">RAW: K=${doc.keyword_score} · S=${doc.semantic_score}</span>
                             <div style="display: flex; gap: 6px;">
                                 <button class="btn-box" style="padding: 4px 8px; font-size: 9px;" onclick="locateInVectorLab(${doc.document_id})">
-                                    <span>🌌 2D LAB</span>
+                                    <span>2D LAB</span>
                                 </button>
                                 <button class="btn-inspect-stark" onclick="inspectDocument(${doc.document_id})">
                                     <span>INSPECT</span>
@@ -2983,8 +2983,8 @@
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                     <span class="metric-label">DATA REVIEW & OCR FIDELITY</span>
                                     <div style="display: flex; gap: 6px;">
-                                        <button id="btn-review-heatmap" class="btn-box" style="padding: 3px 8px; font-size: 10px; background: var(--accent-green); color: #000; border-color: var(--accent-green);" onclick="setReviewMode('heatmap')">🔥 CONFIDENCE HEATMAP</button>
-                                        <button id="btn-review-editor" class="btn-box" style="padding: 3px 8px; font-size: 10px; background: transparent; color: #888; border-color: var(--border-dim);" onclick="setReviewMode('editor')">✎ RAW EDITOR</button>
+                                        <button id="btn-review-heatmap" class="btn-box" style="padding: 3px 8px; font-size: 10px; background: var(--accent-green); color: #000; border-color: var(--accent-green);" onclick="setReviewMode('heatmap')">CONFIDENCE HEATMAP</button>
+                                        <button id="btn-review-editor" class="btn-box" style="padding: 3px 8px; font-size: 10px; background: transparent; color: #888; border-color: var(--border-dim);" onclick="setReviewMode('editor')">RAW EDITOR</button>
                                     </div>
                                 </div>
 
@@ -3280,7 +3280,7 @@
 
                 ctx.font = 'bold 10px monospace';
                 ctx.fillStyle = '#ffffff';
-                ctx.fillText(`⚡ QUERY VECTOR: "${activeQueryProjection.query.slice(0, 28)}..."`, qx + 18, qy + 4);
+                ctx.fillText(`QUERY VECTOR: "${activeQueryProjection.query.slice(0, 28)}..."`, qx + 18, qy + 4);
                 ctx.restore();
             }
 

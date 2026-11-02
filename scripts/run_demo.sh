@@ -10,8 +10,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 echo "=========================================================="
-echo "  🏛️  ArchiveMind: Hybrid SQL-Vector Archival Search Engine"
-echo "  🎨  VDUI Project"
+echo "  ArchiveMind: Hybrid SQL-Vector Archival Search Engine"
+echo "  VDUI Project"
 echo "=========================================================="
 
 cd "$PROJECT_ROOT"
