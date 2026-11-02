@@ -132,6 +132,10 @@ def encode_query(query: str) -> np.ndarray:
     return vecs[0]
 
 
+embed_query = encode_query
+
+
+
 def vector_to_blob(vector: np.ndarray) -> bytes:
     """Serializes a 1D float32 numpy array to a raw binary BLOB for SQLite storage."""
     return vector.astype(np.float32).tobytes()
