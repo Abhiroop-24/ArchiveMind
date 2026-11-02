@@ -193,3 +193,65 @@ def project_search_query(query_text: str) -> Dict[str, Any]:
         "query_y": qy,
         "nearest": ranked[:5]
     }
+
+
+def compute_similarity_matrix() -> Dict[str, Any]:
+    """
+    Computes NxN pairwise cosine similarity matrix across all archival documents
+    in the 384-dimensional MiniLM dense vector space.
+    """
+    space = compute_vector_space()
+    nodes = space.get("nodes", [])
+    if not nodes:
+        return {"documents": [], "matrix": [], "metrics": {}}
+
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    doc_ids = [n["document_id"] for n in nodes]
+
+    vec_map = {}
+    for doc_id in doc_ids:
+        cur.execute("""
+            SELECT ce.embedding_blob 
+            FROM document_chunk dc
+            JOIN chunk_embedding ce ON dc.chunk_id = ce.chunk_id
+            WHERE dc.document_id = ?
+            LIMIT 1
+        """, (doc_id,))
+        row = cur.fetchone()
+        if row and row[0]:
+            v = np.frombuffer(row[0], dtype=np.float32)
+            norm = np.linalg.norm(v)
+            if norm > 1e-6:
+                v = v / norm
+            vec_map[doc_id] = v
+        else:
+            vec_map[doc_id] = np.zeros(384, dtype=np.float32)
+    conn.close()
+
+    valid_nodes = [n for n in nodes if n["document_id"] in vec_map]
+    vec_matrix = np.array([vec_map[n["document_id"]] for n in valid_nodes], dtype=np.float32)
+
+    # Pairwise cosine similarity matrix: X * X.T
+    sim_matrix = np.dot(vec_matrix, vec_matrix.T)
+    sim_matrix = np.clip(sim_matrix, 0.0, 1.0)
+
+    doc_list = []
+    for n in valid_nodes:
+        doc_list.append({
+            "document_id": n["document_id"],
+            "title": n["title"],
+            "domain": n["domain"],
+            "color": n["color"]
+        })
+
+    return {
+        "documents": doc_list,
+        "matrix": [[round(float(val), 3) for val in row] for row in sim_matrix],
+        "metrics": {
+            "dimension": 384,
+            "metric": "Cosine Similarity (Unit Hyper-sphere Dot Product)",
+            "total_documents": len(valid_nodes)
+        }
+    }
+

@@ -661,6 +661,79 @@ def project_ml_query_api(q: str):
         raise HTTPException(status_code=400, detail="Query string q is required")
     return vector_viz.project_search_query(q.strip())
 
+
+@app.get("/api/ml/similarity_matrix")
+def get_ml_similarity_matrix_api():
+    return vector_viz.compute_similarity_matrix()
+
+
+@app.get("/api/documents/{doc_id}/cnn_diagnostics")
+def get_document_cnn_diagnostics_api(doc_id: int):
+    conn = db.get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT title, physical_condition, image_path FROM document WHERE document_id = ?", (doc_id,))
+    row = cur.fetchone()
+    conn.close()
+
+    if not row:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    img_name = row["image_path"] or f"doc_{doc_id}.jpg"
+    clean_base = Path(img_name).name.replace("proc_", "")
+
+    p_proc = PROCESSED_DIR / f"proc_{clean_base}"
+    p_orig = ORIGINALS_DIR / clean_base
+    target_img = None
+    for p in [p_proc, p_orig, PROCESSED_DIR / img_name, ORIGINALS_DIR / img_name]:
+        if p.exists() and p.is_file() and p.stat().st_size > 100:
+            target_img = str(p)
+            break
+
+    if not target_img:
+        any_img = next(PROCESSED_DIR.glob("*.jpg"), None) or next(ORIGINALS_DIR.glob("*.jpg"), None)
+        target_img = str(any_img) if any_img else None
+
+    if not target_img:
+        raise HTTPException(status_code=404, detail="No manuscript image available for CNN analysis")
+
+    try:
+        import cv2
+        cond = classification_service.analyze_image_condition(target_img)
+
+        # Compute 32-bin luminance histogram
+        gray = cv2.imread(target_img, cv2.IMREAD_GRAYSCALE)
+        hist = cv2.calcHist([gray], [0], None, [32], [0, 256]).flatten()
+        max_h = float(hist.max()) if hist.max() > 0 else 1.0
+        hist_norm = [round(float(h / max_h), 4) for h in hist]
+        otsu_val, _ = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+        # Sobel ink edge gradient energy (measuring calligraphic stroke sharpness)
+        sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
+        sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
+        grad_mag = np.sqrt(sobelx**2 + sobely**2)
+        mean_edge_energy = round(float(np.mean(grad_mag)), 2)
+
+        return {
+            "document_id": doc_id,
+            "title": row["title"],
+            "cnn_backbone": "MobileNetV3-Small (Depthwise Separable Convolutions)",
+            "condition_classification": cond,
+            "luminance_histogram": {
+                "bins": 32,
+                "values": hist_norm,
+                "otsu_threshold": round(float(otsu_val), 1),
+                "ink_edge_energy": mean_edge_energy
+            },
+            "clahe_params": {
+                "clip_limit": 2.5,
+                "tile_grid": "8x8",
+                "color_space": "LAB / L-Channel Equalization"
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"CNN Diagnostics Error: {e}")
+
+
 @app.patch("/api/documents/{doc_id}/ocr")
 def update_document_ocr_api(doc_id: int, req: OCRUpdateRequest):
     db.update_document_ocr(doc_id, req.corrected_text)

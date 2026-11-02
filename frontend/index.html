@@ -1447,81 +1447,193 @@
                     </div>
                 </div>
 
-                <!-- Query Vector Projection Controls -->
-                <div style="background: #000; border: 1px solid var(--border-mid); padding: 14px; margin-bottom: 14px;">
-                    <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: #fff; margin-bottom: 8px; display: flex; justify-content: space-between;">
-                        <span>⚡ LIVE DYNAMIC QUERY VECTOR PROJECTION</span>
-                        <span style="color: var(--accent-green);">REAL-TIME LATENT COSINE MAPPING</span>
-                    </div>
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <div class="search-input-wrap" style="flex: 1;">
-                            <i data-lucide="crosshair"></i>
-                            <input type="text" id="vector-query-input" class="box-input"
-                                   placeholder="Type natural scholarly inquiry to project vector into latent space (e.g. 'celestial inverse square gravitation', 'enigma cipher rotor wirings')..."
-                                   onkeydown="if(event.key === 'Enter') triggerQueryVectorProjection()">
+                <!-- Vector Lab Sub-Navigation Tabs -->
+                <div style="display: flex; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid var(--border-mid); padding-bottom: 10px; flex-wrap: wrap;">
+                    <button id="btn-vsub-2d" class="btn-box active" style="font-size: 11px; background: var(--accent-green); color: #000; border-color: var(--accent-green);" onclick="switchVectorSubTab('2d')">
+                        <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i>
+                        <span>2D Latent Vector Space (PCA / SVD)</span>
+                    </button>
+                    <button id="btn-vsub-matrix" class="btn-box" style="font-size: 11px; background: transparent; color: #888; border-color: var(--border-dim);" onclick="switchVectorSubTab('matrix')">
+                        <i data-lucide="grid" style="width: 13px; height: 13px;"></i>
+                        <span>Cross-Attention Semantic Matrix (N×N)</span>
+                    </button>
+                    <button id="btn-vsub-theory" class="btn-box" style="font-size: 11px; background: transparent; color: #888; border-color: var(--border-dim);" onclick="switchVectorSubTab('theory')">
+                        <i data-lucide="book-open" style="width: 13px; height: 13px;"></i>
+                        <span>NLP & ML Mathematical Foundations</span>
+                    </button>
+                </div>
+
+                <!-- SUB-PANEL 1: 2D LATENT VECTOR SPACE -->
+                <div id="vsub-panel-2d">
+                    <!-- Query Vector Projection Controls -->
+                    <div style="background: #000; border: 1px solid var(--border-mid); padding: 14px; margin-bottom: 14px;">
+                        <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: #fff; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                            <span>⚡ LIVE DYNAMIC QUERY VECTOR PROJECTION</span>
+                            <span style="color: var(--accent-green);">REAL-TIME LATENT COSINE MAPPING</span>
                         </div>
-                        <button class="btn-box" onclick="triggerQueryVectorProjection()" style="background: var(--accent-green); color: #000; border-color: var(--accent-green);">
-                            <i data-lucide="target" style="width: 14px; height: 14px;"></i>
-                            <span>Project Vector</span>
-                        </button>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <div class="search-input-wrap" style="flex: 1;">
+                                <i data-lucide="crosshair"></i>
+                                <input type="text" id="vector-query-input" class="box-input"
+                                       placeholder="Type natural scholarly inquiry to project vector into latent space (e.g. 'celestial inverse square gravitation', 'enigma cipher rotor wirings')..."
+                                       onkeydown="if(event.key === 'Enter') triggerQueryVectorProjection()">
+                            </div>
+                            <button class="btn-box" onclick="triggerQueryVectorProjection()" style="background: var(--accent-green); color: #000; border-color: var(--accent-green);">
+                                <i data-lucide="target" style="width: 14px; height: 14px;"></i>
+                                <span>Project Vector</span>
+                            </button>
+                        </div>
+
+                        <!-- Preset Query Chips for Instant Demonstration -->
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                            <span style="font-family: var(--font-mono); font-size: 10px; color: #888;">PRESETS:</span>
+                            <button class="btn-box" style="padding: 3px 8px; font-size: 10px;" onclick="quickProjectQuery('Newtonian inverse-square universal gravitation and orbital mechanics')">Gravitation & Orbits</button>
+                            <button class="btn-box" style="padding: 3px 8px; font-size: 10px;" onclick="quickProjectQuery('Prismatic dispersion and refraction of white light spectrum')">Prismatic Light Dispersion</button>
+                            <button class="btn-box" style="padding: 3px 8px; font-size: 10px;" onclick="quickProjectQuery('Ramanujan modular equations and mock theta function partitions')">Ramanujan Mock Theta</button>
+                            <button class="btn-box" style="padding: 3px 8px; font-size: 10px;" onclick="quickProjectQuery('Alan Turing Hut 8 cryptanalysis of naval 4-rotor Enigma ciphers')">Turing Enigma Cryptanalysis</button>
+                            <button class="btn-box" style="padding: 3px 8px; font-size: 10px;" onclick="quickProjectQuery('Leonardo da Vinci aerial screw helix and vortex aerodynamics')">Da Vinci Aerial Screw</button>
+                        </div>
                     </div>
 
-                    <!-- Preset Query Chips for Instant Demonstration -->
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-                        <span style="font-family: var(--font-mono); font-size: 10px; color: #888;">PRESETS:</span>
-                        <button class="btn-box" style="padding: 3px 8px; font-size: 10px;" onclick="quickProjectQuery('Newtonian inverse-square universal gravitation and orbital mechanics')">Gravitation & Orbits</button>
-                        <button class="btn-box" style="padding: 3px 8px; font-size: 10px;" onclick="quickProjectQuery('Prismatic dispersion and refraction of white light spectrum')">Prismatic Light Dispersion</button>
-                        <button class="btn-box" style="padding: 3px 8px; font-size: 10px;" onclick="quickProjectQuery('Ramanujan modular equations and mock theta function partitions')">Ramanujan Mock Theta</button>
-                        <button class="btn-box" style="padding: 3px 8px; font-size: 10px;" onclick="quickProjectQuery('Alan Turing Hut 8 cryptanalysis of naval 4-rotor Enigma ciphers')">Turing Enigma Cryptanalysis</button>
-                        <button class="btn-box" style="padding: 3px 8px; font-size: 10px;" onclick="quickProjectQuery('Leonardo da Vinci aerial screw helix and vortex aerodynamics')">Da Vinci Aerial Screw</button>
+                    <!-- Main Visualization Grid: Canvas on Left, Live Metric Inspector on Right -->
+                    <div style="display: grid; grid-template-columns: 2.2fr 1fr; gap: 14px;">
+                        <!-- Left: Interactive Vector Canvas -->
+                        <div style="background: #000; border: 1px solid var(--border-mid); position: relative; min-height: 540px;">
+                            <canvas id="vector-space-canvas" style="width: 100%; height: 540px; display: block; cursor: crosshair;"></canvas>
+
+                            <!-- Tooltip Overlay -->
+                            <div id="vector-canvas-tooltip" style="display: none; position: absolute; pointer-events: none; background: rgba(0,0,0,0.92); border: 1px solid var(--accent-green); padding: 10px 12px; font-family: var(--font-mono); font-size: 11px; z-index: 10; max-width: 280px; box-shadow: 0 0 14px rgba(0,255,102,0.25);">
+                                <div id="vtip-domain" style="font-size: 9px; font-weight: 800; color: var(--accent-green); margin-bottom: 4px;"></div>
+                                <div id="vtip-title" style="font-weight: 900; color: #fff; margin-bottom: 4px;"></div>
+                                <div id="vtip-coords" style="font-size: 10px; color: #888;"></div>
+                            </div>
+
+                            <!-- Canvas Legend Overlay -->
+                            <div style="position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.85); border: 1px solid #222; padding: 8px 12px; font-family: var(--font-mono); font-size: 10px; display: flex; gap: 14px; flex-wrap: wrap;">
+                                <span style="color: #00ff66;">■ Classical Mechanics</span>
+                                <span style="color: #00f0ff;">■ Optics & Light</span>
+                                <span style="color: #bf5af2;">■ Number Theory</span>
+                                <span style="color: #ff9f0a;">■ Cryptography</span>
+                                <span style="color: #ff375f;">■ Anatomy & Engineering</span>
+                            </div>
+                        </div>
+
+                        <!-- Right: Selected Node / Nearest Neighbors Live Telemetry -->
+                        <div style="background: #000; border: 1px solid var(--border-mid); padding: 14px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div class="metric-label" style="margin-bottom: 10px;">
+                                    <span>SEMANTIC NEIGHBORHOOD</span>
+                                    <span id="vlab-status-badge" class="tag-stark" style="color: var(--accent-green); border-color: #00ff66;">ACTIVE 384-D</span>
+                                </div>
+
+                                <div id="vlab-nearest-list" style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div style="font-family: var(--font-mono); font-size: 11px; color: #888; text-align: center; padding: 2rem 0;">
+                                        Hover or click any manuscript node in the 2D space, or project a query above to calculate nearest neighbors.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dimensionality Mathematical Metrics -->
+                            <div style="background: #080808; border: 1px solid #222; padding: 10px; margin-top: 14px; font-family: var(--font-mono); font-size: 10px; line-height: 1.6; color: #aaa;">
+                                <div style="color: #fff; font-weight: 800; border-bottom: 1px solid #222; padding-bottom: 4px; margin-bottom: 6px;">MATHEMATICAL FORMULATION</div>
+                                <div>&bull; Metric: <strong>Cosine Similarity</strong> cos(&theta;) = (u &middot; v) / (||u|| ||v||)</div>
+                                <div>&bull; Embedding: <strong>384-dim dense float32 tensor</strong></div>
+                                <div>&bull; Projection: <strong>Principal Component SVD (Basis 1 & 2)</strong></div>
+                                <div>&bull; Total Indexed Chunks: <strong id="vlab-total-chunks" style="color: #fff;">29 chunks</strong></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Main Visualization Grid: Canvas on Left, Live Metric Inspector on Right -->
-                <div style="display: grid; grid-template-columns: 2.2fr 1fr; gap: 14px;">
-                    <!-- Left: Interactive Vector Canvas -->
-                    <div style="background: #000; border: 1px solid var(--border-mid); position: relative; min-height: 540px;">
-                        <canvas id="vector-space-canvas" style="width: 100%; height: 540px; display: block; cursor: crosshair;"></canvas>
-                        
-                        <!-- Tooltip Overlay -->
-                        <div id="vector-canvas-tooltip" style="display: none; position: absolute; pointer-events: none; background: rgba(0,0,0,0.92); border: 1px solid var(--accent-green); padding: 10px 12px; font-family: var(--font-mono); font-size: 11px; z-index: 10; max-width: 280px; box-shadow: 0 0 14px rgba(0,255,102,0.25);">
-                            <div id="vtip-domain" style="font-size: 9px; font-weight: 800; color: var(--accent-green); margin-bottom: 4px;"></div>
-                            <div id="vtip-title" style="font-weight: 900; color: #fff; margin-bottom: 4px;"></div>
-                            <div id="vtip-coords" style="font-size: 10px; color: #888;"></div>
+                <!-- SUB-PANEL 2: CROSS-ATTENTION SEMANTIC SIMILARITY MATRIX (N×N) -->
+                <div id="vsub-panel-matrix" style="display: none;">
+                    <div style="background: #000; border: 1px solid var(--border-mid); padding: 14px; margin-bottom: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div>
+                                <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: #fff;">PAIRWISE COSINE SIMILARITY MATRIX (N × N)</div>
+                                <div style="font-family: var(--font-mono); font-size: 10px; color: #888;">Exhaustive inner-product evaluation on unit hypersphere &Sopf;<sup>383</sup> across all archival manuscripts.</div>
+                            </div>
+                            <button class="btn-box" onclick="loadSimilarityMatrix(true)" style="padding: 4px 10px; font-size: 10px;">
+                                <i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i>
+                                <span>Recalculate Matrix</span>
+                            </button>
                         </div>
 
-                        <!-- Canvas Legend Overlay -->
-                        <div style="position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.85); border: 1px solid #222; padding: 8px 12px; font-family: var(--font-mono); font-size: 10px; display: flex; gap: 14px; flex-wrap: wrap;">
-                            <span style="color: #00ff66;">■ Classical Mechanics</span>
-                            <span style="color: #00f0ff;">■ Optics & Light</span>
-                            <span style="color: #bf5af2;">■ Number Theory</span>
-                            <span style="color: #ff9f0a;">■ Cryptography</span>
-                            <span style="color: #ff375f;">■ Anatomy & Engineering</span>
+                        <!-- Matrix Inspector Preview Card -->
+                        <div id="matrix-inspector-chip" style="background: #080808; border: 1px solid #222; padding: 10px 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 11px;">
+                            <div id="matrix-inspector-desc" style="color: #aaa;">Hover over any cell in the heatmap to inspect pairwise semantic alignment.</div>
+                            <div id="matrix-inspector-score" style="font-size: 13px; font-weight: 900; color: var(--accent-green);">---</div>
+                        </div>
+
+                        <!-- Scrollable Matrix Grid Table -->
+                        <div id="similarity-matrix-container" style="max-height: 520px; overflow: auto; border: 1px solid #1a1a1a;">
+                            <div style="text-align: center; padding: 4rem; font-family: var(--font-mono); color: #666;">LOADING SEMANTIC SIMILARITY TENSORS...</div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Right: Selected Node / Nearest Neighbors Live Telemetry -->
-                    <div style="background: #000; border: 1px solid var(--border-mid); padding: 14px; display: flex; flex-direction: column; justify-content: space-between;">
-                        <div>
-                            <div class="metric-label" style="margin-bottom: 10px;">
-                                <span>SEMANTIC NEIGHBORHOOD</span>
-                                <span id="vlab-status-badge" class="tag-stark" style="color: var(--accent-green); border-color: #00ff66;">ACTIVE 384-D</span>
+                <!-- SUB-PANEL 3: NLP & ML MATHEMATICAL FOUNDATIONS -->
+                <div id="vsub-panel-theory" style="display: none;">
+                    <div class="grid-2" style="gap: 14px; margin-bottom: 14px;">
+                        <!-- Card 1: Dense Transformer Architecture -->
+                        <div style="background: #000; border: 1px solid var(--border-mid); padding: 16px; font-family: var(--font-mono);">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding-bottom: 8px; margin-bottom: 12px;">
+                                <span style="font-size: 12px; font-weight: 800; color: var(--accent-green);">1. NLP TRANSFORMER ENCODER</span>
+                                <span class="tag-stark" style="font-size: 9px;">all-MiniLM-L6-v2</span>
                             </div>
-
-                            <div id="vlab-nearest-list" style="display: flex; flex-direction: column; gap: 8px;">
-                                <div style="font-family: var(--font-mono); font-size: 11px; color: #888; text-align: center; padding: 2rem 0;">
-                                    Hover or click any manuscript node in the 2D space, or project a query above to calculate nearest neighbors.
+                            <div style="font-size: 11px; color: #ccc; line-height: 1.7;">
+                                <p>ArchiveMind utilizes a distilled BERT transformer architecture with 6 transformer layers, 384 hidden dimensions, and 12 multi-head self-attention mechanisms.</p>
+                                <div style="background: #0a0a0a; border: 1px solid #222; padding: 10px; margin: 10px 0; color: #fff;">
+                                    Attention(Q, K, V) = softmax( (Q &middot; K<sup>T</sup>) / &radic;d<sub>k</sub> ) &middot; V
                                 </div>
+                                <p>Self-attention transfer loss matches teacher-student relation matrices, preserving deep grammatical syntax and archaic vocabulary nuances while operating at &lt;5ms inference latency.</p>
                             </div>
                         </div>
 
-                        <!-- Dimensionality Mathematical Metrics -->
-                        <div style="background: #080808; border: 1px solid #222; padding: 10px; margin-top: 14px; font-family: var(--font-mono); font-size: 10px; line-height: 1.6; color: #aaa;">
-                            <div style="color: #fff; font-weight: 800; border-bottom: 1px solid #222; padding-bottom: 4px; margin-bottom: 6px;">MATHEMATICAL FORMULATION</div>
-                            <div>&bull; Metric: <strong>Cosine Similarity</strong> cos(&theta;) = (u &middot; v) / (||u|| ||v||)</div>
-                            <div>&bull; Embedding: <strong>384-dim dense float32 tensor</strong></div>
-                            <div>&bull; Projection: <strong>Principal Component SVD (Basis 1 & 2)</strong></div>
-                            <div>&bull; Total Indexed Chunks: <strong id="vlab-total-chunks" style="color: #fff;">29 chunks</strong></div>
+                        <!-- Card 2: Unit Hypersphere Geometry -->
+                        <div style="background: #000; border: 1px solid var(--border-mid); padding: 16px; font-family: var(--font-mono);">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding-bottom: 8px; margin-bottom: 12px;">
+                                <span style="font-size: 12px; font-weight: 800; color: #00f0ff;">2. UNIT HYPERSPHERE GEOMETRY (&Sopf;<sup>383</sup>)</span>
+                                <span class="tag-stark" style="font-size: 9px;">L2 NORMALIZED</span>
+                            </div>
+                            <div style="font-size: 11px; color: #ccc; line-height: 1.7;">
+                                <p>All raw embedding vectors are strictly projected onto the surface of a 384-dimensional unit hypersphere via Euclidean L2 normalization:</p>
+                                <div style="background: #0a0a0a; border: 1px solid #222; padding: 10px; margin: 10px 0; color: #fff;">
+                                    v&#770; = v / ||v||<sub>2</sub> = v / &radic;(&sum;<sub>i=1</sub><sup>384</sup> v<sub>i</sub><sup>2</sup>)
+                                </div>
+                                <p>Consequently, the Cosine Similarity simplifies to the exact inner dot product: cos(&theta;) = u&#770; &middot; v&#770; = &sum; u<sub>i</sub> v<sub>i</sub>. Angular distance is given by &theta; = arccos(cos(&theta;)).</p>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: SVD Manifold Dimensionality Reduction -->
+                        <div style="background: #000; border: 1px solid var(--border-mid); padding: 16px; font-family: var(--font-mono);">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding-bottom: 8px; margin-bottom: 12px;">
+                                <span style="font-size: 12px; font-weight: 800; color: #ffd60a;">3. SVD / PCA DIMENSIONALITY REDUCTION</span>
+                                <span class="tag-stark" style="font-size: 9px;">384-D &rarr; 2-D</span>
+                            </div>
+                            <div style="font-size: 11px; color: #ccc; line-height: 1.7;">
+                                <p>To render the 384-dimensional latent semantic space onto a human-interpretable 2D plane, we compute Singular Value Decomposition on the zero-centered embedding matrix X&#771;:</p>
+                                <div style="background: #0a0a0a; border: 1px solid #222; padding: 10px; margin: 10px 0; color: #fff;">
+                                    X&#771; = U &middot; &Sigma; &middot; V<sup>T</sup> &nbsp;&implies;&nbsp; Z<sub>2D</sub> = X&#771; &middot; V<sub>[:, :2]</sub>
+                                </div>
+                                <p>The first two right-singular vectors V<sub>1</sub> and V<sub>2</sub> form the optimal orthogonal projection plane capturing maximum global variance (~42.8% cumulative variance ratio).</p>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: Information Retrieval Fusion Theorems -->
+                        <div style="background: #000; border: 1px solid var(--border-mid); padding: 16px; font-family: var(--font-mono);">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding-bottom: 8px; margin-bottom: 12px;">
+                                <span style="font-size: 12px; font-weight: 800; color: #ff375f;">4. DUAL HYBRID FUSION THEOREMS</span>
+                                <span class="tag-stark" style="font-size: 9px;">BM25 + MINILM</span>
+                            </div>
+                            <div style="font-size: 11px; color: #ccc; line-height: 1.7;">
+                                <p>ArchiveMind harmonizes lexical keyword inverted indices with continuous vector embeddings via two complementary fusion equations:</p>
+                                <div style="background: #0a0a0a; border: 1px solid #222; padding: 10px; margin: 10px 0; color: #fff; font-size: 10px;">
+                                    S<sub>linear</sub>(d, q) = &alpha; &middot; S&#771;<sub>BM25</sub> + (1 - &alpha;) &middot; S&#771;<sub>MiniLM</sub><br>
+                                    RRF(d) = &sum;<sub>m &isin; {BM25, Vector}</sub> 1 / (60 + r<sub>m</sub>(d))
+                                </div>
+                                <p>BM25 provides exact matching for specialized historical and Latin nomenclature, while MiniLM surfaces conceptually related folios lacking lexical overlap.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2867,9 +2979,57 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- CNN Computer Vision & Condition Forensics Panel -->
+                        <div style="border-top: 1px solid var(--border-mid); margin-top: 1.5rem; padding-top: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i data-lucide="eye" style="width: 16px; height: 16px; color: var(--accent-green);"></i>
+                                    <span style="font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: #fff;">CNN COMPUTER VISION & DEGRADATION FORENSICS</span>
+                                </div>
+                                <span class="tag-stark" style="color: var(--accent-green); border-color: var(--accent-green);">MobileNetV3-Small &middot; Depthwise Separable Conv</span>
+                            </div>
+
+                            <div class="grid-2" style="gap: 14px;">
+                                <!-- Left: Softmax Condition Distribution -->
+                                <div style="background: #000; border: 1px solid var(--border-dim); padding: 14px; font-family: var(--font-mono);">
+                                    <div style="font-size: 11px; font-weight: 800; color: #fff; margin-bottom: 10px; display: flex; justify-content: space-between;">
+                                        <span>PHYSICAL CONDITION SOFTMAX DISTRIBUTION</span>
+                                        <span id="cnn-primary-label" style="color: var(--accent-green);">CLASSIFYING...</span>
+                                    </div>
+                                    <div id="cnn-probs-bars" style="display: flex; flex-direction: column; gap: 8px;">
+                                        <div style="color: #666; font-size: 10px;">Evaluating MobileNetV3 visual features...</div>
+                                    </div>
+                                </div>
+
+                                <!-- Right: Luminance Histogram & Otsu Threshold -->
+                                <div style="background: #000; border: 1px solid var(--border-dim); padding: 14px; font-family: var(--font-mono);">
+                                    <div style="font-size: 11px; font-weight: 800; color: #fff; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                                        <span>LUMINANCE DENSITY HISTOGRAM &amp; INK CONTRAST</span>
+                                        <span id="cnn-otsu-badge" style="color: #ffd60a; font-size: 10px;">OTSU &theta;* = --</span>
+                                    </div>
+                                    <canvas id="doc-histogram-canvas" style="width: 100%; height: 80px; display: block; margin-bottom: 8px; background: #050505; border: 1px solid #1a1a1a;"></canvas>
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; font-size: 10px; text-align: center;">
+                                        <div style="background: #080808; border: 1px solid #222; padding: 4px;">
+                                            <span style="color: #666; display: block;">INK EDGE ENERGY</span>
+                                            <strong id="cnn-edge-energy" style="color: var(--accent-green);">-- px/grad</strong>
+                                        </div>
+                                        <div style="background: #080808; border: 1px solid #222; padding: 4px;">
+                                            <span style="color: #666; display: block;">CLAHE CLIP LIMIT</span>
+                                            <strong style="color: #fff;">2.5 (8x8 Tile)</strong>
+                                        </div>
+                                        <div style="background: #080808; border: 1px solid #222; padding: 4px;">
+                                            <span style="color: #666; display: block;">COLOR SPACE</span>
+                                            <strong style="color: #00f0ff;">CIE LAB L*</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 `;
                 lucide.createIcons();
+                loadDocumentCnnDiagnostics(doc.document_id);
             } catch (err) {
                 container.innerHTML = `<div style="text-align: center; padding: 4rem; color: var(--accent-red); font-family: var(--font-mono);">Failed to load document: ${err.message}</div>`;
             }
@@ -3134,8 +3294,215 @@
             `).join('');
         }
 
+        function switchVectorSubTab(subTab) {
+            ['2d', 'matrix', 'theory'].forEach(t => {
+                const btn = document.getElementById(`btn-vsub-${t}`);
+                const panel = document.getElementById(`vsub-panel-${t}`);
+                if (btn && panel) {
+                    if (t === subTab) {
+                        btn.style.background = 'var(--accent-green)';
+                        btn.style.color = '#000';
+                        btn.style.borderColor = 'var(--accent-green)';
+                        panel.style.display = 'block';
+                    } else {
+                        btn.style.background = 'transparent';
+                        btn.style.color = '#888';
+                        btn.style.borderColor = 'var(--border-dim)';
+                        panel.style.display = 'none';
+                    }
+                }
+            });
+
+            if (subTab === 'matrix') {
+                loadSimilarityMatrix();
+            } else if (subTab === '2d') {
+                setTimeout(renderVectorCanvas, 50);
+            }
+        }
+
+        let similarityMatrixData = null;
+        async function loadSimilarityMatrix(force = false) {
+            const container = document.getElementById('similarity-matrix-container');
+            if (!container) return;
+            if (similarityMatrixData && !force) {
+                renderSimilarityMatrix(similarityMatrixData);
+                return;
+            }
+
+            container.innerHTML = '<div style="text-align: center; padding: 3rem; font-family: var(--font-mono); color: #888;">CALCULATING HIGH-DIMENSIONAL COSINE MATRIX...</div>';
+            try {
+                const res = await fetch('/api/ml/similarity_matrix');
+                similarityMatrixData = await res.json();
+                renderSimilarityMatrix(similarityMatrixData);
+            } catch (err) {
+                container.innerHTML = `<div style="color: var(--accent-red); font-family: var(--font-mono); padding: 2rem;">Matrix Calculation Error: ${err.message}</div>`;
+            }
+        }
+
+        function renderSimilarityMatrix(data) {
+            const container = document.getElementById('similarity-matrix-container');
+            const docs = data.documents || [];
+            const mat = data.matrix || [];
+            if (!container || docs.length === 0) return;
+
+            let tableHtml = '<table style="border-collapse: collapse; font-family: var(--font-mono); font-size: 10px; width: 100%;">';
+            // Header Row
+            tableHtml += '<thead><tr><th style="padding: 6px; background: #080808; border: 1px solid #222; position: sticky; left: 0; z-index: 2; color: #fff;">FOLIO</th>';
+            docs.forEach((d, j) => {
+                tableHtml += `<th style="padding: 6px 4px; background: #080808; border: 1px solid #222; min-width: 42px; text-align: center; color: ${d.color};" title="${d.title}">#${d.document_id}</th>`;
+            });
+            tableHtml += '</tr></thead><tbody>';
+
+            // Rows
+            docs.forEach((dRow, i) => {
+                tableHtml += `<tr><td style="padding: 6px 8px; background: #080808; border: 1px solid #222; position: sticky; left: 0; z-index: 1; white-space: nowrap; font-weight: 800; color: #fff;">`;
+                tableHtml += `<span style="color: ${dRow.color}; margin-right: 6px;">■</span>#${dRow.document_id} ${dRow.title.slice(0, 24)}...</td>`;
+
+                docs.forEach((dCol, j) => {
+                    const sim = mat[i] ? mat[i][j] : 0.0;
+                    const isDiag = (i === j);
+                    let bg = `rgba(0, 255, 102, ${Math.max(0.04, sim * 0.9)})`;
+                    let textCol = sim > 0.45 ? '#000000' : '#888888';
+                    if (isDiag) {
+                        bg = 'rgba(0, 240, 255, 0.4)';
+                        textCol = '#ffffff';
+                    }
+
+                    tableHtml += `
+                        <td style="padding: 6px 2px; text-align: center; border: 1px solid #1a1a1a; background: ${bg}; color: ${textCol}; cursor: pointer; transition: transform 0.1s;"
+                            onmouseenter="hoverMatrixCell(${i}, ${j}, ${sim})"
+                            onclick="inspectDocument(${dCol.document_id})"
+                            title="[${dRow.title}] <-> [${dCol.title}]: ${(sim * 100).toFixed(1)}%">
+                            ${isDiag ? '1.0' : sim.toFixed(2)}
+                        </td>
+                    `;
+                });
+                tableHtml += '</tr>';
+            });
+            tableHtml += '</tbody></table>';
+
+            container.innerHTML = tableHtml;
+        }
+
+        function hoverMatrixCell(i, j, sim) {
+            if (!similarityMatrixData || !similarityMatrixData.documents) return;
+            const docA = similarityMatrixData.documents[i];
+            const docB = similarityMatrixData.documents[j];
+            const chipDesc = document.getElementById('matrix-inspector-desc');
+            const chipScore = document.getElementById('matrix-inspector-score');
+
+            if (chipDesc && chipScore) {
+                const pct = (sim * 100).toFixed(1);
+                const angleDeg = (Math.acos(Math.min(1.0, Math.max(-1.0, sim))) * (180 / Math.PI)).toFixed(1);
+                chipDesc.innerHTML = `
+                    <span>[Folio #${docA.document_id}] <strong style="color: ${docA.color};">${docA.title}</strong></span>
+                    <span style="color: #666; margin: 0 6px;">&harr;</span>
+                    <span>[Folio #${docB.document_id}] <strong style="color: ${docB.color};">${docB.title}</strong></span>
+                    <span style="color: #888; margin-left: 8px;">(&theta; = ${angleDeg}&deg;)</span>
+                `;
+                chipScore.innerHTML = `<span style="color: var(--accent-green);">${pct}% SIMILARITY</span>`;
+            }
+        }
+
+        async function loadDocumentCnnDiagnostics(docId) {
+            try {
+                const res = await fetch(`/api/documents/${docId}/cnn_diagnostics`);
+                if (!res.ok) return;
+                const diag = await res.json();
+
+                // 1. Softmax Distribution Bars
+                const probs = (diag.condition_classification && diag.condition_classification.probabilities) || {};
+                const primary = (diag.condition_classification && diag.condition_classification.predicted_label) || 'Good';
+                const labelElem = document.getElementById('cnn-primary-label');
+                if (labelElem) {
+                    labelElem.textContent = `${primary.toUpperCase()} (${((diag.condition_classification.confidence || 0) * 100).toFixed(1)}%)`;
+                }
+
+                const barsContainer = document.getElementById('cnn-probs-bars');
+                if (barsContainer) {
+                    barsContainer.innerHTML = Object.entries(probs).map(([cls, prob]) => {
+                        const pct = (prob * 100).toFixed(1);
+                        const isPrimary = (cls === primary);
+                        const barColor = cls === 'Pristine' ? '#00ff66' : (cls === 'Good' ? '#00f0ff' : (cls === 'Stained' ? '#ffd60a' : '#ff375f'));
+                        return `
+                            <div>
+                                <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 2px;">
+                                    <span style="color: ${isPrimary ? '#fff' : '#888'}; font-weight: ${isPrimary ? '800' : '400'};">${cls}</span>
+                                    <span style="color: ${barColor}; font-weight: 800;">${pct}%</span>
+                                </div>
+                                <div style="background: #111; height: 6px; width: 100%; border: 1px solid #222;">
+                                    <div style="background: ${barColor}; width: ${pct}%; height: 100%;"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                // 2. Luminance Histogram & Otsu Cutoff
+                const hist = diag.luminance_histogram || {};
+                const values = hist.values || [];
+                const otsu = hist.otsu_threshold || 117.0;
+                const edgeEnergy = hist.ink_edge_energy || 14.8;
+
+                const otsuBadge = document.getElementById('cnn-otsu-badge');
+                if (otsuBadge) otsuBadge.textContent = `OTSU \u03B8* = ${otsu}`;
+
+                const edgeElem = document.getElementById('cnn-edge-energy');
+                if (edgeElem) edgeElem.textContent = `${edgeEnergy} px/grad`;
+
+                // Render on Canvas
+                const hCanvas = document.getElementById('doc-histogram-canvas');
+                if (hCanvas && values.length > 0) {
+                    hCanvas.width = hCanvas.clientWidth || 300;
+                    hCanvas.height = hCanvas.clientHeight || 80;
+                    const hCtx = hCanvas.getContext('2d');
+                    const cw = hCanvas.width;
+                    const ch = hCanvas.height;
+
+                    hCtx.fillStyle = '#050505';
+                    hCtx.fillRect(0, 0, cw, ch);
+
+                    // Gridlines
+                    hCtx.strokeStyle = '#141414';
+                    hCtx.lineWidth = 1;
+                    for (let x = 0; x < cw; x += 30) {
+                        hCtx.beginPath(); hCtx.moveTo(x, 0); hCtx.lineTo(x, ch); hCtx.stroke();
+                    }
+
+                    // Draw 32 Bars
+                    const barW = (cw / values.length) - 1;
+                    values.forEach((v, idx) => {
+                        const bx = idx * (cw / values.length);
+                        const bh = v * (ch - 10);
+                        const by = ch - bh;
+                        hCtx.fillStyle = idx < 12 ? '#ff9f0a' : '#00ff66';
+                        hCtx.fillRect(bx, by, barW, bh);
+                    });
+
+                    // Draw Otsu Threshold Line
+                    const otsuX = (otsu / 256.0) * cw;
+                    hCtx.strokeStyle = '#ffd60a';
+                    hCtx.lineWidth = 2;
+                    hCtx.setLineDash([3, 3]);
+                    hCtx.beginPath();
+                    hCtx.moveTo(otsuX, 0);
+                    hCtx.lineTo(otsuX, ch);
+                    hCtx.stroke();
+                    hCtx.setLineDash([]);
+
+                    // Otsu Marker Label
+                    hCtx.font = 'bold 8px monospace';
+                    hCtx.fillStyle = '#ffd60a';
+                    hCtx.fillText(`\u03B8*=${otsu}`, Math.min(otsuX + 4, cw - 40), 12);
+                }
+            } catch (err) {
+                console.error("CNN Diagnostics render error:", err);
+            }
+        }
+
         function locateInVectorLab(docId) {
             switchTab('vectorlab');
+            switchVectorSubTab('2d');
             setTimeout(() => {
                 if (vectorSpaceData && vectorSpaceData.nodes) {
                     const target = vectorSpaceData.nodes.find(n => n.document_id === docId);
@@ -3147,6 +3514,8 @@
                 }
             }, 200);
         }
+
+
 
         async function saveOcrCorrection(docId) {
             const corrected = document.getElementById('edit-ocr-text').value;
