@@ -47,7 +47,9 @@ class ArchiveMindDB:
 
     def init_database(self):
         """Initializes tables, FTS index, and loads initial seed data."""
-        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        db_dir = os.path.dirname(self.db_path)
+        if db_dir:
+            os.makedirs(db_dir, exist_ok=True)
         conn = self.get_connection()
         cur = conn.cursor()
 
@@ -159,7 +161,7 @@ class ArchiveMindDB:
         );
         """)
 
-        # Trigger for Document View Logging & Checksum Integrity
+        # Trigger for Document View Logging, Checksum Integrity & Citation Audit
         cur.executescript("""
         CREATE TRIGGER IF NOT EXISTS trg_validate_doc_checksum
         BEFORE UPDATE OF checksum_value ON document
@@ -168,6 +170,19 @@ class ArchiveMindDB:
                 WHEN LENGTH(NEW.checksum_value) < 16 THEN
                     RAISE(ABORT, 'Integrity Error: Cryptographic checksum is invalid or truncated.')
             END;
+        END;
+
+        DROP TRIGGER IF EXISTS trg_audit_citation_generation;
+        CREATE TRIGGER trg_audit_citation_generation
+        AFTER INSERT ON citation
+        BEGIN
+            INSERT INTO document_view (document_id, user_id, ip_address, viewed_at)
+            VALUES (
+                NEW.document_id,
+                3, -- Active researcher user_id (Abhiroop)
+                '127.0.0.1 [TRIGGER:CITATION_' || UPPER(NEW.citation_style) || ']',
+                CURRENT_TIMESTAMP
+            );
         END;
         """)
 

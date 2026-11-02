@@ -42,6 +42,29 @@ FOR EACH ROW
 EXECUTE FUNCTION fn_verify_document_integrity();
 
 -- --------------------------------------------------------------------
+-- 2b. TRIGGER: Automated Citation Generation Audit Logging
+-- --------------------------------------------------------------------
+-- Automatically logs an immutable audit event in DOCUMENT_VIEW when a citation is created
+CREATE OR REPLACE FUNCTION fn_audit_citation_generation()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO document_view (document_id, user_id, ip_address, viewed_at)
+    VALUES (
+        NEW.document_id,
+        3, -- Active researcher (Abhiroop)
+        '127.0.0.1 [TRIGGER:CITATION_' || UPPER(NEW.citation_style) || ']',
+        CURRENT_TIMESTAMP
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_audit_citation_generation
+AFTER INSERT ON citation
+FOR EACH ROW
+EXECUTE FUNCTION fn_audit_citation_generation();
+
+-- --------------------------------------------------------------------
 -- 3. STORED PROCEDURE: Generate Archival Citation
 -- --------------------------------------------------------------------
 -- Formats standard archival citations (Chicago/MLA style) and inserts into CITATION table

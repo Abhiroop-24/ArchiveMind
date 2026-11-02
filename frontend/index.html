@@ -1540,12 +1540,25 @@
                 const list = document.getElementById('citation-list');
                 const newElem = document.createElement('div');
                 newElem.className = 'citation-box';
-                newElem.style.borderColor = '#ffffff';
+                newElem.style.border = '2px solid #ffffff';
                 newElem.innerHTML = `
                     <span class="citation-badge">${citation.citation_style}</span>
                     <span style="color: #ffffff; font-size: 12.5px;">${citation.citation_text}</span>
+                    <span style="margin-left: auto; font-size: 10px; color: #ffffff; background: #222222; border: 1px solid #555555; padding: 3px 8px; white-space: nowrap; font-family: var(--font-mono); font-weight: 700;">
+                        TRIGGER FIRED &rarr; LOGGED TO AUDIT TAB
+                    </span>
                 `;
                 list.prepend(newElem);
+
+                // Auto-refresh the audit trail in the background
+                await loadAuditTrail();
+
+                // Flash visual notification on Audit & Triggers tab button
+                const auditBtn = document.getElementById('tab-btn-audit');
+                if (auditBtn) {
+                    auditBtn.style.boxShadow = '0 0 10px rgba(255,255,255,0.8)';
+                    setTimeout(() => { auditBtn.style.boxShadow = 'none'; }, 2000);
+                }
             } catch (err) {
                 alert("Citation error: " + err.message);
             }
@@ -1652,16 +1665,30 @@
             try {
                 const res = await fetch('/api/audit/views');
                 const views = await res.json();
-                tbody.innerHTML = views.map(v => `
-                    <tr>
-                        <td style="color: #ffffff; font-weight: 800;">#${v.view_id}</td>
+                if (!views || views.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 3.5rem; color: var(--text-white-muted); font-family: var(--font-mono);">NO AUDIT RECORDS FOUND</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = views.map(v => {
+                    const isTrigger = v.ip_address && v.ip_address.includes('[TRIGGER:');
+                    return `
+                    <tr style="${isTrigger ? 'background: #0d0d0d; outline: 1px solid #333333;' : ''}">
+                        <td style="color: #ffffff; font-weight: 800; font-family: var(--font-mono);">#${v.view_id}</td>
                         <td style="color: #ffffff; font-weight: 700;">${v.title}</td>
-                        <td style="color: var(--text-white-muted);">${v.viewed_at}</td>
-                        <td style="color: #ffffff;">${v.ip_address}</td>
-                        <td style="color: #ffffff;">${v.viewer_name}</td>
-                        <td><span class="tag-stark">${v.role_name || 'GUEST'}</span></td>
+                        <td style="color: var(--text-white-muted); font-family: var(--font-mono); font-size: 11px;">${v.viewed_at}</td>
+                        <td style="color: #ffffff; font-family: var(--font-mono); font-size: 11px;">
+                            ${isTrigger ? `<span style="background: #ffffff; color: #000000; font-weight: 800; padding: 2px 6px; letter-spacing: 0.03em;">${v.ip_address}</span>` : v.ip_address}
+                        </td>
+                        <td style="color: #ffffff; font-weight: ${isTrigger ? '800' : '500'};">${v.viewer_name}</td>
+                        <td>
+                            ${isTrigger 
+                                ? `<span class="tag-stark" style="background: #ffffff; color: #000000; font-weight: 900; border-color: #ffffff;">AUTO-TRIGGER</span>` 
+                                : `<span class="tag-stark">${v.role_name || 'GUEST'}</span>`
+                            }
+                        </td>
                     </tr>
-                `).join('');
+                    `;
+                }).join('');
             } catch (err) {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ffffff; padding: 2.5rem; font-family: var(--font-mono);">AUDIT TRAIL ERROR: ${err.message}</td></tr>`;
             }
