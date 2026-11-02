@@ -279,6 +279,14 @@ if os.path.exists(FRONTEND_DIR):
                 return f.read()
         return "<h1>ArchiveMind Frontend Initializing...</h1>"
 
+    @app.get("/report", response_class=HTMLResponse)
+    def view_report():
+        report_file = os.path.join(BASE_DIR, "docs", "ArchiveMind_DBMS_Project_Report.html")
+        if os.path.exists(report_file):
+            with open(report_file, "r", encoding="utf-8") as f:
+                return f.read()
+        return "<h1>Report file not found</h1>"
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("backend.server:app", host="0.0.0.0", port=8000, reload=True)

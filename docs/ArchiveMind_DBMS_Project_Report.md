@@ -97,13 +97,14 @@ Finally, this DBMS Project could not have been completed without the continual m
 
 Historical archives, national manuscript libraries, and university repositories contain millions of handwritten letters, scientific codices, treaties, and historical records. While high-resolution digital scanning preserves physical artifacts against organic decay, researchers face severe information retrieval bottlenecks: conventional relational databases (RDBMS) support precise metadata querying and keyword indexing (B-Tree/GIN indexes) but fail when queries involve conceptual semantics or degraded handwriting; conversely, standalone vector similarity databases excel at neural stroke-pattern retrieval but lack relational integrity, ACID transaction guarantees, multi-table foreign keys, role-based access control, and verifiable audit trails.
 
-**ArchiveMind** addresses this dual limitation by presenting a hybrid SQL-Vector semantic search architecture tailored for digitized document preservation and handwriting forensics. The system couples a structured relational schema in PostgreSQL (or embedded SQLite with FTS5 virtual tables) with high-dimensional vector embeddings extracted via forensic stroke analysis. An edge ingestion pipeline (simulating a Raspberry Pi 3B+ scanner with OpenCV) computes cryptographic SHA-256 integrity checksums, extracts OCR transcripts, and registers dense 128-dimensional handwriting feature vectors. 
+**ArchiveMind** addresses this dual limitation by presenting a hybrid SQL-Vector semantic search architecture tailored for digitized document preservation and handwriting forensics. The system couples a structured relational schema in PostgreSQL (or embedded SQLite with FTS5 virtual tables) with high-dimensional vector embeddings extracted via forensic stroke analysis. A dedicated digital preservation ingestion station computes cryptographic SHA-256 integrity checksums, extracts OCR transcripts, and registers dense 128-dimensional handwriting feature vectors within ACID transactions.
 
 The database incorporates:
-1. **Hybrid Retrieval**: Combines SQL Full-Text Search (tsvector / FTS5) with cosine vector distance scoring via Reciprocal Rank Fusion ($Score = \alpha \cdot FTS + (1-\alpha) \cdot Cosine$).
+1. **Hybrid Retrieval**: Combines SQL Full-Text Search (tsvector / FTS5) with cosine vector distance scoring via convex combination ($Score = \alpha \cdot FTS + (1-\alpha) \cdot Cosine$).
 2. **Chain of Custody Triggers**: Automatically records every document inspection into an immutable view audit table (`DOCUMENT_VIEW`) capturing timestamp, user ID, and IP address.
-3. **Automated Stored Procedures**: Formats and registers scholarly citations across Chicago, MLA, and APA formats.
-4. **Graph Provenance Traversal**: Connects historical persons, multi-archive collections, and viewing chains.
+3. **Automated Citation Triggers**: Automatically fires a database trigger upon scholarly citation creation, logging immutable chain-of-custody provenance attributed to the active researcher.
+4. **Role-Based Access Control (RBAC)**: Enforces role isolation between Head Archivists (with DDL/DML mutation privileges) and Academic Researchers (with read-only inspection, citation generation, and analytical access).
+5. **Graph Provenance Traversal**: Connects historical persons, multi-archive collections, and viewing chains.
 
 The project demonstrates all fundamental relational operations: complex grouping aggregations, data modifications, cascading integrity deletes, correlated subqueries, and nested subqueries, wrapped within an intuitive, role-based archival management dashboard.
 
@@ -187,9 +188,9 @@ The scope of ArchiveMind encompasses:
 
 ## 1.4 System Architecture Overview
 The system architecture follows a three-tier design:
-* **Edge / Acquisition Layer**: Simulated Raspberry Pi 3B+ workstation equipped with a camera module running OpenCV for document cropping, deskewing, and SHA-256 checksum computation.
-* **Database & Hybrid Engine Layer**: Relational database (PostgreSQL 15+ / SQLite FTS5) managing structured entities, integrated with a vector similarity module computing cosine distance across dense embeddings.
-* **Application & Presentation Layer**: FastAPI RESTful backend coupled with a modern responsive frontend featuring interactive hybrid search sliders, manuscript inspection, provenance graph visualization, and an interactive SQL sandbox.
+* **Preservation & Ingestion Layer**: High-resolution document preservation pipeline equipped with automated document boundary detection, cryptographic SHA-256 checksum calculation, and dense 128-dimensional handwriting feature vector extraction.
+* **Database & Hybrid Engine Layer**: Relational database (PostgreSQL 15+ / SQLite FTS5) managing structured entities, integrated with a vector similarity module computing cosine distance across dense embeddings and automated chain-of-custody triggers.
+* **Application & Presentation Layer**: FastAPI RESTful backend coupled with a responsive monochrome brutalist frontend featuring interactive hybrid search sliders, manuscript inspection, provenance graph visualization, active role switcher, and an interactive SQL sandbox.
 
 ---
 
@@ -212,10 +213,11 @@ ArchiveMind provides a **Hybrid SQL-Vector Engine**:
   where $\alpha \in [0, 1]$ allows researchers to dynamically weight keyword precision against handwriting similarity.
 
 ## 2.3 User Roles and Privileges
-ArchiveMind implements three distinct security roles managed in the `ROLE` and `ACCESS_PERMISSION` tables:
-* **Head Archivist (e.g., Demo Teacher)**: Full administrative access; can create collections, modify document statuses, initiate atomic manuscript transfers, and inspect security audit logs.
-* **Lead Researcher (e.g., T. Lohith Srinivas)**: Read access to manuscripts; can perform hybrid searches, inspect OCR texts, generate scholarly citations, and explore provenance graphs. Cannot alter or delete archival records.
-* **Digitization Technician (Pi Scanner Tech)**: Ingestion access; permitted to upload scanned documents, compute checksums, and trigger OCR extraction pipelines.
+ArchiveMind implements distinct security roles managed in the `ROLE` and `ACCESS_PERMISSION` tables with backend Role-Based Access Control (RBAC):
+* **Head Archivist (Faculty Guide / Demo Teacher)**: Full administrative access; can ingest and preserve collections, modify document statuses, execute database mutation operations (UPDATE/DELETE), and inspect comprehensive security audit logs.
+* **Academic Researchers (Abhiroop & A Sheiman Joshi)**: Analytical search and inspection privileges; can execute hybrid searches, inspect OCR texts, generate scholarly citations (which automatically fire database triggers logged under their respective identity), and explore provenance graphs. Blocked by RBAC from executing unauthorized database write mutations (UPDATE/DELETE queries).
+* **Digitization Technician**: Ingestion access; permitted to upload scanned documents, compute checksums, and trigger OCR extraction pipelines.
+* **Auditor**: Read-only oversight of the chain-of-custody immutable logs in `DOCUMENT_VIEW`.
 
 ---
 
@@ -550,8 +552,10 @@ INSERT INTO role (role_id, role_name) VALUES
 -- Users
 INSERT INTO app_user (user_id, role_id, username, password_hash, full_name, email) VALUES
 (1, 1, 'demo_teacher', 'pbkdf2:sha256:archivist_hash_99', 'Demo Teacher', 'demo.teacher@pes.edu'),
-(2, 2, 'lohith_s', 'pbkdf2:sha256:researcher_hash_01', 'T. Lohith Srinivas', 'lohith.pes2ug19cs203@pes.edu'),
-(3, 3, 'pi_station_tech', 'pbkdf2:sha256:tech_hash_44', 'Raspberry Pi Scanner Tech', 'digitization.tech@pes.edu');
+(2, 2, 'sheiman_j', 'pbkdf2:sha256:researcher_hash_01', 'A Sheiman Joshi', 'sheiman.pes2ug24cs003@pes.edu'),
+(3, 2, 'abhiroop_r', 'pbkdf2:sha256:researcher_hash_02', 'Abhiroop', 'abhiroop.pes2ug24cs024@pes.edu'),
+(4, 3, 'preservation_tech', 'pbkdf2:sha256:tech_hash_44', 'Preservation Station Tech', 'digitization.tech@pes.edu'),
+(5, 4, 'auditor_compliance', 'pbkdf2:sha256:audit_hash_12', 'Archive Compliance Officer', 'audit@pes.edu');
 
 -- Archives & Collections
 INSERT INTO archive (archive_id, name, location, institution) VALUES
@@ -835,25 +839,67 @@ FOR EACH ROW
 EXECUTE FUNCTION fn_verify_document_integrity();
 ```
 
+### 3. Trigger: Automated Citation Generation Audit Logging
+Guarantees an immutable chain-of-custody audit record in `DOCUMENT_VIEW` whenever an academic citation is registered:
+
+```sql
+-- PostgreSQL Syntax:
+CREATE OR REPLACE FUNCTION fn_audit_citation_generation()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO document_view (document_id, user_id, ip_address, viewed_at)
+    VALUES (
+        NEW.document_id,
+        COALESCE(NEW.user_id, 3),
+        '127.0.0.1 [TRIGGER:CITATION_' || UPPER(NEW.citation_style) || ']',
+        CURRENT_TIMESTAMP
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_audit_citation_generation
+AFTER INSERT ON citation
+FOR EACH ROW
+EXECUTE FUNCTION fn_audit_citation_generation();
+
+-- SQLite Syntax:
+CREATE TRIGGER trg_audit_citation_generation
+AFTER INSERT ON citation
+BEGIN
+    INSERT INTO document_view (document_id, user_id, ip_address, viewed_at)
+    VALUES (
+        NEW.document_id,
+        COALESCE(NEW.user_id, 3),
+        '127.0.0.1 [TRIGGER:CITATION_' || UPPER(NEW.citation_style) || ']',
+        CURRENT_TIMESTAMP
+    );
+END;
+```
+
 ---
 
 <div style="page-break-after: always;"></div>
 
 # CHAPTER 9: FRONT END DEVELOPMENT
 
-## 9.1 Technology Stack
-* **Frontend**: HTML5, Tailwind CSS, Lucide Icons, Vanilla JavaScript with Canvas-based Provenance Network Visualizer.
+## 9.1 Technology Stack & Design System
+* **Architecture**: Modern Single Page Application (SPA) built using Semantic HTML5, Vanilla JavaScript (ES6+), and Vanilla CSS.
+* **Design Aesthetic**: Minimalist monochrome brutalism inspired by the Omarchy Vantablack and Nothing OS design language (pure white backgrounds, stark black structural cards, high-contrast typography, zero-radius rectangular geometry `border-radius: 0px`, and subtle micro-interactions).
+* **Typography**: Clean grotesque sans-serif (`Inter`, `Helvetica Neue`) combined with monospaced accents (`Geist Mono`, `JetBrains Mono`) for cryptographic hashes, SQL statements, and metadata tags.
+* **Icons & Visualization**: Lucide monochrome iconography and HTML5 Canvas interactive topological network visualizer.
 * **Backend Application Server**: Python 3.14, FastAPI REST Framework, Uvicorn ASGI Server.
-* **Database**: PostgreSQL / SQLite with FTS5 Virtual Table Indexing and dense 128-dimensional vector cosine matching.
+* **Database**: PostgreSQL / SQLite with FTS5 Virtual Table Indexing, dynamic SQL triggers, and dense 128-dimensional vector cosine matching.
 
 ## 9.2 Interface Architecture & User Workflows
-The front end provides five major tabbed workflows:
+The front end provides six major tabbed workflows:
 1. **Hybrid Search Dashboard**: Users enter natural language keywords and adjust the **Alpha Fusion Slider** (ranging from 100% Vector to 100% SQL FTS). Result cards display individual FTS ranks, vector similarity scores, and combined hybrid scores.
 2. **Manuscript Inspector**: Offers deep forensic review of selected manuscripts, displaying high-resolution metadata, cryptographic SHA-256 hashes, full OCR transcripts, and stored-procedure citation generators.
 3. **Provenance Network Visualizer**: Renders an interactive canvas graph displaying relational linkages between Historical Authors, Manuscripts, Archival Collections, Institutions, and View Audit Nodes.
-4. **Edge Ingestion Console (Pi 3B+)**: Simulates an automated scanning station. Form inputs undergo client-server validation, SHA-256 hashing, FTS indexing, and vector extraction within an atomic transaction.
+4. **Digital Preservation Ingestion Station**: Form inputs undergo client-server validation, SHA-256 hashing, FTS indexing, and vector extraction within an atomic transaction.
 5. **DBMS Evaluation Queries Sandbox**: Provides one-click execution of all 5 mandatory evaluation queries with execution timings, query rationale, and tabular result sets.
 6. **Audit & Chain of Custody Trail**: Displays real-time database view triggers and IP addresses verifying security and provenance.
+7. **Active Role Switcher (RBAC)**: Allows dynamic switching between **Abhiroop (Researcher)**, **A Sheiman Joshi (Researcher)**, and **Demo Teacher (Head Archivist)**, instantly updating system permissions and attributing audit records.
 
 ---
 
