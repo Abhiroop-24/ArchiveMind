@@ -24,7 +24,7 @@ if ! ping -c 2 -W 2 "${PI_IP}" > /dev/null 2>&1; then
     echo "    Check Ethernet cable and ensure laptop eno1 is at 10.42.0.1."
     exit 1
 fi
-echo "  ✓ Pi is reachable"
+echo "  [OK] Pi is reachable"
 
 # Ensure sshpass is available
 if ! command -v sshpass &> /dev/null; then
@@ -66,12 +66,12 @@ sleep 2
 STATUS=$(${SSH_CMD} "systemctl is-active archivemind-camera.service" || true)
 
 if [ "${STATUS}" = "active" ]; then
-    echo "  ✓ archivemind-camera.service is ACTIVE and running on boot!"
+    echo "  [OK] archivemind-camera.service is ACTIVE and running on boot!"
     echo "=========================================================="
     echo "  Raspberry Pi setup complete."
     echo "  Remote endpoint: http://${PI_IP}:8082/status"
     echo "=========================================================="
 else
-    echo "  ⚠ Warning: Service status is ${STATUS}. Checking logs:"
+    echo "  [WARNING] Service status is ${STATUS}. Checking logs:"
     ${SSH_CMD} "journalctl -u archivemind-camera.service -n 15 --no-pager"
 fi

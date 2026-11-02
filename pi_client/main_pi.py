@@ -173,14 +173,14 @@ def background_worker():
             if not registered:
                 if uploader.check_laptop_online(timeout_sec=1.5):
                     if uploader.register_device():
-                        print(f"✓ Registered device {config.DEVICE_ID} with laptop {config.LAPTOP_IP}")
+                        print(f"[OK] Registered device {config.DEVICE_ID} with laptop {config.LAPTOP_IP}")
                         registered = True
 
             # If there are items in the offline queue, attempt to drain
             if queue_manager.queue_size() > 0:
                 count = uploader.drain_offline_queue()
                 if count > 0:
-                    print(f"✓ Uploaded {count} queued captures to laptop")
+                    print(f"[OK] Uploaded {count} queued captures to laptop")
         except Exception as e:
             pass
         time.sleep(10)
@@ -188,17 +188,17 @@ def background_worker():
 
 def on_hardware_button_pressed():
     """Callback for physical capture button on GPIO pin."""
-    print("★ Hardware capture button pressed! Acquiring image...")
+    print("[EVENT] Hardware capture button pressed! Acquiring image...")
     try:
         meta = capture.capture_manuscript()
         try:
             uploader.upload_scan(meta)
-            print(f"✓ Uploaded scan {meta['scan_id']} to laptop")
+            print(f"[OK] Uploaded scan {meta['scan_id']} to laptop")
         except Exception as err:
             queue_manager.enqueue_scan(meta)
-            print(f"⚠ Laptop unreachable, queued scan {meta['scan_id']}: {err}")
+            print(f"[WARNING] Laptop unreachable, queued scan {meta['scan_id']}: {err}")
     except Exception as e:
-        print(f"✗ Button capture failed: {e}")
+        print(f"[ERROR] Button capture failed: {e}")
 
 
 def run_daemon():
@@ -212,7 +212,7 @@ def run_daemon():
     # Wire up hardware button if present
     if BUTTON_AVAILABLE:
         button.when_pressed = on_hardware_button_pressed
-        print(f"✓ Hardware capture button active on GPIO {config.GPIO_CAPTURE_PIN}")
+        print(f"[OK] Hardware capture button active on GPIO {config.GPIO_CAPTURE_PIN}")
 
     # Start background retry worker thread
     bg_thread = threading.Thread(target=background_worker, daemon=True)
@@ -222,7 +222,7 @@ def run_daemon():
     try:
         capture.get_shared_picam()
     except Exception as e:
-        print(f"⚠ Camera pre-warm notice: {e}")
+        print(f"[NOTICE] Camera pre-warm notice: {e}")
 
     server = ThreadingHTTPServer((config.PI_HOST, config.PI_PORT), PiDaemonHandler)
     try:

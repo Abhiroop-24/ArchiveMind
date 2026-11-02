@@ -566,7 +566,8 @@ class ArchiveMindDB:
                 limit=limit
             )
             return results
-        except Exception:
+        except Exception as e:
+            print(f"[HybridSearch Notice] Fallback activated: {e}")
             # Fallback inline execution
             cur = conn.cursor()
             cur.execute("""

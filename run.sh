@@ -60,10 +60,10 @@ fi
 if [ "$PI_ONLINE" = false ]; then
     echo "  [!] Pi camera daemon not responding. Attempting SSH wake-up..."
     if command -v sshpass >/dev/null 2>&1; then
-        if sshpass -p '240906' ssh -o ConnectTimeout=2 -o StrictHostKeyChecking=no abhiroop@$PI_ETH_IP "sudo systemctl restart archivemind-camera.service" >/dev/null 2>&1; then
+        if sshpass -p '240906' ssh -o ConnectTimeout=2 -o StrictHostKeyChecking=no abhiroop@$PI_ETH_IP 'echo "240906" | sudo -S systemctl restart archivemind-camera.service' >/dev/null 2>&1; then
             echo "  [OK] Camera daemon auto-started on Pi via Direct Ethernet."
             PI_ONLINE=true
-        elif sshpass -p '240906' ssh -o ConnectTimeout=2 -o StrictHostKeyChecking=no abhiroop@$PI_WIFI_IP "sudo systemctl restart archivemind-camera.service" >/dev/null 2>&1; then
+        elif sshpass -p '240906' ssh -o ConnectTimeout=2 -o StrictHostKeyChecking=no abhiroop@$PI_WIFI_IP 'echo "240906" | sudo -S systemctl restart archivemind-camera.service' >/dev/null 2>&1; then
             echo "  [OK] Camera daemon auto-started on Pi via Wi-Fi."
             PI_ONLINE=true
         else
