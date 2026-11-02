@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ====================================================================
 # ARCHIVEMIND: One-Click Demo Launch Script
-# Course: UE23CS351A - DBMS Project | PES University
+# Course: VDUI Project
 # ====================================================================
 
 set -e
@@ -11,9 +11,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 echo "=========================================================="
 echo "  🏛️  ArchiveMind: Hybrid SQL-Vector Archival Search Engine"
-echo "  🎓  PES University - UE23CS351A DBMS Project"
-echo "  👨‍💻  Team: A Sheiman Joshi (PES2UG24CS003) & Abhiroop (PES2UG24CS024)"
-echo "  👩‍🏫  Guide: Demo Teacher"
+echo "  🎨  VDUI Project"
 echo "=========================================================="
 
 cd "$PROJECT_ROOT"

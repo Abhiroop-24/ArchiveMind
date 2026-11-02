@@ -1,5 +1,5 @@
 # ArchiveMind — Viva Presentation & Demonstration Guide
-### Course: UE23CS351A – DBMS Capstone Project | PES University
+### VDUI Project — Archival Intelligence & Hybrid Search Platform
 
 ---
 

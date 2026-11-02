@@ -1,17 +1,11 @@
 # ArchiveMind — AI-Powered Hybrid SQL–Vector Semantic Search Engine
-### Intelligent Manuscript Preservation, Edge Computer Vision & Archival Forensics
-**Course: UE23CS351A – DBMS Capstone Project | Department of Computer Science & Engineering | PES University**
-
-**Author / Developer**:  
-- **Abhiroop** (`PES2UG24CS024`)  
-- **A Sheiman Joshi** (`PES2UG24CS003`)  
-**Project Guide / Faculty Evaluator**: Demo Teacher  
+**VDUI Project**
 
 ---
 
 ## 1. System Architecture Overview
 
-ArchiveMind evolves from a classical relational DBMS into a complete **Distributed Edge-AI, Computer Vision, Real Semantic Search, and Archival Forensics Platform**.
+ArchiveMind is a complete **Distributed Edge-AI, Computer Vision, Real Semantic Search, and Archival Forensics Platform with a Nothing OS Brutalist Archival User Interface**.
 
 ```
 ┌──────────────────────────────────────────────┐          Direct Ethernet Link (eno1)          ┌────────────────────────────────────────────────────────┐
@@ -186,11 +180,11 @@ Access the dashboard at **`http://localhost:8000`** in your browser.
    - Show how semantic search retrieves Newton even with different vocabulary
    - Show RRF ranking and passage highlights
 5. **Local AI Research Assistant**: Ask: *"What are the mock theta functions described in Ramanujan's letter?"* Show grounded synthesis with clickable citations.
-6. **DBMS Evaluation Queries & RBAC**: Run Query 7.1 (GROUP BY), attempt Mutation 7.2 as Researcher (blocked by RBAC), switch role to Demo Teacher (Head Archivist), and execute successfully.
+6. **Archival Evaluation Queries & RBAC**: Run Query 7.1 (GROUP BY), attempt Mutation 7.2 as Researcher (blocked by RBAC), switch role to Head Archivist, and execute successfully.
 7. **Audit Trail**: Open Audit tab to show trigger-generated log rows with client IP and timestamps.
 
 ---
 
-## 7. License & Academic Attribution
-Developed as part of the **UE23CS351A Database Management Systems Capstone Project**, PES University.  
+## 7. License & Attribution
+Developed as part of the **VDUI Project**.  
 All historical manuscript transcripts belong to their respective archival repositories (Cambridge Digital Archives, Vatican Apostolic Library, National Archives of India, Bletchley Park Trust).

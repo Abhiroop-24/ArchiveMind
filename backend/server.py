@@ -1,6 +1,6 @@
 """
 ArchiveMind Backend API Server
-Course: UE23CS351A - DBMS Project | PES University
+Course: VDUI Project
 FastAPI Server providing RESTful endpoints for Hybrid Search (SQL+Vector),
 Edge Raspberry Pi Acquisition, Background AI Ingestion, Provenance Graph Traversal,
 Local RAG Research Assistant, and DBMS Evaluation Query Execution.
@@ -125,7 +125,7 @@ def health():
     return {
         "status": "healthy",
         "project": "ArchiveMind — AI-Powered Hybrid SQL–Vector Semantic Search Engine",
-        "course": "UE23CS351A",
+        "course": "VDUI",
         "version": "2.0.0",
         "gpu_available": gpu_available,
         "compute_device": gpu_name,

@@ -1,6 +1,6 @@
 """
 ArchiveMind Database Manager
-Course: UE23CS351A - DBMS Project | PES University
+Course: VDUI Project
 Handles Relational Tables, FTS5 Full-Text Search, Real all-MiniLM-L6-v2 Semantic Embeddings,
 Hybrid Ranking (Weighted + RRF), Stored Procedures, Chain-of-Custody Triggers,
 and AI Ingestion Pipeline (Raspberry Pi Acquisitions, OCR, Damage Predictions).
