@@ -1,0 +1,18 @@
+# Python & Environment
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Database instance files (schema & seed SQL are committed)
+*.db-journal
+archivemind.db
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+

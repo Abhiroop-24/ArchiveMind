@@ -1,0 +1,21 @@
+[Unit]
+Description=ArchiveMind Raspberry Pi Manuscript Acquisition Service
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=abhiroop
+WorkingDirectory=/home/abhiroop/archivemind_client
+ExecStart=/usr/bin/python3 -u /home/abhiroop/archivemind_client/main_pi.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+Environment=PYTHONUNBUFFERED=1
+Environment=LAPTOP_IP=10.42.0.1
+Environment=LAPTOP_PORT=8000
+Environment=STORAGE_DIR=/home/abhiroop/archivemind_captures
+
+[Install]
+WantedBy=multi-user.target

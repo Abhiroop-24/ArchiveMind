@@ -1,0 +1,1999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArchiveMind — AI-Powered Hybrid SQL–Vector Semantic Search Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700;800&family=Geist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* ==========================================================================
+           NOTHING OS / BRUTALIST ARCHIVAL DESIGN SYSTEM
+           Stark White Canvas (#ffffff) with dot-matrix & hairline grid
+           Obsidian Black Cards (#000000, #080808) with razor 1px borders
+           Zero Curves: border-radius: 0px !important (Strict architectural geometry)
+           High-density Geist & Geist Mono typography
+           ========================================================================== */
+        :root {
+            --bg-page: #f8f8f8;
+            --bg-white: #ffffff;
+            --box-black: #000000;
+            --box-card: #080808;
+            --box-elevated: #111111;
+            --box-subtle: #181818;
+            
+            --border-heavy: #000000;
+            --border-dim: #222222;
+            --border-mid: #333333;
+            --border-light: #e5e5e5;
+            
+            --text-black: #000000;
+            --text-black-muted: #555555;
+            --text-white: #ffffff;
+            --text-white-muted: #888888;
+            --text-white-faint: #444444;
+
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+
+            --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Geist Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            border-radius: 0 !important;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-white);
+            color: var(--text-black);
+            font-family: var(--font-sans);
+            font-size: 13px;
+            line-height: 1.4;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(0, 0, 0, 0.04) 0%, transparent 60%),
+                radial-gradient(#d1d1d1 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px;
+        }
+
+        /* Top Header */
+        .box-header {
+            background: var(--bg-white);
+            border-bottom: 2px solid var(--border-heavy);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .box-header-inner {
+            max-width: 1540px;
+            margin: 0 auto;
+            height: 60px;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-black);
+        }
+
+        .brand-sq {
+            background: var(--box-black);
+            color: var(--text-white);
+            font-family: var(--font-mono);
+            font-weight: 900;
+            font-size: 15px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--border-heavy);
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 900;
+            font-size: 16px;
+            letter-spacing: -0.03em;
+            text-transform: uppercase;
+        }
+
+        .brand-badge {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            font-weight: 800;
+            background: #000000;
+            color: #ffffff;
+            padding: 2px 6px;
+            letter-spacing: 0.05em;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .pulse-live {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 8px;
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid #333333;
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--accent-green);
+            animation: pulseAnim 1.5s infinite;
+        }
+
+        @keyframes pulseAnim {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            border: 1px solid var(--border-heavy);
+            padding: 4px 8px;
+            background: var(--bg-white);
+        }
+
+        .role-dropdown {
+            background: transparent;
+            border: none;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-black);
+            cursor: pointer;
+            outline: none;
+            margin-left: 6px;
+        }
+
+        /* Nav Tabs */
+        .box-nav {
+            background: var(--bg-white);
+            border-bottom: 2px solid var(--border-heavy);
+            position: sticky;
+            top: 60px;
+            z-index: 999;
+        }
+
+        .box-nav-inner {
+            max-width: 1540px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: flex;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .box-nav-inner::-webkit-scrollbar { display: none; }
+
+        .tab-box-btn {
+            background: transparent;
+            border: none;
+            border-right: 1px solid var(--border-light);
+            padding: 14px 18px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-black-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            transition: all 0.1s ease;
+        }
+
+        .tab-box-btn:first-child { border-left: 1px solid var(--border-light); }
+        .tab-box-btn:hover { background: #f0f0f0; color: #000000; }
+        .tab-box-btn.active {
+            background: var(--box-black);
+            color: var(--text-white);
+            border-bottom: 2px solid var(--box-black);
+        }
+
+        /* Layout Main */
+        main {
+            max-width: 1540px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem 1.5rem;
+            width: 100%;
+            flex: 1;
+        }
+
+        .tab-panel {
+            display: none;
+            animation: fadeInTab 0.12s ease-out;
+        }
+        .tab-panel.active { display: block; }
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hero Banner */
+        .hero-banner {
+            border: 2px solid var(--border-heavy);
+            background: var(--bg-white);
+            padding: 1.75rem 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 6px 6px 0px var(--box-black);
+        }
+
+        .hero-headline {
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            text-transform: uppercase;
+        }
+
+        .hero-meta-right {
+            text-align: right;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-black-muted);
+            line-height: 1.6;
+        }
+
+        /* Obsidian Black Cards */
+        .box-card-black {
+            background: var(--box-black);
+            color: var(--text-white);
+            border: 2px solid var(--box-black);
+            padding: 1.75rem;
+            margin-bottom: 2rem;
+            box-shadow: 6px 6px 0px #000000;
+        }
+
+        .box-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-dim);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .box-title {
+            font-size: 15px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .box-desc {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-white-muted);
+            margin-top: 4px;
+        }
+
+        /* Grid layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-4 { grid-template-columns: 1fr 1fr; }
+            .grid-3 { grid-template-columns: 1fr; }
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        /* Telemetry Metric Tile */
+        .metric-tile {
+            background: var(--box-card);
+            border: 1px solid var(--border-dim);
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .metric-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text-white-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .metric-value {
+            font-size: 26px;
+            font-weight: 900;
+            font-family: var(--font-mono);
+            margin: 10px 0 4px 0;
+            color: var(--text-white);
+        }
+
+        .metric-sub {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--accent-green);
+        }
+
+        /* Search input bar */
+        .search-block {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input-wrap {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input-wrap i {
+            position: absolute;
+            left: 14px;
+            color: #666;
+            width: 16px;
+            height: 16px;
+        }
+
+        .box-input {
+            width: 100%;
+            background: #000000;
+            border: 1px solid var(--border-mid);
+            color: #ffffff;
+            font-family: var(--font-sans);
+            font-size: 14px;
+            padding: 12px 14px 12px 42px;
+            outline: none;
+        }
+        .box-input:focus { border-color: #ffffff; }
+
+        .btn-box {
+            background: #ffffff;
+            color: #000000;
+            border: 2px solid #ffffff;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 0 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.1s;
+        }
+        .btn-box:hover {
+            background: #000000;
+            color: #ffffff;
+        }
+
+        .btn-box-danger {
+            background: var(--accent-red);
+            color: #ffffff;
+            border: 2px solid var(--accent-red);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 800;
+            padding: 10px 18px;
+            cursor: pointer;
+        }
+
+        /* Sliders & Controls */
+        .tuning-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 1.25rem;
+            background: var(--box-card);
+            border: 1px solid var(--border-dim);
+            padding: 1.25rem;
+        }
+
+        @media (max-width: 900px) {
+            .tuning-grid { grid-template-columns: 1fr; }
+        }
+
+        .tune-unit label {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--text-white-muted);
+            margin-bottom: 6px;
+        }
+
+        .slider-meta-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text-white-muted);
+            margin-bottom: 8px;
+        }
+
+        .slider-val-badge {
+            background: #ffffff;
+            color: #000000;
+            padding: 2px 6px;
+            font-size: 10px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: #ffffff;
+            height: 6px;
+            background: #222222;
+            cursor: pointer;
+        }
+
+        select.form-input-black {
+            width: 100%;
+            background: #000000;
+            border: 1px solid var(--border-dim);
+            color: #ffffff;
+            padding: 9px 12px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            outline: none;
+        }
+
+        /* Results Grid */
+        .results-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .results-grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .manuscript-card {
+            background: #000000;
+            color: #ffffff;
+            border: 2px solid #000000;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 4px 4px 0px #000000;
+            transition: transform 0.1s ease;
+        }
+        .manuscript-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 6px 0px #000000;
+        }
+
+        .card-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .tag-stark {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border: 1px solid #333333;
+            background: var(--box-subtle);
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        .card-doc-title {
+            font-size: 15px;
+            font-weight: 800;
+            line-height: 1.25;
+            margin-bottom: 6px;
+        }
+
+        .card-author-line {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-white-muted);
+            margin-bottom: 10px;
+        }
+
+        .card-ocr-quote {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: #cccccc;
+            background: var(--box-card);
+            border-left: 2px solid #ffffff;
+            padding: 10px;
+            margin-bottom: 12px;
+            line-height: 1.45;
+        }
+
+        .score-pill-box {
+            display: flex;
+            gap: 10px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-white-muted);
+            border-top: 1px solid var(--border-dim);
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        .score-pill-box strong { color: #ffffff; }
+
+        .btn-inspect-stark {
+            background: #ffffff;
+            color: #000000;
+            border: 1px solid #ffffff;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 800;
+            padding: 8px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        .btn-inspect-stark:hover {
+            background: #000000;
+            color: #ffffff;
+        }
+
+        /* AI Assistant Chat */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            background: var(--box-card);
+            border: 1px solid var(--border-dim);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 1rem 1.25rem;
+            line-height: 1.5;
+            font-size: 13px;
+        }
+
+        .chat-bubble-user {
+            align-self: flex-end;
+            background: #ffffff;
+            color: #000000;
+            font-weight: 600;
+        }
+
+        .chat-bubble-assistant {
+            align-self: flex-start;
+            background: var(--box-elevated);
+            color: #ffffff;
+            border-left: 3px solid var(--accent-green);
+        }
+
+        .citation-tag-btn {
+            display: inline-block;
+            background: #000000;
+            border: 1px solid #444444;
+            color: var(--accent-green);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            padding: 2px 6px;
+            margin: 4px 4px 0 0;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .citation-tag-btn:hover {
+            border-color: #ffffff;
+            color: #ffffff;
+        }
+
+        .chat-input-bar {
+            display: flex;
+            border-top: 1px solid var(--border-dim);
+            padding: 1rem;
+            background: #000000;
+            gap: 10px;
+        }
+
+        .chat-prompt-chips {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 10px 1.5rem;
+            background: var(--box-subtle);
+            border-top: 1px solid var(--border-dim);
+        }
+
+        .chip-btn {
+            background: #000000;
+            border: 1px solid var(--border-mid);
+            color: #cccccc;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            padding: 4px 8px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .chip-btn:hover { border-color: #ffffff; color: #ffffff; }
+
+        /* Tables & Preformatted */
+        .table-black-box {
+            overflow-x: auto;
+            border: 1px solid var(--border-dim);
+            background: #000000;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            text-align: left;
+        }
+
+        thead {
+            background: #000000;
+            border-bottom: 2px solid var(--border-dim);
+        }
+
+        th {
+            padding: 12px 16px;
+            color: var(--text-white-muted);
+            font-weight: 800;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-family: var(--font-mono);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #161616;
+            color: var(--text-white);
+            font-family: var(--font-mono);
+        }
+
+        tr:hover td { background: var(--box-elevated); }
+
+        .form-unit {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .form-unit label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--text-white-muted);
+            text-transform: uppercase;
+        }
+
+        .form-input-black {
+            background: #000000;
+            border: 1px solid var(--border-dim);
+            color: #ffffff;
+            padding: 10px 12px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            outline: none;
+        }
+        .form-input-black:focus { border-color: #ffffff; }
+
+        /* Footer */
+        footer {
+            border-top: 2px solid var(--border-heavy);
+            padding: 1.75rem 1.5rem;
+            background: var(--bg-white);
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-black);
+            font-family: var(--font-mono);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Architectural Top Bar -->
+    <header class="box-header">
+        <div class="box-header-inner">
+            <a href="#" class="brand-cluster" onclick="switchTab('overview'); return false;">
+                <div class="brand-sq">A</div>
+                <div class="brand-title">
+                    <span>ArchiveMind</span>
+                    <span class="brand-badge">Hybrid SQL &middot; MiniLM</span>
+                </div>
+            </a>
+
+            <div class="header-controls">
+                <div class="pulse-live" id="pi-pulse-badge">
+                    <div class="pulse-dot"></div>
+                    <span id="pi-pulse-text">PI 3B+ CONNECTED (10.42.0.116)</span>
+                </div>
+                <a href="/report" target="_blank" class="btn-box" style="text-decoration: none; padding: 6px 12px; font-size: 11px;">
+                    <i data-lucide="file-text" style="width: 13px; height: 13px;"></i>
+                    <span>Academic Report</span>
+                </a>
+                <div class="user-chip">
+                    <span>ROLE:</span>
+                    <select id="role-selector" class="role-dropdown" onchange="onRoleChange(this.value)">
+                        <option value="researcher_abhiroop" selected>Abhiroop (PES2UG24CS024)</option>
+                        <option value="researcher_sheiman">A Sheiman Joshi (PES2UG24CS003)</option>
+                        <option value="archivist">Demo Teacher (Faculty Guide)</option>
+                    </select>
+                    <span id="role-badge" class="tag-stark" style="font-weight: 800; font-size: 10px; background: #000000; color: #ffffff; border: 1px solid #ffffff; margin-left: 6px;">RESEARCHER</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Role Switch Toast -->
+    <div id="role-alert-toast" style="display:none; position: fixed; top: 70px; right: 24px; z-index: 9999; background: #000000; border: 2px solid #ffffff; box-shadow: 4px 4px 0px #000000; color: #ffffff; padding: 12px 18px; font-family: var(--font-mono); font-size: 11px; max-width: 440px; line-height: 1.4;"></div>
+
+    <!-- Sharp Box Navigation (Nothing OS Zero Curves) -->
+    <nav class="box-nav">
+        <div class="box-nav-inner">
+            <button class="tab-box-btn active" id="tab-btn-overview" onclick="switchTab('overview')">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Overview & Telemetry</span>
+            </button>
+            <button class="tab-box-btn" id="tab-btn-scanner" onclick="switchTab('scanner')">
+                <i data-lucide="camera"></i>
+                <span>Live Pi Scanner</span>
+            </button>
+            <button class="tab-box-btn" id="tab-btn-search" onclick="switchTab('search')">
+                <i data-lucide="search"></i>
+                <span>Hybrid Search</span>
+            </button>
+            <button class="tab-box-btn" id="tab-btn-assistant" onclick="switchTab('assistant')">
+                <i data-lucide="bot"></i>
+                <span>AI Research Assistant</span>
+            </button>
+            <button class="tab-box-btn" id="tab-btn-document" onclick="switchTab('document')">
+                <i data-lucide="file-text"></i>
+                <span>Inspector & Citation</span>
+            </button>
+            <button class="tab-box-btn" id="tab-btn-provenance" onclick="switchTab('provenance')">
+                <i data-lucide="git-merge"></i>
+                <span>Provenance Topology</span>
+            </button>
+            <button class="tab-box-btn" id="tab-btn-queries" onclick="switchTab('queries')">
+                <i data-lucide="terminal"></i>
+                <span>DBMS Evaluation</span>
+            </button>
+            <button class="tab-box-btn" id="tab-btn-audit" onclick="switchTab('audit')">
+                <i data-lucide="activity"></i>
+                <span>Audit & Triggers</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Workspace -->
+    <main>
+
+        <!-- ========================================================= -->
+        <!-- TAB 0: OVERVIEW & TELEMETRY -->
+        <!-- ========================================================= -->
+        <section id="tab-overview" class="tab-panel active">
+            <div class="hero-banner">
+                <div>
+                    <h1 class="hero-headline">ARCHIVEMIND.</h1>
+                    <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-transform: uppercase; margin-top: 4px;">
+                        INTELLIGENT MANUSCRIPT PRESERVATION & HYBRID SEARCH PLATFORM
+                    </div>
+                </div>
+                <div class="hero-meta-right">
+                    UE23CS351A DBMS CAPSTONE &middot; PES UNIVERSITY<br>
+                    EDGE DEVICE: RASPBERRY PI 3B+ &middot; AI ACCELERATOR: NVIDIA RTX 2050
+                </div>
+            </div>
+
+            <!-- Telemetry Metrics Grid -->
+            <div class="grid-4" style="margin-bottom: 2rem;">
+                <div class="metric-tile">
+                    <div class="metric-label">
+                        <span>Pi Acquisition Station</span>
+                        <i data-lucide="cpu" style="width: 14px; height: 14px;"></i>
+                    </div>
+                    <div class="metric-value" id="stat-pi-status" style="font-size: 20px; color: var(--accent-green);">10.42.0.116</div>
+                    <div class="metric-sub" id="stat-pi-sub">Ethernet eno1 &middot; 5MP ov5647 Active</div>
+                </div>
+
+                <div class="metric-tile">
+                    <div class="metric-label">
+                        <span>AI Inference Engine</span>
+                        <i data-lucide="zap" style="width: 14px; height: 14px;"></i>
+                    </div>
+                    <div class="metric-value" id="stat-gpu-name" style="font-size: 18px;">RTX 2050 4GB</div>
+                    <div class="metric-sub" id="stat-gpu-sub">CUDA Accelerated &middot; MiniLM + TrOCR</div>
+                </div>
+
+                <div class="metric-tile">
+                    <div class="metric-label">
+                        <span>Preserved Folios</span>
+                        <i data-lucide="book-open" style="width: 14px; height: 14px;"></i>
+                    </div>
+                    <div class="metric-value" id="stat-doc-count">10 Folios</div>
+                    <div class="metric-sub">100% SHA-256 Validated</div>
+                </div>
+
+                <div class="metric-tile">
+                    <div class="metric-label">
+                        <span>Active Collections</span>
+                        <i data-lucide="archive" style="width: 14px; height: 14px;"></i>
+                    </div>
+                    <div class="metric-value" id="stat-col-count">5 Eras</div>
+                    <div class="metric-sub">Cambridge &middot; Vatican &middot; Bletchley</div>
+                </div>
+            </div>
+
+            <!-- Model Registry & Live Architecture -->
+            <div class="grid-2">
+                <div class="box-card-black">
+                    <div class="box-card-header">
+                        <div>
+                            <div class="box-title">
+                                <i data-lucide="layers" style="width: 16px; height: 16px;"></i>
+                                <span>Pretrained AI Model Registry</span>
+                            </div>
+                            <div class="box-desc">Loaded model checkpoints and parameter configurations</div>
+                        </div>
+                    </div>
+                    <div class="table-black-box">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Model Name</th>
+                                    <th>Type</th>
+                                    <th>Dim/CER</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="model-registry-body">
+                                <tr>
+                                    <td>all-MiniLM-L6-v2</td>
+                                    <td>Sentence Embedding</td>
+                                    <td>384-D (FP32)</td>
+                                    <td><span class="tag-stark" style="color: var(--accent-green); border-color: var(--accent-green);">ACTIVE</span></td>
+                                </tr>
+                                <tr>
+                                    <td>MobileNetV3-Small</td>
+                                    <td>Condition Assessment</td>
+                                    <td>5 Classes</td>
+                                    <td><span class="tag-stark" style="color: var(--accent-green); border-color: var(--accent-green);">ACTIVE</span></td>
+                                </tr>
+                                <tr>
+                                    <td>TrOCR-Base-Handwritten</td>
+                                    <td>Historical HTR</td>
+                                    <td>Line-Level</td>
+                                    <td><span class="tag-stark" style="color: var(--accent-green); border-color: var(--accent-green);">ACTIVE</span></td>
+                                </tr>
+                                <tr>
+                                    <td>PaddleOCR-Historical</td>
+                                    <td>Printed Typography</td>
+                                    <td>Layout Order</td>
+                                    <td><span class="tag-stark" style="color: var(--accent-green); border-color: var(--accent-green);">ACTIVE</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Qwen2.5:3b-Instruct</td>
+                                    <td>Local RAG Assistant</td>
+                                    <td>Grounded Q&A</td>
+                                    <td><span class="tag-stark" style="color: var(--accent-amber); border-color: var(--accent-amber);">LOCAL/OLLAMA</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="box-card-black">
+                    <div class="box-card-header">
+                        <div>
+                            <div class="box-title">
+                                <i data-lucide="radio" style="width: 16px; height: 16px;"></i>
+                                <span>Recent Ingestion Activity</span>
+                            </div>
+                            <div class="box-desc">Live jobs received from Raspberry Pi acquisition queue</div>
+                        </div>
+                        <button class="btn-inspect-stark" onclick="switchTab('scanner')">OPEN STUDIO</button>
+                    </div>
+                    <div id="recent-jobs-feed" style="font-family: var(--font-mono); font-size: 11px; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="color: var(--text-white-muted); text-align: center; padding: 2rem;">No recent acquisition jobs yet. Place manuscript under Pi camera to capture.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 1: LIVE SCANNER (RASPBERRY PI ACQUISITION STUDIO) -->
+        <!-- ========================================================= -->
+        <section id="tab-scanner" class="tab-panel">
+            <div class="box-card-black">
+                <div class="box-card-header">
+                    <div>
+                        <div class="box-title">
+                            <i data-lucide="camera" style="width: 16px; height: 16px;"></i>
+                            <span>Raspberry Pi Acquisition & Enhancement Studio</span>
+                        </div>
+                        <div class="box-desc">Acquire physical historical folios via Raspberry Pi Camera (ov5647 5MP) over direct Ethernet link (10.42.0.116).</div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-box" onclick="triggerPiCapture()">
+                            <i data-lucide="aperture" style="width: 14px; height: 14px;"></i>
+                            <span>Capture from Pi Camera</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <!-- Left: Camera Capture & Upload Box -->
+                    <div>
+                        <div style="background: var(--box-card); border: 1px solid var(--border-dim); padding: 1.25rem; margin-bottom: 1.5rem;">
+                            <div class="metric-label" style="margin-bottom: 10px;">HARDWARE DIRECT LINK TELEMETRY</div>
+                            <div style="font-family: var(--font-mono); font-size: 11px; line-height: 1.7; color: #ccc;">
+                                <div>&bull; Host: <strong>archivemind-pi</strong> &middot; Target: <strong>10.42.0.116:8082</strong></div>
+                                <div>&bull; Physical Link: <strong>Ethernet eno1 (10.42.0.1) &middot; Full Duplex</strong></div>
+                                <div>&bull; Camera Module: <strong>5MP ov5647 [1920x1080 30fps]</strong></div>
+                                <div>&bull; Startup Mode: <strong>Systemd Autostart Service (archivemind-camera.service)</strong></div>
+                            </div>
+                        </div>
+
+                        <!-- Local Upload Fallback for Testing -->
+                        <div style="border: 2px dashed var(--border-mid); background: var(--box-card); padding: 1.5rem; text-align: center; margin-bottom: 1.5rem;">
+                            <i data-lucide="upload" style="width: 28px; height: 28px; color: var(--text-white-muted); margin-bottom: 8px;"></i>
+                            <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; text-transform: uppercase;">Upload Manuscript Folio (Local Test Mode)</div>
+                            <div style="font-size: 11px; color: var(--text-white-muted); margin: 6px 0 12px 0;">Accepts high-resolution manuscript scans (JPEG/PNG up to 25MB)</div>
+                            <input type="file" id="local-upload-file" accept="image/*" style="display: none;" onchange="handleLocalFileSelect(this.files[0])">
+                            <button class="btn-inspect-stark" style="margin: 0 auto;" onclick="document.getElementById('local-upload-file').click()">SELECT LOCAL IMAGE</button>
+                        </div>
+
+                        <!-- Processing Metadata Form -->
+                        <div class="form-unit">
+                            <label>Manuscript Title</label>
+                            <input type="text" id="scan-title" class="form-input-black" placeholder="e.g. Principia Mathematica Draft Lemma 4">
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="form-unit">
+                                <label>Target Collection</label>
+                                <select id="scan-collection" class="form-input-black">
+                                    <option value="1">Newtonian Scientific Manuscripts</option>
+                                    <option value="2">Da Vinci Codex & Anatomy Studies</option>
+                                    <option value="3">Ramanujan Lost Notebook Folios</option>
+                                    <option value="4">Turing Decryption & Computing Dispatches</option>
+                                    <option value="5">Victorian Analytical Engine Papers</option>
+                                </select>
+                            </div>
+                            <div class="form-unit">
+                                <label>Historical Author</label>
+                                <input type="text" id="scan-author" class="form-input-black" value="Sir Isaac Newton">
+                            </div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="form-unit">
+                                <label>Recognition Engine Mode</label>
+                                <select id="scan-ocr-mode" class="form-input-black">
+                                    <option value="auto" selected>Auto-Detect (Printed + HTR)</option>
+                                    <option value="handwritten">TrOCR Handwritten Cursive</option>
+                                    <option value="printed">PaddleOCR Printed Typography</option>
+                                </select>
+                            </div>
+                            <div class="form-unit">
+                                <label>Date Written / Circa</label>
+                                <input type="text" id="scan-date" class="form-input-black" value="Circa 1687">
+                            </div>
+                        </div>
+
+                        <button id="btn-process-ingest" class="btn-box" style="width: 100%; justify-content: center; padding: 12px; margin-top: 10px;" onclick="submitManuscriptIngestion()">
+                            <i data-lucide="check-circle" style="width: 15px; height: 15px;"></i>
+                            <span>Enhance, OCR & Index into Database</span>
+                        </button>
+                    </div>
+
+                    <!-- Right: Live Preview & Inspection Window -->
+                    <div>
+                        <div style="background: var(--box-card); border: 1px solid var(--border-dim); padding: 1.25rem; min-height: 480px; display: flex; flex-direction: column;">
+                            <div class="metric-label" style="margin-bottom: 10px;">
+                                <span>ACQUISITION PREVIEW & CV ENHANCEMENT</span>
+                                <span id="preview-status-badge" class="tag-stark">AWAITING CAPTURE</span>
+                            </div>
+
+                            <div id="scanner-preview-container" style="flex: 1; display: flex; align-items: center; justify-content: center; background: #000000; border: 1px solid var(--border-mid); overflow: hidden; position: relative;">
+                                <div id="scanner-empty-msg" style="text-align: center; color: var(--text-white-muted); font-family: var(--font-mono); font-size: 11px;">
+                                    <i data-lucide="image" style="width: 36px; height: 36px; margin: 0 auto 10px auto; display: block; opacity: 0.4;"></i>
+                                    Click "Capture from Pi Camera" or select a file to preview.
+                                </div>
+                                <img id="scanner-preview-img" src="" alt="Capture Preview" style="display: none; max-width: 100%; max-height: 400px; object-fit: contain;">
+                            </div>
+
+                            <!-- Live CV Metrics Readout -->
+                            <div id="cv-metrics-readout" style="display: none; margin-top: 12px; font-family: var(--font-mono); font-size: 10px; color: #aaa; background: #050505; border: 1px solid #1a1a1a; padding: 10px;">
+                                <div>&bull; SHA-256: <strong id="readout-sha" style="color: #fff;">-</strong></div>
+                                <div>&bull; Filters: <span id="readout-filters" style="color: var(--accent-green);">-</span></div>
+                                <div>&bull; AI Condition: <strong id="readout-condition" style="color: var(--accent-amber);">-</strong></div>
+                                <div>&bull; OCR Transcription: <span id="readout-ocr-snippet" style="color: #eee;">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 2: HYBRID SEARCH -->
+        <!-- ========================================================= -->
+        <section id="tab-search" class="tab-panel">
+            <div class="box-card-black">
+                <div class="box-card-header">
+                    <div>
+                        <div class="box-title">
+                            <i data-lucide="sliders-horizontal" style="width: 16px; height: 16px;"></i>
+                            <span>Hybrid SQL-Vector Semantic Search Engine</span>
+                        </div>
+                        <div class="box-desc">Exact FTS5 BM25 keyword matching fused with 384-dimensional all-MiniLM-L6-v2 dense embeddings.</div>
+                    </div>
+                </div>
+
+                <!-- Search Input Block -->
+                <div class="search-block">
+                    <div class="search-input-wrap">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="search-query" class="box-input"
+                               placeholder="Search across historical manuscripts (e.g. 'universal gravitation', 'turing machine thinking', 'mock theta partitions', 'aerial helical screw')..."
+                               onkeydown="if(event.key === 'Enter') performSearch()">
+                    </div>
+                    <button class="btn-box" onclick="performSearch()">
+                        <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+                        <span>Search</span>
+                    </button>
+                </div>
+
+                <div class="tuning-grid">
+                    <div class="tune-unit">
+                        <div class="slider-meta-header">
+                            <span>0% PURE SEMANTIC (MiniLM)</span>
+                            <span class="slider-val-badge" id="alpha-label">50% SQL / 50% VECTOR</span>
+                            <span>100% PURE KEYWORD (FTS5)</span>
+                        </div>
+                        <input type="range" id="alpha-slider" min="0" max="1" step="0.05" value="0.5" oninput="updateAlphaLabel(this.value)">
+                    </div>
+
+                    <div class="tune-unit">
+                        <label>Filter by Collection</label>
+                        <select id="filter-collection" class="form-input-black" onchange="performSearch()">
+                            <option value="">All Archival Collections</option>
+                        </select>
+                    </div>
+
+                    <div class="tune-unit">
+                        <label>Physical Preservation State</label>
+                        <select id="filter-condition" class="form-input-black" onchange="performSearch()">
+                            <option value="">All States</option>
+                            <option value="Pristine">Pristine</option>
+                            <option value="Good">Good</option>
+                            <option value="Fragile">Fragile</option>
+                            <option value="Critical-Decay">Critical-Decay</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-header-bar">
+                <span id="results-count">&#9632; LIVE INDEX / RETRIEVING MANUSCRIPTS...</span>
+            </div>
+
+            <div id="results-grid" class="results-grid-cards">
+                <!-- Dynamically populated manuscript cards -->
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 3: LOCAL AI RESEARCH ASSISTANT (RAG) -->
+        <!-- ========================================================= -->
+        <section id="tab-assistant" class="tab-panel">
+            <div class="box-card-black">
+                <div class="box-card-header">
+                    <div>
+                        <div class="box-title">
+                            <i data-lucide="bot" style="width: 16px; height: 16px;"></i>
+                            <span>Local Archival Research Assistant (RAG Engine)</span>
+                        </div>
+                        <div class="box-desc">Answers historical inquiries grounded strictly in verified manuscript passages with inline cryptographic citations.</div>
+                    </div>
+                    <span class="tag-stark" style="color: var(--accent-green); border-color: var(--accent-green);">LOCAL &middot; ZERO CLOUD DEPENDENCY</span>
+                </div>
+
+                <!-- Chat Terminal -->
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-bubble chat-bubble-assistant">
+                            <strong>ArchiveMind AI Assistant:</strong><br>
+                            Greetings, Researcher. I am grounded in the primary historical manuscripts catalogued in the repository. Ask any question regarding Sir Isaac Newton's celestial mechanics, Leonardo da Vinci's flight treatises, Srinivasa Ramanujan's mock theta functions, or Alan Turing's Bletchley Park decryption memos. Every response includes verifiable academic citations.
+                        </div>
+                    </div>
+
+                    <!-- Prompt Suggestion Chips -->
+                    <div class="chat-prompt-chips">
+                        <span style="font-family: var(--font-mono); font-size: 10px; color: #777; align-self: center;">PROMPTS:</span>
+                        <button class="chip-btn" onclick="askPreset('What did Newton determine regarding the inverse square law of universal gravitation?')">Newton Gravitation</button>
+                        <button class="chip-btn" onclick="askPreset('How does Leonardo da Vinci describe the mechanics of the aerial helical screw?')">Da Vinci Aerial Screw</button>
+                        <button class="chip-btn" onclick="askPreset('Explain the imitation game proposed by Alan Turing to test machine thought.')">Turing Imitation Game</button>
+                        <button class="chip-btn" onclick="askPreset('What are the mock theta functions described in Ramanujan\'s final letter to Hardy?')">Ramanujan Mock Theta</button>
+                    </div>
+
+                    <!-- Input Bar -->
+                    <div class="chat-input-bar">
+                        <input type="text" id="chat-query-input" class="box-input" style="padding-left: 14px;"
+                               placeholder="Ask a historical question (e.g. 'What equations govern planetary orbit fluxions?')..."
+                               onkeydown="if(event.key === 'Enter') sendAssistantQuery()">
+                        <button class="btn-box" onclick="sendAssistantQuery()">
+                            <i data-lucide="send" style="width: 14px; height: 14px;"></i>
+                            <span>Ask</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 4: INSPECTOR & CITATIONS -->
+        <!-- ========================================================= -->
+        <section id="tab-document" class="tab-panel">
+            <div id="doc-detail-view">
+                <div style="text-align: center; padding: 5rem; color: var(--text-black-muted); font-family: var(--font-mono); font-weight: 800;">
+                    SELECT A MANUSCRIPT FROM THE HYBRID SEARCH TAB TO INSPECT ITS TRANSCRIPTION AND GENERATE CITATIONS.
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 5: PROVENANCE TOPOLOGY GRAPH -->
+        <!-- ========================================================= -->
+        <section id="tab-provenance" class="tab-panel">
+            <div class="box-card-black">
+                <div class="box-card-header">
+                    <div>
+                        <div class="box-title">
+                            <i data-lucide="git-merge" style="width: 16px; height: 16px;"></i>
+                            <span>Chain of Custody & Provenance Topology</span>
+                        </div>
+                        <div class="box-desc">Relational entity graph linking Documents, Authors, Collections, Archives, and Audited Access Views.</div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <select id="prov-doc-select" class="form-input-black" onchange="loadProvenanceGraph(this.value)">
+                            <option value="1">Doc 1: Principia Mathematica (Newton)</option>
+                            <option value="2">Doc 2: Opticks Prismatic Dispersion (Newton)</option>
+                            <option value="3">Doc 3: Codex Atlanticus Aerial Screw (Da Vinci)</option>
+                            <option value="5">Doc 5: Mock Theta Functions Letter (Ramanujan)</option>
+                            <option value="7">Doc 7: Hut 8 Enigma Decryption Memo (Turing)</option>
+                            <option value="8">Doc 8: Computing Machinery & Intelligence (Turing)</option>
+                            <option value="9">Doc 9: Note G Bernoulli Computation (Lovelace)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="provenance-graph-container" style="background: #000000; border: 1px solid var(--border-dim); min-height: 480px; position: relative; padding: 1.5rem;">
+                    <!-- Rendered SVG node-link graph -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 6: DBMS ACADEMIC EVALUATION QUERIES -->
+        <!-- ========================================================= -->
+        <section id="tab-queries" class="tab-panel">
+            <div class="box-card-black">
+                <div class="box-card-header">
+                    <div>
+                        <div class="box-title">
+                            <i data-lucide="terminal" style="width: 16px; height: 16px;"></i>
+                            <span>DBMS Evaluation Queries (UE23CS351A Capstone)</span>
+                        </div>
+                        <div class="box-desc">Execution of academic SQL requirements: Aggregation, Mutations with Triggers, Correlated and Nested Subqueries.</div>
+                    </div>
+                </div>
+
+                <!-- Query Buttons Tile Grid -->
+                <div class="grid-3" style="margin-bottom: 1.5rem;">
+                    <div class="query-tile active" id="btn-q-7.1" onclick="runQueryKey('7.1')">
+                        <div class="query-tile-title">7.1 Aggregation & GROUP BY</div>
+                        <div class="query-tile-sub">Era-level manuscript counts & average OCR length</div>
+                    </div>
+                    <div class="query-tile" id="btn-q-7.2" onclick="runQueryKey('7.2')">
+                        <div class="query-tile-title">7.2 UPDATE Mutation</div>
+                        <div class="query-tile-sub">Batch restoration of critical-decay records</div>
+                    </div>
+                    <div class="query-tile" id="btn-q-7.3" onclick="runQueryKey('7.3')">
+                        <div class="query-tile-title">7.3 DELETE Mutation</div>
+                        <div class="query-tile-sub">Pruning temporary diagnostic records</div>
+                    </div>
+                    <div class="query-tile" id="btn-q-7.4" onclick="runQueryKey('7.4')">
+                        <div class="query-tile-title">7.4 Correlated Subquery</div>
+                        <div class="query-tile-sub">Length exceeding collection average</div>
+                    </div>
+                    <div class="query-tile" id="btn-q-7.5" onclick="runQueryKey('7.5')">
+                        <div class="query-tile-title">7.5 Nested Subquery (HAVING >= 2)</div>
+                        <div class="query-tile-sub">Authors in multi-collection archives</div>
+                    </div>
+                </div>
+
+                <!-- SQL Preview Box -->
+                <pre id="query-sql-pre" class="sql-pre-box">SELECT ...</pre>
+
+                <!-- Query Results Table -->
+                <div id="query-table-container" class="table-black-box">
+                    <table id="query-results-table">
+                        <thead id="query-table-head"></thead>
+                        <tbody id="query-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- TAB 7: AUDIT TRAIL & DATABASE TRIGGERS -->
+        <!-- ========================================================= -->
+        <section id="tab-audit" class="tab-panel">
+            <div class="box-card-black">
+                <div class="box-card-header">
+                    <div>
+                        <div class="box-title">
+                            <i data-lucide="activity" style="width: 16px; height: 16px;"></i>
+                            <span>Audit Trail & Cryptographic Chain of Custody</span>
+                        </div>
+                        <div class="box-desc">Automated records generated by database triggers (trg_audit_citation_generation, trg_validate_doc_checksum).</div>
+                    </div>
+                    <button class="btn-inspect-stark" onclick="loadAuditTrail()">REFRESH AUDIT</button>
+                </div>
+
+                <div class="table-black-box">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>View ID</th>
+                                <th>Timestamp</th>
+                                <th>Client / Trigger Origin</th>
+                                <th>Document ID</th>
+                                <th>Manuscript Title</th>
+                                <th>Audited User</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-table-body">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div>ArchiveMind &mdash; AI-Powered Hybrid SQL&ndash;Vector Archival Search Platform</div>
+        <div>PES UNIVERSITY &middot; CSE DEPARTMENT &middot; CAPSTONE PROJECT 2026</div>
+    </footer>
+
+    <!-- Frontend Application Logic -->
+    <script>
+        const USER_PROFILES = {
+            'researcher_abhiroop': {
+                id: 3,
+                name: 'Abhiroop',
+                usn: 'PES2UG24CS024',
+                role: 'Researcher',
+                roleLabel: 'RESEARCHER',
+                canMutate: false,
+                desc: 'Academic Researcher · Full Search, Inspection, Citations, Provenance'
+            },
+            'researcher_sheiman': {
+                id: 2,
+                name: 'A Sheiman Joshi',
+                usn: 'PES2UG24CS003',
+                role: 'Researcher',
+                roleLabel: 'RESEARCHER',
+                canMutate: false,
+                desc: 'Academic Researcher · Full Search, Inspection, Citations, Provenance'
+            },
+            'archivist': {
+                id: 1,
+                name: 'Demo Teacher',
+                usn: 'FACULTY GUIDE',
+                role: 'Head Archivist',
+                roleLabel: 'HEAD ARCHIVIST (ADMIN)',
+                canMutate: true,
+                desc: 'Head Archivist & Faculty Guide · Full Administrative, Ingestion & Mutation Privileges'
+            }
+        };
+
+        let currentUser = USER_PROFILES['researcher_abhiroop'];
+        let metadata = {};
+        let currentDocuments = [];
+        let activeCapturedFile = null;
+
+        function onRoleChange(key) {
+            currentUser = USER_PROFILES[key] || USER_PROFILES['researcher_abhiroop'];
+            const badge = document.getElementById('role-badge');
+            if (badge) {
+                badge.textContent = currentUser.roleLabel;
+                badge.style.background = currentUser.canMutate ? '#ffffff' : '#000000';
+                badge.style.color = currentUser.canMutate ? '#000000' : '#ffffff';
+            }
+            showRoleToast(`
+                <div style="font-weight: 800; color: #ffffff; margin-bottom: 4px;">&#9881; ACTIVE ROLE SWITCHED</div>
+                <div><strong>${currentUser.name}</strong> (${currentUser.usn}) &mdash; <span style="color: #bbbbbb;">${currentUser.roleLabel}</span></div>
+                <div style="font-size: 10px; color: #888888; margin-top: 4px;">${currentUser.desc}</div>
+            `);
+        }
+
+        function showRoleToast(html, duration = 3500) {
+            const toast = document.getElementById('role-alert-toast');
+            if (!toast) return;
+            toast.innerHTML = html;
+            toast.style.display = 'block';
+            if (toast.timer) clearTimeout(toast.timer);
+            toast.timer = setTimeout(() => { toast.style.display = 'none'; }, duration);
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-box-btn').forEach(b => b.classList.remove('active'));
+
+            const targetPanel = document.getElementById(`tab-${tabId}`);
+            const targetBtn = document.getElementById(`tab-btn-${tabId}`);
+
+            if (targetPanel) targetPanel.classList.add('active');
+            if (targetBtn) targetBtn.classList.add('active');
+
+            if (tabId === 'provenance') {
+                const docId = document.getElementById('prov-doc-select').value;
+                loadProvenanceGraph(docId);
+            } else if (tabId === 'audit') {
+                loadAuditTrail();
+            } else if (tabId === 'queries') {
+                runQueryKey('7.1');
+            } else if (tabId === 'overview') {
+                loadOverviewTelemetry();
+            }
+        }
+
+        function updateAlphaLabel(val) {
+            const v = parseFloat(val);
+            const sqlPct = Math.round(v * 100);
+            const vecPct = 100 - sqlPct;
+            document.getElementById('alpha-label').textContent = `${sqlPct}% SQL (FTS5) / ${vecPct}% VECTOR (MiniLM)`;
+        }
+
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+        async function initApp() {
+            try {
+                const res = await fetch('/api/meta');
+                metadata = await res.json();
+
+                const colSelect = document.getElementById('filter-collection');
+                if (colSelect && metadata.collections) {
+                    metadata.collections.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.collection_id;
+                        opt.textContent = `${c.name} (${c.era})`;
+                        colSelect.appendChild(opt);
+                    });
+                }
+
+                document.getElementById('stat-doc-count').textContent = `${metadata.total_documents} Folios`;
+                await loadOverviewTelemetry();
+                await performSearch();
+            } catch (err) {
+                console.error("Init Error:", err);
+            }
+        }
+
+        // ==========================================
+        // OVERVIEW & TELEMETRY
+        // ==========================================
+        async function loadOverviewTelemetry() {
+            try {
+                const healthRes = await fetch('/api/health');
+                const health = await healthRes.json();
+                if (health.gpu_available) {
+                    document.getElementById('stat-gpu-name').textContent = health.compute_device;
+                    document.getElementById('stat-gpu-sub').textContent = 'RTX 2050 CUDA Active';
+                }
+
+                const piRes = await fetch('/api/devices/archivemind-pi-cam-01/status');
+                if (piRes.ok) {
+                    const piData = await piRes.json();
+                    if (piData.is_reachable) {
+                        document.getElementById('stat-pi-status').textContent = '10.42.0.116';
+                        document.getElementById('stat-pi-status').style.color = 'var(--accent-green)';
+                        document.getElementById('stat-pi-sub').textContent = 'Direct Ethernet &middot; 5MP ov5647 Ready';
+                    }
+                }
+
+                // Recent jobs
+                const jobsRes = await fetch('/api/ingestion/jobs?limit=5');
+                const jobs = await jobsRes.json();
+                const feed = document.getElementById('recent-jobs-feed');
+                if (jobs && jobs.length > 0) {
+                    feed.innerHTML = jobs.map(j => `
+                        <div style="background: var(--box-card); border: 1px solid var(--border-dim); padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${j.scan_id}</strong> &middot; <span style="color: #888;">${j.created_at}</span>
+                            </div>
+                            <span class="tag-stark" style="color: ${j.status === 'COMPLETED' ? 'var(--accent-green)' : 'var(--accent-amber)'};">${j.status}</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error("Telemetry error:", err);
+            }
+        }
+
+        // ==========================================
+        // RASPBERRY PI TRIGGER & SCANNER
+        // ==========================================
+        async function triggerPiCapture() {
+            const previewContainer = document.getElementById('scanner-preview-container');
+            const previewImg = document.getElementById('scanner-preview-img');
+            const emptyMsg = document.getElementById('scanner-empty-msg');
+            const statusBadge = document.getElementById('preview-status-badge');
+
+            emptyMsg.innerHTML = '<div style="color: var(--accent-green);">&#9881; DISPATCHING CAPTURE COMMAND TO RASPBERRY PI (10.42.0.116:8082)...</div>';
+            statusBadge.textContent = 'ACQUIRING FROM PI...';
+
+            try {
+                const res = await fetch('/api/devices/trigger_capture', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        device_id: 'archivemind-pi-cam-01',
+                        pi_ip: '10.42.0.116',
+                        pi_port: 8082
+                    })
+                });
+                const data = await res.json();
+                if (data.success && data.pi_response) {
+                    const piResp = data.pi_response;
+                    showRoleToast("✓ Physical manuscript capture acquired from Raspberry Pi ov5647 camera!");
+                    statusBadge.textContent = 'IMAGE CAPTURED';
+
+                    // Update Title
+                    document.getElementById('scan-title').value = `Pi Acquired Folio ${piResp.scan_id}`;
+                    
+                    // Display image
+                    emptyMsg.style.display = 'none';
+                    previewImg.src = `/storage/originals/${piResp.scan_id}.jpg?t=${Date.now()}`;
+                    previewImg.style.display = 'block';
+
+                    // Readout
+                    document.getElementById('cv-metrics-readout').style.display = 'block';
+                    document.getElementById('readout-sha').textContent = piResp.checksum_sha256 || 'Calculated on ingest';
+                    document.getElementById('readout-filters').textContent = 'Bilateral Denoising + CLAHE + Deskew Ready';
+                    document.getElementById('readout-condition').textContent = 'Analyzing...';
+                } else {
+                    emptyMsg.innerHTML = `<div style="color: var(--accent-red);">Pi Capture Error: ${data.detail || 'Device busy'}</div>`;
+                    statusBadge.textContent = 'ERROR';
+                }
+            } catch (err) {
+                emptyMsg.innerHTML = `<div style="color: var(--accent-red);">Network Error: ${err.message}. Ensure Ethernet link is active at 10.42.0.1.</div>`;
+                statusBadge.textContent = 'OFFLINE';
+            }
+        }
+
+        function handleLocalFileSelect(file) {
+            if (!file) return;
+            activeCapturedFile = file;
+            const previewImg = document.getElementById('scanner-preview-img');
+            const emptyMsg = document.getElementById('scanner-empty-msg');
+            const statusBadge = document.getElementById('preview-status-badge');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                emptyMsg.style.display = 'none';
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+                statusBadge.textContent = 'LOCAL FILE LOADED';
+                document.getElementById('scan-title').value = file.name.replace(/\.[^/.]+$/, "");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function submitManuscriptIngestion() {
+            const title = document.getElementById('scan-title').value || "Historical Manuscript Acquisition";
+            const colId = document.getElementById('scan-collection').value;
+            const author = document.getElementById('scan-author').value;
+            const ocrMode = document.getElementById('scan-ocr-mode').value;
+            const dateWritten = document.getElementById('scan-date').value;
+
+            const btn = document.getElementById('btn-process-ingest');
+            btn.innerHTML = '<span>Processing CV Enhancement, OCR & Embeddings...</span>';
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('collection_id', colId);
+            formData.append('author_name', author);
+            formData.append('ocr_mode', ocrMode);
+            formData.append('date_written', dateWritten);
+
+            if (activeCapturedFile) {
+                formData.append('file', activeCapturedFile);
+            } else {
+                // If Pi captured earlier, send a dummy test file or fallback
+                const blob = new Blob(["ArchiveMind manuscript capture"], { type: "image/jpeg" });
+                formData.append('file', blob, "pi_captured.jpg");
+            }
+
+            try {
+                const res = await fetch('/api/ingestion/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                showRoleToast(`✓ Ingestion job ${data.job_id} launched! AI worker active.`);
+                
+                // Refresh overview & search
+                setTimeout(() => {
+                    performSearch();
+                    loadOverviewTelemetry();
+                    switchTab('search');
+                }, 2000);
+            } catch (err) {
+                alert(`Ingestion error: ${err.message}`);
+            } finally {
+                btn.innerHTML = '<i data-lucide="check-circle" style="width: 15px; height: 15px;"></i><span>Enhance, OCR & Index into Database</span>';
+                btn.disabled = false;
+                lucide.createIcons();
+            }
+        }
+
+        // ==========================================
+        // HYBRID SEARCH
+        // ==========================================
+        async function performSearch() {
+            const queryText = document.getElementById('search-query').value;
+            const alpha = parseFloat(document.getElementById('alpha-slider').value);
+            const collectionId = document.getElementById('filter-collection').value || null;
+            const condition = document.getElementById('filter-condition').value || null;
+
+            const grid = document.getElementById('results-grid');
+            grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 4rem; color: #000000; font-family: var(--font-mono); font-weight: 800;">EXECUTING HYBRID SQL-VECTOR RANKING...</div>';
+
+            try {
+                const res = await fetch('/api/search/hybrid', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query_text: queryText,
+                        alpha: alpha,
+                        collection_id: collectionId ? parseInt(collectionId) : null,
+                        physical_condition: condition || null
+                    })
+                });
+                const data = await res.json();
+                renderSearchResults(data.results);
+                document.getElementById('results-count').textContent = `■ LIVE INDEX / ${data.count} MANUSCRIPTS MATCHING CRITERIA (${data.fusion_method})`;
+            } catch (err) {
+                grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #000000; font-family: var(--font-mono); font-weight: 800;">SEARCH ERROR: ${err.message}</div>`;
+            }
+        }
+
+        function renderSearchResults(docs) {
+            currentDocuments = docs;
+            const grid = document.getElementById('results-grid');
+            if (!docs || docs.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 4rem; color: #000000; font-family: var(--font-mono); font-weight: 800;">NO MATCHING ARCHIVAL MANUSCRIPTS FOUND.</div>';
+                return;
+            }
+
+            grid.innerHTML = docs.map(doc => `
+                <div class="manuscript-card">
+                    <div>
+                        <div class="card-top-bar">
+                            <span class="tag-stark">${doc.physical_condition}</span>
+                            <span class="tag-stark" style="color: var(--accent-green); border-color: #333;">${doc.match_mode || 'Hybrid'}</span>
+                            <span style="font-family: var(--font-mono); font-size: 11px; color: #888;">${doc.date_written || 'CIRCA UNKNOWN'}</span>
+                        </div>
+
+                        <div class="card-doc-title">${doc.title}</div>
+                        <div class="card-author-line">AUTHOR: ${doc.authors}</div>
+
+                        <div class="card-ocr-quote">"${doc.matching_passage || doc.ocr_snippet || ''}"</div>
+
+                        <div style="font-family: var(--font-mono); font-size: 10px; color: #777; margin-bottom: 10px;">
+                            <div>COLLECTION: ${doc.collection_name} (${doc.era})</div>
+                            <div>ARCHIVE: ${doc.archive_name}</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="score-pill-box">
+                            <div><span>SQL FTS:</span> <strong>${doc.keyword_score}</strong></div>
+                            <div><span>MiniLM VEC:</span> <strong>${doc.semantic_score}</strong></div>
+                            <div><span>HYBRID:</span> <strong style="color: var(--accent-green);">${doc.hybrid_score}</strong></div>
+                        </div>
+                        <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-family: var(--font-mono); font-size: 9px; color: #666;">RRF: ${doc.rrf_score || '0.016'}</span>
+                            <button class="btn-inspect-stark" onclick="inspectDocument(${doc.document_id})">
+                                <span>INSPECT</span>
+                                <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // LOCAL AI RESEARCH ASSISTANT (RAG)
+        // ==========================================
+        async function sendAssistantQuery() {
+            const input = document.getElementById('chat-query-input');
+            const q = input.value.trim();
+            if (!q) return;
+
+            const chatMessages = document.getElementById('chat-messages');
+
+            // Append User Bubble
+            const userBubble = document.createElement('div');
+            userBubble.className = 'chat-bubble chat-bubble-user';
+            userBubble.textContent = q;
+            chatMessages.appendChild(userBubble);
+
+            input.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Loading bubble
+            const loadingBubble = document.createElement('div');
+            loadingBubble.className = 'chat-bubble chat-bubble-assistant';
+            loadingBubble.innerHTML = '<span style="font-family: var(--font-mono);">&#9881; Retrieving grounded manuscript passages & generating grounded response...</span>';
+            chatMessages.appendChild(loadingBubble);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const res = await fetch('/api/assistant/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: q })
+                });
+                const data = await res.json();
+
+                // Format Citations
+                let citationsHtml = '';
+                if (data.citations && data.citations.length > 0) {
+                    citationsHtml = '<div style="margin-top: 12px; border-top: 1px solid var(--border-dim); padding-top: 8px;"><strong style="font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; color: var(--text-white-muted);">Verified Citations:</strong><br>' +
+                        data.citations.map(c => `
+                            <button class="citation-tag-btn" onclick="inspectDocument(${c.document_id})">
+                                Doc #${c.document_id}: ${c.title} (${c.authors})
+                            </button>
+                        `).join('') + '</div>';
+                }
+
+                loadingBubble.innerHTML = `
+                    <div style="font-family: var(--font-mono); font-size: 10px; color: var(--accent-green); margin-bottom: 6px;">[ENGINE: ${data.llm_engine}]</div>
+                    <div>${data.answer.replace(/\n/g, '<br>')}</div>
+                    ${citationsHtml}
+                `;
+            } catch (err) {
+                loadingBubble.innerHTML = `<span style="color: var(--accent-red);">Assistant Error: ${err.message}</span>`;
+            }
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function askPreset(promptText) {
+            document.getElementById('chat-query-input').value = promptText;
+            sendAssistantQuery();
+        }
+
+        // ==========================================
+        // INSPECTOR & CITATIONS
+        // ==========================================
+        async function inspectDocument(docId) {
+            switchTab('document');
+            const container = document.getElementById('doc-detail-view');
+            container.innerHTML = '<div style="text-align: center; padding: 5rem; color: #000000; font-family: var(--font-mono); font-weight: 800;">RETRIEVING FORENSIC MANUSCRIPT RECORD...</div>';
+
+            try {
+                const res = await fetch(`/api/documents/${docId}?user_id=${currentUser.id}`);
+                const data = await res.json();
+                const doc = data.document;
+
+                container.innerHTML = `
+                    <div class="box-card-black">
+                        <div class="box-card-header">
+                            <div>
+                                <span class="tag-stark">${doc.doc_type}</span>
+                                <h2 style="font-size: 20px; font-weight: 900; margin: 6px 0;">${doc.title}</h2>
+                                <div class="box-desc">Preserved in ${doc.archive_name} &middot; ${doc.collection_name} (${doc.era})</div>
+                            </div>
+                            <span class="tag-stark" style="color: var(--accent-green); border-color: var(--accent-green);">${doc.physical_condition}</span>
+                        </div>
+
+                        <div class="grid-2">
+                            <div>
+                                <div class="metric-label" style="margin-bottom: 8px;">DIGITIZED MANUSCRIPT FOLIO</div>
+                                <div style="background: #000000; border: 1px solid var(--border-mid); padding: 10px; text-align: center; margin-bottom: 1rem;">
+                                    <img src="/storage/originals/${doc.image_path}" onerror="this.src='/storage/processed/proc_${doc.image_path}'" style="max-width: 100%; max-height: 380px; object-fit: contain;">
+                                </div>
+
+                                <div class="metric-label" style="margin-bottom: 8px;">CRYPTOGRAPHIC CHAIN OF CUSTODY</div>
+                                <div style="font-family: var(--font-mono); font-size: 11px; background: #000000; border: 1px solid var(--border-dim); padding: 12px; color: #bbb; line-height: 1.6;">
+                                    <div>&bull; Algorithm: <strong>SHA-256</strong></div>
+                                    <div style="word-break: break-all;">&bull; Hash: <strong style="color: #fff;">${doc.checksum_value}</strong></div>
+                                    <div>&bull; Language: <strong>${doc.language}</strong> &middot; Digitized: <strong>${doc.digitized_at}</strong></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="metric-label" style="margin-bottom: 8px;">EDITABLE TRANSCRIPTION & RE-INDEXING</div>
+                                <textarea id="edit-ocr-text" class="form-input-black" style="width: 100%; height: 180px; line-height: 1.5; margin-bottom: 10px;">${doc.ocr_text_cache || ''}</textarea>
+                                
+                                <button class="btn-box" style="width: 100%; justify-content: center; padding: 10px; margin-bottom: 1.5rem;" onclick="saveOcrCorrection(${doc.document_id})">
+                                    <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+                                    <span>Save Correction & Regenerate MiniLM Embeddings</span>
+                                </button>
+
+                                <div class="metric-label" style="margin-bottom: 8px;">ACADEMIC CITATION GENERATOR</div>
+                                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                                    <select id="citation-style-select" class="form-input-black">
+                                        <option value="Chicago-Archival">Chicago Archival Style</option>
+                                        <option value="MLA">MLA Format</option>
+                                        <option value="APA">APA Historical Format</option>
+                                    </select>
+                                    <button class="btn-box" onclick="generateCitation(${doc.document_id})">GENERATE</button>
+                                </div>
+                                <div id="citation-result-box" style="font-family: var(--font-mono); font-size: 11px; background: #000000; border: 1px solid var(--border-dim); padding: 10px; color: #fff;">
+                                    Click "Generate" to create formatted academic citation.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                lucide.createIcons();
+            } catch (err) {
+                container.innerHTML = `<div style="text-align: center; padding: 4rem; color: var(--accent-red); font-family: var(--font-mono);">Failed to load document: ${err.message}</div>`;
+            }
+        }
+
+        async function saveOcrCorrection(docId) {
+            const corrected = document.getElementById('edit-ocr-text').value;
+            try {
+                const res = await fetch(`/api/documents/${docId}/ocr`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ corrected_text: corrected })
+                });
+                const data = await res.json();
+                showRoleToast("✓ OCR updated! FTS5 index refreshed and MiniLM embeddings regenerated.");
+            } catch (err) {
+                alert(`Error updating OCR: ${err.message}`);
+            }
+        }
+
+        async function generateCitation(docId) {
+            const style = document.getElementById('citation-style-select').value;
+            try {
+                const res = await fetch(`/api/documents/${docId}/citation`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ style: style, user_id: currentUser.id })
+                });
+                const data = await res.json();
+                document.getElementById('citation-result-box').innerHTML = `
+                    <div style="color: var(--accent-green); margin-bottom: 4px;">✓ Trigger trg_audit_citation_generation executed</div>
+                    <div>"${data.citation_text}"</div>
+                `;
+            } catch (err) {
+                alert(`Citation error: ${err.message}`);
+            }
+        }
+
+        // ==========================================
+        // PROVENANCE GRAPH
+        // ==========================================
+        async function loadProvenanceGraph(docId) {
+            const container = document.getElementById('provenance-graph-container');
+            container.innerHTML = '<div style="color: var(--text-white-muted); font-family: var(--font-mono);">Generating topology network...</div>';
+            try {
+                const res = await fetch(`/api/provenance/${docId}`);
+                const data = await res.json();
+                
+                const nodes = data.nodes || [];
+                const edges = data.edges || [];
+
+                let html = '<div style="display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 1.5rem;">';
+                nodes.forEach(n => {
+                    const color = n.type === 'document' ? 'var(--accent-blue)' : (n.type === 'person' ? 'var(--accent-amber)' : 'var(--accent-green)');
+                    html += `
+                        <div style="background: var(--box-elevated); border: 1px solid ${color}; padding: 10px 14px; font-family: var(--font-mono); font-size: 11px;">
+                            <div style="font-size: 9px; color: ${color}; font-weight: 800; text-transform: uppercase;">${n.type}</div>
+                            <div style="font-weight: 800; color: #fff;">${n.label}</div>
+                            <div style="font-size: 10px; color: #888;">${n.details || ''}</div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+
+                html += '<div class="metric-label" style="margin-bottom: 8px;">TOPOLOGICAL RELATIONSHIP EDGES</div><div class="table-black-box"><table><thead><tr><th>Source Entity</th><th>Edge Relationship</th><th>Target Entity</th></tr></thead><tbody>';
+                edges.forEach(e => {
+                    html += `<tr><td>${e.source}</td><td style="color: var(--accent-green);">${e.label}</td><td>${e.target}</td></tr>`;
+                });
+                html += '</tbody></table></div>';
+
+                container.innerHTML = html;
+            } catch (err) {
+                container.innerHTML = `<div style="color: var(--accent-red);">Error: ${err.message}</div>`;
+            }
+        }
+
+        // ==========================================
+        // DBMS EVALUATION QUERIES
+        // ==========================================
+        async function runQueryKey(qkey) {
+            document.querySelectorAll('.query-tile').forEach(t => t.classList.remove('active'));
+            const activeTile = document.getElementById(`btn-q-${qkey}`);
+            if (activeTile) activeTile.classList.add('active');
+
+            const pre = document.getElementById('query-sql-pre');
+            const thead = document.getElementById('query-table-head');
+            const tbody = document.getElementById('query-table-body');
+
+            pre.textContent = 'EXECUTING QUERY...';
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            try {
+                const res = await fetch('/api/queries/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query_key: qkey, user_id: currentUser.id })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    pre.textContent = `[RBAC DENIED - HTTP ${res.status}]\n${errData.detail || 'Permission denied'}`;
+                    return;
+                }
+
+                const data = await res.json();
+                pre.textContent = `-- ${data.name}\n-- ${data.desc}\n\n${data.sql}`;
+
+                const rows = data.results || [];
+                if (rows.length > 0) {
+                    const cols = Object.keys(rows[0]);
+                    thead.innerHTML = `<tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr>`;
+                    tbody.innerHTML = rows.map(r => `
+                        <tr>${cols.map(c => `<td>${r[c]}</td>`).join('')}</tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Query executed successfully (0 rows returned / mutated).</td></tr>';
+                }
+            } catch (err) {
+                pre.textContent = `Error: ${err.message}`;
+            }
+        }
+
+        // ==========================================
+        // AUDIT TRAIL
+        // ==========================================
+        async function loadAuditTrail() {
+            const tbody = document.getElementById('audit-table-body');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Loading custody audit trail...</td></tr>';
+            try {
+                const res = await fetch('/api/audit/views?limit=25');
+                const rows = await res.json();
+                if (rows.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No audit view records found.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = rows.map(r => `
+                    <tr>
+                        <td>#${r.view_id}</td>
+                        <td style="color: #aaa;">${r.viewed_at}</td>
+                        <td style="color: var(--accent-green);">${r.ip_address}</td>
+                        <td>Doc #${r.document_id}</td>
+                        <td style="color: #fff; font-weight: 700;">${r.title}</td>
+                        <td>${r.viewer_name}</td>
+                        <td><span class="tag-stark">${r.role_name || 'Audited User'}</span></td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="7" style="color: var(--accent-red);">Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        // Window load
+        window.addEventListener('DOMContentLoaded', () => {
+            initApp();
+            lucide.createIcons();
+            // Periodic ping to check Pi status
+            setInterval(loadOverviewTelemetry, 10000);
+        });
+    </script>
+</body>
+</html>
