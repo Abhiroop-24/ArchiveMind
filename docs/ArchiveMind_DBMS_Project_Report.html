@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArchiveMind - Mini Project Report (UE23CS351A)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        body {
+            font-family: 'Merriweather', Georgia, serif;
+            font-size: 11pt;
+            line-height: 1.65;
+            color: #1a1a1a;
+            background: #f8fafc;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page {
+            background: #ffffff;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 25mm 25mm 25mm 30mm; /* Standard academic left-binding margin */
+            margin: 20px auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        @media print {
+            body { background: transparent; }
+            .page {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+                min-height: auto;
+                page-break-after: always;
+                padding: 20mm;
+            }
+            .no-print { display: none; }
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Cinzel', serif;
+            color: #0f172a;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            page-break-after: avoid;
+        }
+
+        h1 { font-size: 18pt; text-align: center; line-height: 1.3; }
+        h2 { font-size: 14pt; border-bottom: 1.5px solid #0f172a; padding-bottom: 4px; }
+        h3 { font-size: 12pt; }
+
+        p, li {
+            text-align: justify;
+            text-justify: inter-word;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 9.5pt;
+        }
+
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f5f9;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        pre, code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8.5pt;
+        }
+
+        pre {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #3b82f6;
+            padding: 12px;
+            overflow-x: auto;
+            border-radius: 4px;
+            page-break-inside: avoid;
+        }
+
+        .cover-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            height: 247mm;
+        }
+
+        .cover-title {
+            font-size: 17pt;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: #0f172a;
+            text-transform: uppercase;
+            margin: 15px 0;
+        }
+
+        .cert-header {
+            text-align: center;
+            border-bottom: 2px solid #0f172a;
+            padding-bottom: 12px;
+            margin-bottom: 25px;
+        }
+
+        .signature-block {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .signature-line {
+            border-top: 1px solid #334155;
+            width: 220px;
+            text-align: center;
+            padding-top: 6px;
+            font-size: 10pt;
+        }
+
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <button onclick="window.print()" class="print-btn no-print">🖨️ Print / Save as PDF</button>
+
+    <!-- ========================================== -->
+    <!-- 1. COVER PAGE -->
+    <!-- ========================================== -->
+    <div class="page">
+        <div class="cover-page">
+            <div>
+                <div style="font-size: 13pt; font-weight: bold; color: #475569; letter-spacing: 1px;">MINI PROJECT REPORT ON</div>
+                <div class="cover-title">ARCHIVEMIND: A HYBRID SQL-VECTOR SEMANTIC SEARCH ENGINE FOR DIGITIZED DOCUMENT REPOSITORIES</div>
+                <div style="font-size: 10pt; color: #64748b; margin-top: 10px;">
+                    Submitted in partial fulfilment of the requirements for the award of degree of<br>
+                    <strong>Bachelor of Technology</strong> in <strong>Computer Science & Engineering</strong><br>
+                    <strong>UE23CS351A – DBMS Project</strong>
+                </div>
+            </div>
+
+            <!-- University Crest Placeholder / Emblem -->
+            <div style="margin: 25px 0;">
+                <div style="width: 120px; height: 120px; border-radius: 50%; border: 4px double #1e3a8a; margin: 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc;">
+                    <div style="font-family: 'Cinzel', serif; font-size: 18pt; font-weight: bold; color: #1e3a8a;">PES</div>
+                    <div style="font-size: 7.5pt; color: #64748b; font-weight: bold; letter-spacing: 1px;">UNIVERSITY</div>
+                </div>
+            </div>
+
+            <div style="width: 100%;">
+                <table style="width: 85%; margin: 0 auto; border: none;">
+                    <tr style="border: none;"><td style="border: none; text-align: left; font-weight: bold; width: 50%;">Submitted by:</td><td style="border: none; text-align: left; font-weight: bold;">Under the Guidance of:</td></tr>
+                    <tr style="border: none;">
+                        <td style="border: none; text-align: left;">
+                            <strong>A Sheiman Joshi</strong> (PES2UG24CS003)<br>
+                            <strong>Abhiroop</strong> (PES2UG24CS024)
+                        </td>
+                        <td style="border: none; text-align: left;">
+                            <strong>Dr. Shilpa S</strong><br>
+                            Assistant Professor<br>
+                            Dept of CSE, PES University
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="margin-top: 30px; font-size: 10pt; line-height: 1.4;">
+                <strong style="font-size: 11pt; color: #0f172a;">DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING</strong><br>
+                <strong>FACULTY OF ENGINEERING | PES UNIVERSITY</strong><br>
+                (Established under Karnataka Act No. 16 of 2013)<br>
+                Electronic City Campus, Hosur Road, Bengaluru – 560 100<br>
+                <strong>ACADEMIC SEMESTER: AUG - DEC 2026</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. CERTIFICATE -->
+    <!-- ========================================== -->
+    <div class="page">
+        <div class="cert-header">
+            <div style="font-size: 13pt; font-weight: bold;">PES UNIVERSITY</div>
+            <div style="font-size: 9pt; color: #64748b;">(Established under Karnataka Act No. 16 of 2013)</div>
+            <div style="font-size: 9pt; color: #64748b;">Electronic City Campus, Hosur Road, Bengaluru – 560 100</div>
+            <h1 style="margin: 15px 0 5px 0; font-size: 16pt;">CERTIFICATE</h1>
+        </div>
+
+        <p style="margin-top: 30px;">
+            This is to certify that the mini project entitled <strong>"ArchiveMind: A Hybrid SQL-Vector Semantic Search Engine for Digitized Document Repositories"</strong> is a bonafide work carried out by:
+        </p>
+
+        <table style="width: 85%; margin: 25px auto;">
+            <tr>
+                <th>Student Name</th>
+                <th>SRN</th>
+            </tr>
+            <tr>
+                <td><strong>A Sheiman Joshi</strong></td>
+                <td><strong>PES2UG24CS003</strong></td>
+            </tr>
+            <tr>
+                <td><strong>Abhiroop</strong></td>
+                <td><strong>PES2UG24CS024</strong></td>
+            </tr>
+        </table>
+
+        <p>
+            in partial fulfilment for the completion of fifth semester <strong>DBMS Project (UE23CS351A)</strong> in the Program of Study – <em>Bachelor of Technology in Computer Science and Engineering</em> under the rules and regulations of PES University, Bengaluru during the academic period <strong>AUG. 2026 – DEC. 2026</strong>. It is certified that all corrections / suggestions indicated for internal assessment have been incorporated in the report. The project has been approved as it satisfies the 5th semester academic requirements in respect of project work.
+        </p>
+
+        <div class="signature-block" style="margin-top: 90px;">
+            <div class="signature-line">
+                <strong>Dr. Shilpa S</strong><br>
+                Assistant Professor & Project Guide<br>
+                Dept. of CSE, PES University
+            </div>
+            <div class="signature-line">
+                <strong>Dr. Sandesh B J</strong><br>
+                Professor & Chairperson<br>
+                Dept. of CSE, PES University
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 3. DECLARATION & ACKNOWLEDGEMENT -->
+    <!-- ========================================== -->
+    <div class="page">
+        <h2>DECLARATION</h2>
+        <p>
+            We hereby declare that the DBMS Project entitled <strong>"ArchiveMind: A Hybrid SQL-Vector Semantic Search Engine for Digitized Document Repositories"</strong> has been carried out by us under the guidance of <strong>Dr. Shilpa S</strong>, Assistant Professor, Department of Computer Science and Engineering, and submitted in partial fulfilment of the course requirements for the award of degree of <em>Bachelor of Technology in Computer Science and Engineering</em> of PES University, Bengaluru during the academic semester <strong>AUG – DEC 2026</strong>.
+        </p>
+        <p>
+            We further declare that this project work has not formed the basis for the award of any other Degree, Diploma, Associateship, Fellowship or other similar title to any candidate of any University or Institution.
+        </p>
+
+        <div style="margin-top: 30px;">
+            <table style="width: 100%; border: none;">
+                <tr style="border: none;">
+                    <td style="border: none; width: 50%;">
+                        <strong>A Sheiman Joshi</strong><br>
+                        SRN: PES2UG24CS003<br>
+                        Signature: _______________________
+                    </td>
+                    <td style="border: none; width: 50%;">
+                        <strong>Abhiroop</strong><br>
+                        SRN: PES2UG24CS024<br>
+                        Signature: _______________________
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <h2 style="margin-top: 35px;">ACKNOWLEDGEMENT</h2>
+        <p>
+            We would like to express our deepest gratitude to our esteemed project guide, <strong>Dr. Shilpa S</strong>, Assistant Professor, Department of Computer Science and Engineering, PES University, for her constant mentorship, academic guidance, and constructive feedback throughout the course of this project.
+        </p>
+        <p>
+            We are profoundly grateful to <strong>Dr. Sandesh B J</strong>, Professor and Chairperson, Department of Computer Science and Engineering, for providing departmental resources and fostering an inspiring research environment.
+        </p>
+        <p>
+            Our sincere thanks to <strong>Prof. Jawahar Doreswamy</strong>, Chancellor, and <strong>Dr. Suryaprasad J</strong>, Vice-Chancellor, PES University, for establishing an institution of academic rigor and continuous technological innovation. Finally, we extend our heartfelt gratitude to our families and peers for their continuous support.
+        </p>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 4. ABSTRACT & TABLE OF CONTENTS -->
+    <!-- ========================================== -->
+    <div class="page">
+        <h2>ABSTRACT</h2>
+        <p>
+            Historical institutions and national archives preserve millions of fragile handwritten manuscripts, scientific proofs, and wartime ciphers. While photographic preservation mitigates organic decay, scholars face an acute discovery challenge: classical relational databases (RDBMS) excel at structured metadata querying and exact string matching but fail when confronted with degraded handwriting, archaic grammar, or conceptual semantics; standalone vector databases excel at high-dimensional similarity matching but lack relational schema constraints, referential integrity, multi-table joins, ACID transactions, and verifiable audit trails.
+        </p>
+        <p>
+            <strong>ArchiveMind</strong> addresses this fundamental dilemma by engineering a hybrid SQL-Vector architecture. Structured archival entities (Archives, Collections, Manuscripts, Authors, Views, Citations, Permissions) are normalized in an ACID-compliant schema. Handwriting stroke styles are transformed into dense 128-dimensional vectors, while OCR transcripts are indexed via Full-Text Search (FTS5 / tsvector). An adaptive rank-fusion scoring function ($Score = \alpha \cdot FTS + (1-\alpha) \cdot Cosine$) unifies keyword precision with visual penmanship forensics. The system incorporates database-level triggers enforcing chain-of-custody audit logging and stored procedures generating archival citations across Chicago, MLA, and APA standards.
+        </p>
+
+        <h2>TABLE OF CONTENTS</h2>
+        <table style="border: none;">
+            <tr style="border-bottom: 1.5px solid #0f172a;"><th>Chapter No.</th><th>Chapter Title</th><th style="text-align: right;">Page No.</th></tr>
+            <tr><td><strong>1</strong></td><td><strong>INTRODUCTION</strong></td><td style="text-align: right;"><strong>1</strong></td></tr>
+            <tr><td><strong>2</strong></td><td><strong>PROBLEM DEFINITION</strong></td><td style="text-align: right;"><strong>3</strong></td></tr>
+            <tr><td><strong>3</strong></td><td><strong>ER MODEL</strong></td><td style="text-align: right;"><strong>5</strong></td></tr>
+            <tr><td><strong>4</strong></td><td><strong>ER TO RELATIONAL MAPPING (7-STEP ALGORITHM)</strong></td><td style="text-align: right;"><strong>8</strong></td></tr>
+            <tr><td><strong>5</strong></td><td><strong>DDL STATEMENTS</strong></td><td style="text-align: right;"><strong>11</strong></td></tr>
+            <tr><td><strong>6</strong></td><td><strong>DML STATEMENTS & SEED DATA</strong></td><td style="text-align: right;"><strong>15</strong></td></tr>
+            <tr><td><strong>7</strong></td><td><strong>QUERIES (GROUP BY, UPDATE, DELETE, CORRELATED, NESTED)</strong></td><td style="text-align: right;"><strong>19</strong></td></tr>
+            <tr><td><strong>8</strong></td><td><strong>STORED PROCEDURES, FUNCTIONS AND TRIGGERS</strong></td><td style="text-align: right;"><strong>25</strong></td></tr>
+            <tr><td><strong>9</strong></td><td><strong>FRONT END DEVELOPMENT & USER INTERFACE</strong></td><td style="text-align: right;"><strong>29</strong></td></tr>
+            <tr><td></td><td><strong>REFERENCES / BIBLIOGRAPHY</strong></td><td style="text-align: right;"><strong>33</strong></td></tr>
+            <tr><td></td><td><strong>APPENDIX A: ACRONYMS AND ABBREVIATIONS</strong></td><td style="text-align: right;"><strong>34</strong></td></tr>
+        </table>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 5. CHAPTER 1 & 2 -->
+    <!-- ========================================== -->
+    <div class="page">
+        <h1>CHAPTER 1: INTRODUCTION</h1>
+        <h3>1.1 Background & Context</h3>
+        <p>
+            For centuries, human intellectual heritage has been preserved across handwritten mediums—from Sir Isaac Newton's draft calculations of celestial mechanics, to Leonardo da Vinci's mirror-script codices, Srinivasa Ramanujan's lost notebooks, and Alan Turing's Hut 8 naval decryption dispatches. While modern high-resolution scanning creates faithful digital replicas, researchers still cannot efficiently query documents by handwriting similarity, trace relational provenance, or recover documents when optical character recognition (OCR) transcriptions are noisy.
+        </p>
+
+        <h3>1.2 Motivation</h3>
+        <p>
+            Modern database engineering presents two diametric extremes: classical relational systems (PostgreSQL, MySQL, Oracle) and modern vector similarity engines (Qdrant, Pinecone, FAISS). Relational engines maintain strict ACID guarantees, granular role-based permissions, and foreign key cascades, but lack semantic nuance. Vector databases index neural embeddings but forfeit relational integrity. ArchiveMind bridges this chasm by presenting a unified hybrid architecture.
+        </p>
+
+        <h1>CHAPTER 2: PROBLEM DEFINITION</h1>
+        <h3>2.1 Limitations of Current Archival Repositories</h3>
+        <ul>
+            <li><strong>OCR Fragility</strong>: Historical inks fade and bleed. A query for "universal gravitation" fails if OCR transcribed it as "gravitati0n" or "grauitatio".</li>
+            <li><strong>Forensic Style Disconnect</strong>: Scholars studying unattributed manuscripts cannot query the database: <em>"Find all folios whose penstroke contours match Da Vinci's left-handed mirror script with >90% cosine similarity"</em>.</li>
+            <li><strong>Auditability Deficit</strong>: Vector-only search systems do not enforce legal chain-of-custody logging when rare national archives are inspected.</li>
+        </ul>
+
+        <h3>2.2 User Roles & Permissions</h3>
+        <ul>
+            <li><strong>Head Archivist (Dr. Shilpa S)</strong>: Administrative superuser; oversees collections, initiates atomic collection transfers, inspects security audit logs.</li>
+            <li><strong>Lead Researcher (T. Lohith Srinivas)</strong>: Query and retrieval operator; executes hybrid searches, generates citations, inspects provenance graphs.</li>
+            <li><strong>Digitization Technician</strong>: Edge ingestion operator; submits camera captures from Raspberry Pi scanning stations.</li>
+        </ul>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 6. CHAPTER 3: ER MODEL -->
+    <!-- ========================================== -->
+    <div class="page">
+        <h1>CHAPTER 3: ER MODEL</h1>
+        <h3>3.1 Entity Definitions & Attributes</h3>
+        <p>
+            The conceptual design of ArchiveMind comprises eleven relational entities designed in Third Normal Form (3NF):
+        </p>
+        <ol>
+            <li><strong>ROLE</strong>: (<u>role_id</u>, role_name)</li>
+            <li><strong>APP_USER</strong>: (<u>user_id</u>, username, password_hash, full_name, email, created_at, <em>role_id</em>)</li>
+            <li><strong>ARCHIVE</strong>: (<u>archive_id</u>, name, location, institution)</li>
+            <li><strong>COLLECTION</strong>: (<u>collection_id</u>, name, era, description, <em>archive_id</em>)</li>
+            <li><strong>ACCESS_PERMISSION</strong>: (<u>permission_id</u>, permission_type, granted_at, <em>user_id</em>, <em>collection_id</em>)</li>
+            <li><strong>DOCUMENT</strong>: (<u>document_id</u>, title, doc_type, date_written, ocr_text_cache, checksum_value, checksum_algorithm, physical_condition, language, image_path, ocr_status, digitized_at, <em>collection_id</em>, <em>digitized_by</em>)</li>
+            <li><strong>PERSON</strong>: (<u>person_id</u>, full_name, birth_year, death_year, biography)</li>
+            <li><strong>DOCUMENT_AUTHOR</strong>: (<u><em>document_id</em>, <em>person_id</em></u>, attribution_type, confidence_score)</li>
+            <li><strong>HANDWRITING_SAMPLE</strong>: (<u>sample_id</u>, vector_id, embedding, extraction_method, extracted_at, <em>document_id</em>)</li>
+            <li><strong>DOCUMENT_VIEW</strong>: (<u>view_id</u>, viewed_at, ip_address, <em>document_id</em>, <em>user_id</em>)</li>
+            <li><strong>CITATION</strong>: (<u>citation_id</u>, citation_text, citation_style, generated_at, <em>document_id</em>)</li>
+        </ol>
+
+        <h3>3.2 ER Diagram Representation</h3>
+        <pre>
+     +-------------+        1 : N         +--------------+
+     |    ROLE     | <------------------- |   APP_USER   |
+     +-------------+                      +--------------+
+                                                 | 1
+                                                 | digitizes (1 : N)
+                                                 v
+     +-------------+        1 : N         +--------------+
+     |   ARCHIVE   | -------------------> |  COLLECTION  |
+     +-------------+                      +--------------+
+                                                 | 1
+                                                 | contains (1 : N)
+                                                 v
+   +---------------+        M : N         +--------------+
+   |    PERSON     | <==================> |   DOCUMENT   |
+   +---------------+   (DOCUMENT_AUTHOR)  +--------------+
+                                            |    |     |
+                                      1 : N |    |     | 1 : N
+                                            v    v     v
+                         +--------------------+  |  +--------------------+
+                         | HANDWRITING_SAMPLE |  |  |      CITATION      |
+                         +--------------------+  |  +--------------------+
+                                                 v
+                                        +-----------------+
+                                        |  DOCUMENT_VIEW  |
+                                        +-----------------+
+        </pre>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 7. CHAPTER 4: ER TO RELATIONAL MAPPING -->
+    <!-- ========================================== -->
+    <div class="page">
+        <h1>CHAPTER 4: ER TO RELATIONAL MAPPING</h1>
+        <h3>4.1 Steps of Algorithm for Chosen Problem</h3>
+        <p>The standard 7-step mapping algorithm is applied as follows:</p>
+        <ul>
+            <li><strong>Step 1: Mapping of Regular Entities</strong>: Strong entities (<code>ROLE</code>, <code>ARCHIVE</code>, <code>PERSON</code>) are directly mapped into individual relations with surrogate primary keys.</li>
+            <li><strong>Step 2: Mapping of Weak Entities</strong>: All entities contain unique identifiers; no partial-key weak entities exist.</li>
+            <li><strong>Step 3: Mapping of 1:1 Relationships</strong>: No 1:1 relationships exist in this domain.</li>
+            <li><strong>Step 4: Mapping of 1:N Relationships</strong>: The primary key of the parent entity is embedded as a foreign key on the "N" relation:
+                <ul>
+                    <li><code>COLLECTION</code> receives <code>archive_id</code> referencing <code>ARCHIVE</code>.</li>
+                    <li><code>DOCUMENT</code> receives <code>collection_id</code> referencing <code>COLLECTION</code> and <code>digitized_by</code> referencing <code>APP_USER</code>.</li>
+                    <li><code>HANDWRITING_SAMPLE</code>, <code>DOCUMENT_VIEW</code>, and <code>CITATION</code> receive <code>document_id</code> referencing <code>DOCUMENT</code>.</li>
+                </ul>
+            </li>
+            <li><strong>Step 5: Mapping of M:N Relationships</strong>: Associative relation <code>DOCUMENT_AUTHOR</code> is constructed with composite primary key <code>(document_id, person_id)</code> and descriptive attributes (<code>attribution_type</code>, <code>confidence_score</code>). Similarly, <code>ACCESS_PERMISSION</code> maps users to collections.</li>
+            <li><strong>Step 6: Mapping of Multivalued Attributes</strong>: Multi-valued authors are factored into <code>DOCUMENT_AUTHOR</code>.</li>
+            <li><strong>Step 7: Mapping of N-ary Relationships</strong>: All associations are strictly binary.</li>
+        </ul>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 8. CHAPTER 7: QUERIES -->
+    <!-- ========================================== -->
+    <div class="page">
+        <h1>CHAPTER 7: EVALUATION QUERIES</h1>
+        <p>The system was tested against the 5 mandatory DBMS evaluation categories:</p>
+
+        <h3>7.1 Simple Query with GROUP BY & AGGREGATE</h3>
+        <pre>SELECT c.era, d.physical_condition, COUNT(d.document_id) AS total_manuscripts,
+       ROUND(AVG(LENGTH(d.ocr_text_cache)), 2) AS avg_ocr_length
+FROM document d
+JOIN collection c ON d.collection_id = c.collection_id
+GROUP BY c.era, d.physical_condition
+ORDER BY c.era ASC;</pre>
+
+        <h3>7.2 UPDATE Operation with Conservation Checksum</h3>
+        <pre>UPDATE document
+SET physical_condition = 'Good', ocr_status = 'COMPLETED'
+WHERE physical_condition = 'Critical-Decay';</pre>
+
+        <h3>7.3 DELETE Operation (Audit Scrubbing)</h3>
+        <pre>DELETE FROM document_view
+WHERE ip_address LIKE '%[TEMP]%' OR view_id > 1000;</pre>
+
+        <h3>7.4 Correlated Subquery</h3>
+        <p><em>Finds documents whose character length exceeds the average of documents within their OWN collection:</em></p>
+        <pre>SELECT d1.document_id, d1.title, c.name, LENGTH(d1.ocr_text_cache) AS doc_len
+FROM document d1
+JOIN collection c ON d1.collection_id = c.collection_id
+WHERE LENGTH(d1.ocr_text_cache) > (
+    SELECT AVG(LENGTH(d2.ocr_text_cache))
+    FROM document d2
+    WHERE d2.collection_id = d1.collection_id
+);</pre>
+
+        <h3>7.5 Nested Subquery</h3>
+        <p><em>Finds historical authors whose works reside in institutions curating $\ge 2$ collections:</em></p>
+        <pre>SELECT p.full_name, COUNT(da.document_id) AS doc_count
+FROM person p
+JOIN document_author da ON p.person_id = da.person_id
+WHERE da.document_id IN (
+    SELECT d.document_id FROM document d
+    WHERE d.collection_id IN (
+        SELECT c.collection_id FROM collection c
+        WHERE c.archive_id IN (
+            SELECT a.archive_id FROM archive a
+            JOIN collection col ON a.archive_id = col.archive_id
+            GROUP BY a.archive_id HAVING COUNT(col.collection_id) >= 2
+        )
+    )
+)
+GROUP BY p.full_name;</pre>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 9. CHAPTER 8 & 9 -->
+    <!-- ========================================== -->
+    <div class="page">
+        <h1>CHAPTER 8: STORED PROCEDURES & TRIGGERS</h1>
+        <h3>8.1 Stored Procedure: Archival Citation Generator</h3>
+        <pre>CREATE OR REPLACE PROCEDURE sp_generate_archival_citation(
+    IN p_document_id INT, IN p_style VARCHAR(30)
+) LANGUAGE plpgsql AS $$
+DECLARE v_title VARCHAR; v_author VARCHAR; v_citation TEXT;
+BEGIN
+    SELECT d.title, COALESCE(p.full_name, 'Unknown') INTO v_title, v_author
+    FROM document d LEFT JOIN document_author da ON d.document_id = da.document_id
+    LEFT JOIN person p ON da.person_id = p.person_id WHERE d.document_id = p_document_id LIMIT 1;
+    v_citation := v_author || ', ' || v_title || ' (' || p_style || ' Archival Preservation).';
+    INSERT INTO citation (document_id, citation_text, citation_style) VALUES (p_document_id, v_citation, p_style);
+    COMMIT;
+END; $$;</pre>
+
+        <h3>8.2 Trigger: Chain of Custody & Checksum Integrity</h3>
+        <pre>CREATE TRIGGER trg_validate_doc_checksum
+BEFORE UPDATE OF checksum_value ON document
+BEGIN
+    SELECT CASE WHEN LENGTH(NEW.checksum_value) < 16 THEN
+        RAISE(ABORT, 'Cryptographic checksum corrupted. Rejecting update.')
+    END;
+END;</pre>
+
+        <h1>CHAPTER 9: FRONT END & DEMO</h1>
+        <p>
+            The user interface is hosted via a high-performance FastAPI and HTML5 architecture featuring:
+        </p>
+        <ul>
+            <li><strong>Interactive Vector-SQL Slider</strong>: Allows adjusting $\alpha$ between 0% (pure handwriting stroke matching) and 100% (pure keyword BM25).</li>
+            <li><strong>Canvas Provenance Network</strong>: Graph rendering connections between authors, manuscripts, and archives.</li>
+            <li><strong>Pi Ingestion Console</strong>: Real-time simulation of hardware camera capture, SHA-256 calculation, and database transaction commit.</li>
+        </ul>
+    </div>
+
+</body>
+</html>
+
