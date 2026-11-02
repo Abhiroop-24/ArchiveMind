@@ -282,6 +282,36 @@ def get_pi_snapshot_proxy(pi_ip: str = "10.42.0.116", pi_port: int = 8082):
     raise HTTPException(status_code=502, detail="Pi camera snapshot unreachable")
 
 
+@app.get("/api/devices/detect_a4")
+def detect_a4_live_api():
+    """Fetches latest frame from Pi camera or recent capture and runs strict A4 detection."""
+    from backend.services.image_processing import detect_a4_contour
+    import urllib.request
+    import cv2
+    import numpy as np
+
+    for host in ["10.42.0.116", "192.168.1.9"]:
+        try:
+            url = f"http://{host}:8082/snapshot.jpg"
+            req = urllib.request.Request(url, headers={"User-Agent": "ArchiveMind-Server/2.0"})
+            with urllib.request.urlopen(req, timeout=1.5) as resp:
+                arr = np.asarray(bytearray(resp.read()), dtype=np.uint8)
+                img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+                if img is not None:
+                    return detect_a4_contour(img)
+        except Exception:
+            continue
+
+    latest_img = next(ORIGINALS_DIR.glob("*.jpg"), None)
+    if latest_img:
+        img = cv2.imread(str(latest_img))
+        if img is not None:
+            return detect_a4_contour(img)
+
+    return {"detected": False, "confidence": 0.0, "reason": "No camera frame available"}
+
+
+
 @app.get("/api/devices/pi_stream")
 async def get_pi_stream_proxy(request: Request, pi_ip: str = "10.42.0.116", pi_port: int = 8082):
     candidate_hosts = [pi_ip, "192.168.1.9"]

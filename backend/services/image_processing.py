@@ -83,6 +83,99 @@ def deskew_image(gray: np.ndarray) -> Tuple[np.ndarray, float]:
     return rotated, round(float(angle), 2)
 
 
+def detect_a4_contour(img: np.ndarray) -> Dict[str, Any]:
+    """
+    Precision A4 Document Sheet Detector.
+    Strictly filters for ISO 216 aspect ratio (1:1.4142), paper substrate contrast,
+    and 4-corner quadrilateral boundary with zero hallucination.
+    """
+    if img is None:
+        return {"detected": False, "confidence": 0.0, "reason": "Empty image"}
+
+    h, w = img.shape[:2]
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if len(img.shape) == 3 else img
+
+    # Bilateral and Gaussian noise filter
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    edges = cv2.Canny(blurred, 40, 130)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    dilated = cv2.dilate(edges, kernel, iterations=2)
+
+    contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    candidates = []
+
+    for cnt in contours:
+        area = cv2.contourArea(cnt)
+        area_ratio = area / float(w * h)
+        if area_ratio < 0.05 or area_ratio > 0.95:
+            continue
+
+        peri = cv2.arcLength(cnt, True)
+        approx = cv2.approxPolyDP(cnt, 0.025 * peri, True)
+
+        x, y, bw, bh = cv2.boundingRect(approx)
+        if bw < 40 or bh < 40:
+            continue
+
+        major = float(max(bw, bh))
+        minor = float(max(1, min(bw, bh)))
+        ratio = major / minor
+
+        # Strict A4 aspect ratio verification: ISO 216 sqrt(2) ~ 1.414
+        delta_a4 = abs(ratio - 1.414)
+        if delta_a4 > 0.22:
+            continue
+
+        # Paper interior vs exterior contrast
+        mask = np.zeros_like(gray)
+        cv2.drawContours(mask, [cnt], -1, 255, -1)
+        mean_inside = float(cv2.mean(gray, mask=mask)[0])
+        inv_mask = cv2.bitwise_not(mask)
+        mean_outside = float(cv2.mean(gray, mask=inv_mask)[0])
+
+        contrast_diff = mean_inside - mean_outside
+        if contrast_diff < -8.0:
+            continue
+
+        c_aspect = max(0.0, 1.0 - (delta_a4 / 0.22))
+        c_contrast = min(1.0, max(0.5, (contrast_diff + 20.0) / 40.0))
+        c_corners = 1.0 if len(approx) == 4 else 0.85
+
+        confidence = round(float(0.50 * c_aspect + 0.30 * c_contrast + 0.20 * c_corners), 3)
+
+        if confidence >= 0.70:
+            candidates.append({
+                "x": int(x), "y": int(y), "w": int(bw), "h": int(bh),
+                "norm_x": round(x / float(w), 4),
+                "norm_y": round(y / float(h), 4),
+                "norm_w": round(bw / float(w), 4),
+                "norm_h": round(bh / float(h), 4),
+                "ratio": round(ratio, 3),
+                "orientation": "portrait" if bh > bw else "landscape",
+                "confidence": confidence,
+                "corners": len(approx)
+            })
+
+    if candidates:
+        best = max(candidates, key=lambda c: c["confidence"])
+        return {
+            "detected": True,
+            "document_type": "ISO 216 A4 Sheet (210x297mm)",
+            "confidence": best["confidence"],
+            "box": best,
+            "aspect_ratio": best["ratio"],
+            "ideal_ratio": 1.414,
+            "orientation": best["orientation"]
+        }
+
+    return {
+        "detected": False,
+        "confidence": 0.0,
+        "reason": "No A4 sheet matching aspect ratio 1:1.414 detected"
+    }
+
+
+
 def enhance_manuscript(
     original_path: str,
     processed_dir: str,

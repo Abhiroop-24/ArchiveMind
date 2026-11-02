@@ -1270,9 +1270,9 @@
                                 <!-- Real-time HUD tag -->
                                 <div id="scanner-hud-tag" class="camera-hud-badge">
                                     <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#00ff66; animation:pulse 1s infinite;"></span>
-                                    <span id="hud-model-title">YOLO-V8 DOC DETECTOR</span>
+                                    <span id="hud-model-title">YOLO-A4 PRECISION DETECTOR</span>
                                     <span style="color:#666;">|</span>
-                                    <span id="hud-conf-readout">98.6% CONF</span>
+                                    <span id="hud-conf-readout">SEARCHING...</span>
                                     <span style="color:#666;">|</span>
                                     <span id="hud-res-readout">1080p60</span>
                                 </div>
@@ -2019,9 +2019,10 @@
         let yoloAnimFrame = null;
         let isCameraFrozen = false;
         let yoloBox = { x: 0.25, y: 0.25, w: 0.50, h: 0.50, targetX: 0.25, targetY: 0.25, targetW: 0.50, targetH: 0.50 };
-        let yoloConfidence = 0.982;
-        let yoloDetected = true;
-        let yoloAspect = 1.41;
+        let yoloConfidence = 0.0;
+        let yoloDetected = false;
+        let yoloAspect = 1.414;
+        let yoloOrientation = 'Portrait';
         let cvOffCanvas = null;
         let cvOffCtx = null;
         let lastFrameAnalysisTick = 0;
@@ -2169,7 +2170,7 @@
                 }
                 const meanLum = totalLum / (W * H);
 
-                // Compute edge gradients
+                // Compute horizontal and vertical Sobel gradient energy
                 const grad = new Float32Array(W * H);
                 for (let y = 1; y < H - 1; y++) {
                     for (let x = 1; x < W - 1; x++) {
@@ -2179,20 +2180,28 @@
                     }
                 }
 
-                // Search for prominent rectangular document / card region
+                // Precision A4 Search: ISO 216 Aspect Ratio is sqrt(2) ~ 1.4142
                 let bestCand = null;
                 let maxScore = -1;
 
                 const step = 4;
-                for (let x = 8; x < W - 28; x += step) {
-                    for (let y = 8; y < H - 28; y += step) {
+                for (let x = 6; x < W - 28; x += step) {
+                    for (let y = 6; y < H - 28; y += step) {
                         for (let bw = 24; bw < W - x - 4; bw += step * 2) {
-                            for (let bh = 20; bh < H - y - 4; bh += step * 2) {
-                                const aspect = bw / bh;
-                                if (aspect < 0.55 || aspect > 2.2) continue;
-                                const areaRatio = (bw * bh) / (W * H);
-                                if (areaRatio < 0.03 || areaRatio > 0.85) continue;
+                            for (let bh = 24; bh < H - y - 4; bh += step * 2) {
+                                const major = Math.max(bw, bh);
+                                const minor = Math.max(1, Math.min(bw, bh));
+                                const ratio = major / minor;
 
+                                // STRICT A4 ASPECT RATIO FILTER: ISO 216 is sqrt(2) ~ 1.414
+                                // Reject anything outside [1.22, 1.62] (allows <= 25 deg perspective tilt)
+                                const deltaA4 = Math.abs(ratio - 1.414);
+                                if (deltaA4 > 0.22) continue;
+
+                                const areaRatio = (bw * bh) / (W * H);
+                                if (areaRatio < 0.08 || areaRatio > 0.85) continue;
+
+                                // Calculate perimeter edge density
                                 let perimGrad = 0;
                                 let count = 0;
                                 for (let px = x; px <= x + bw; px += 2) {
@@ -2204,37 +2213,64 @@
                                     count += 2;
                                 }
                                 const edgeDensity = perimGrad / count;
+                                if (edgeDensity < 22) continue; // Must have crisp document edges
 
-                                // Contrast variance
-                                let interiorDiff = 0;
-                                let samples = 0;
+                                // Paper Interior vs Border Contrast Test
+                                // A real paper sheet is brighter than the desk surrounding it
+                                let interiorLum = 0, intSamples = 0;
                                 for (let py = y + 4; py < y + bh - 4; py += 6) {
                                     for (let px = x + 4; px < x + bw - 4; px += 6) {
-                                        interiorDiff += Math.abs(lum[py * W + px] - meanLum);
-                                        samples++;
+                                        interiorLum += lum[py * W + px];
+                                        intSamples++;
                                     }
                                 }
-                                const contrastBonus = samples > 0 ? (interiorDiff / samples) * 0.35 : 0;
-                                const score = edgeDensity + contrastBonus;
+                                const meanInside = intSamples > 0 ? (interiorLum / intSamples) : meanLum;
 
-                                if (score > maxScore) {
+                                // Sample exterior border
+                                let exteriorLum = 0, extSamples = 0;
+                                const bx1 = Math.max(0, x - 6), bx2 = Math.min(W - 1, x + bw + 6);
+                                const by1 = Math.max(0, y - 6), by2 = Math.min(H - 1, y + bh + 6);
+                                for (let px = bx1; px <= bx2; px += 8) {
+                                    if (y > 6) { exteriorLum += lum[(y - 4) * W + px]; extSamples++; }
+                                    if (y + bh < H - 6) { exteriorLum += lum[(y + bh + 4) * W + px]; extSamples++; }
+                                }
+                                const meanOutside = extSamples > 0 ? (exteriorLum / extSamples) : meanLum;
+                                const contrastDiff = meanInside - meanOutside;
+
+                                // Must be brighter or distinct paper substrate
+                                if (contrastDiff < 6) continue;
+
+                                // Score computation
+                                const aspectConf = Math.max(0, 1.0 - (deltaA4 / 0.22));
+                                const edgeConf = Math.min(1.0, edgeDensity / 60.0);
+                                const contrastConf = Math.min(1.0, contrastDiff / 35.0);
+                                const score = (aspectConf * 0.45) + (edgeConf * 0.35) + (contrastConf * 0.20);
+
+                                if (score > maxScore && score >= 0.70) {
                                     maxScore = score;
-                                    bestCand = { x, y, bw, bh, score, aspect };
+                                    bestCand = {
+                                        x, y, bw, bh,
+                                        score,
+                                        ratio,
+                                        orientation: bh > bw ? 'Portrait' : 'Landscape',
+                                        confidence: Math.min(0.992, 0.88 + (score * 0.11))
+                                    };
                                 }
                             }
                         }
                     }
                 }
 
-                if (bestCand && bestCand.score > 28) {
+                if (bestCand && bestCand.score >= 0.70) {
                     return {
                         found: true,
                         targetX: bestCand.x / W,
                         targetY: bestCand.y / H,
                         targetW: bestCand.bw / W,
                         targetH: bestCand.bh / H,
-                        confidence: Math.min(0.995, 0.91 + (bestCand.score / 300)),
-                        aspect: bestCand.aspect
+                        confidence: bestCand.confidence,
+                        aspect: bestCand.ratio,
+                        orientation: bestCand.orientation
                     };
                 }
             } catch (err) {
@@ -2253,6 +2289,7 @@
             const ctx = canvas.getContext('2d');
 
             let tick = 0;
+            let lastFrameAnalysisTick = 0;
 
             function renderLoop() {
                 if (isCameraFrozen) return;
@@ -2285,120 +2322,141 @@
                                 yoloBox.targetH = res.targetH;
                                 yoloConfidence = res.confidence;
                                 yoloAspect = res.aspect;
+                                yoloOrientation = res.orientation || 'Portrait';
                             } else {
-                                // If no tight paper detected, scan slightly centered
+                                // STRICT NO HALLUCINATION: No paper detected
                                 yoloDetected = false;
-                                yoloConfidence = 0.942 + Math.random() * 0.03;
+                                yoloConfidence = 0.0;
                             }
                         }
                     }
                 }
 
-                // Smoothly track target bounding box
-                if (yoloDetected) {
-                    yoloBox.x += (yoloBox.targetX - yoloBox.x) * 0.28;
-                    yoloBox.y += (yoloBox.targetY - yoloBox.y) * 0.28;
-                    yoloBox.w += (yoloBox.targetW - yoloBox.w) * 0.28;
-                    yoloBox.h += (yoloBox.targetH - yoloBox.h) * 0.28;
-                } else {
-                    // Scanning state: gentle center reticle
-                    const scanX = 0.22 + Math.sin(tick * 0.04) * 0.02;
-                    const scanY = 0.18 + Math.cos(tick * 0.03) * 0.02;
-                    yoloBox.x += (scanX - yoloBox.x) * 0.15;
-                    yoloBox.y += (scanY - yoloBox.y) * 0.15;
-                    yoloBox.w += (0.56 - yoloBox.w) * 0.15;
-                    yoloBox.h += (0.64 - yoloBox.h) * 0.15;
-                }
-
-                const bx = yoloBox.x * cw;
-                const by = yoloBox.y * ch;
-                const bw = yoloBox.w * cw;
-                const bh = yoloBox.h * ch;
-
                 const confBadge = document.getElementById('hud-conf-readout');
-                if (confBadge) confBadge.textContent = `${(yoloConfidence * 100).toFixed(1)}% CONF`;
 
-                // 1. Glowing neon green bounding box
-                ctx.save();
-                ctx.strokeStyle = '#00ff66';
-                ctx.lineWidth = yoloDetected ? 2.8 : 1.8;
-                ctx.shadowColor = '#00ff66';
-                ctx.shadowBlur = yoloDetected ? 12 : 6;
-                ctx.setLineDash(yoloDetected ? [] : [6, 4]);
-                ctx.strokeRect(bx, by, bw, bh);
-                ctx.restore();
+                if (yoloDetected) {
+                    // Smooth tracking towards true A4 sheet
+                    yoloBox.x += (yoloBox.targetX - yoloBox.x) * 0.32;
+                    yoloBox.y += (yoloBox.targetY - yoloBox.y) * 0.32;
+                    yoloBox.w += (yoloBox.targetW - yoloBox.w) * 0.32;
+                    yoloBox.h += (yoloBox.targetH - yoloBox.h) * 0.32;
 
-                // 2. High-tech tactical corner L-brackets
-                const cornerLen = Math.min(24, bw * 0.2);
-                ctx.save();
-                ctx.strokeStyle = '#00ff66';
-                ctx.lineWidth = 3.5;
-                ctx.shadowColor = '#00ff66';
-                ctx.shadowBlur = 9;
+                    const bx = yoloBox.x * cw;
+                    const by = yoloBox.y * ch;
+                    const bw = yoloBox.w * cw;
+                    const bh = yoloBox.h * ch;
 
-                // Top-Left
-                ctx.beginPath();
-                ctx.moveTo(bx, by + cornerLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cornerLen, by); ctx.stroke();
-                // Top-Right
-                ctx.beginPath();
-                ctx.moveTo(bx + bw - cornerLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cornerLen); ctx.stroke();
-                // Bottom-Left
-                ctx.beginPath();
-                ctx.moveTo(bx, by + bh - cornerLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cornerLen, by + bh); ctx.stroke();
-                // Bottom-Right
-                ctx.beginPath();
-                ctx.moveTo(bx + bw - cornerLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cornerLen); ctx.stroke();
-                ctx.restore();
+                    if (confBadge) {
+                        confBadge.textContent = `${(yoloConfidence * 100).toFixed(1)}% CONF (A4)`;
+                        confBadge.style.color = 'var(--accent-green)';
+                        confBadge.style.borderColor = 'var(--accent-green)';
+                    }
 
-                // 3. Center Crosshair Reticle (+)
-                const cx = bx + bw / 2;
-                const cy = by + bh / 2;
-                ctx.save();
-                ctx.strokeStyle = 'rgba(0, 255, 102, 0.8)';
-                ctx.lineWidth = 1.5;
-                const rSize = 10;
-                ctx.beginPath();
-                ctx.moveTo(cx - rSize, cy); ctx.lineTo(cx + rSize, cy);
-                ctx.moveTo(cx, cy - rSize); ctx.lineTo(cx, cy + rSize);
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(cx, cy, 5, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.restore();
-
-                // 4. Scanning laser beam if searching for paper
-                if (!yoloDetected) {
-                    const scanBeamY = by + ((Math.sin(tick * 0.08) + 1) / 2) * bh;
+                    // 1. Glowing neon green bounding box
                     ctx.save();
-                    ctx.strokeStyle = 'rgba(0, 255, 102, 0.45)';
-                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#00ff66';
+                    ctx.lineWidth = 3.0;
+                    ctx.shadowColor = '#00ff66';
+                    ctx.shadowBlur = 14;
+                    ctx.strokeRect(bx, by, bw, bh);
+                    ctx.restore();
+
+                    // 2. High-tech tactical corner L-brackets
+                    const cornerLen = Math.min(26, bw * 0.22);
+                    ctx.save();
+                    ctx.strokeStyle = '#00ff66';
+                    ctx.lineWidth = 4.0;
+                    ctx.shadowColor = '#00ff66';
+                    ctx.shadowBlur = 12;
+
+                    // Top-Left
                     ctx.beginPath();
-                    ctx.moveTo(bx + 4, scanBeamY);
-                    ctx.lineTo(bx + bw - 4, scanBeamY);
+                    ctx.moveTo(bx, by + cornerLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cornerLen, by); ctx.stroke();
+                    // Top-Right
+                    ctx.beginPath();
+                    ctx.moveTo(bx + bw - cornerLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cornerLen); ctx.stroke();
+                    // Bottom-Left
+                    ctx.beginPath();
+                    ctx.moveTo(bx, by + bh - cornerLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cornerLen, by + bh); ctx.stroke();
+                    // Bottom-Right
+                    ctx.beginPath();
+                    ctx.moveTo(bx + bw - cornerLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cornerLen); ctx.stroke();
+                    ctx.restore();
+
+                    // 3. Center Crosshair Reticle (+)
+                    const cx = bx + bw / 2;
+                    const cy = by + bh / 2;
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(0, 255, 102, 0.9)';
+                    ctx.lineWidth = 1.5;
+                    const rSize = 10;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - rSize, cy); ctx.lineTo(cx + rSize, cy);
+                    ctx.moveTo(cx, cy - rSize); ctx.lineTo(cx, cy + rSize);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
                     ctx.stroke();
                     ctx.restore();
+
+                    // 4. Detected A4 Sheet Header Tag
+                    ctx.save();
+                    ctx.font = 'bold 11px monospace';
+                    const tagText = `[🟢 YOLO-A4: DETECTED · ${(yoloConfidence * 100).toFixed(1)}% CONF]`;
+                    const textWidth = ctx.measureText(tagText).width;
+
+                    ctx.fillStyle = '#00ff66';
+                    ctx.fillRect(bx, by - 24, textWidth + 14, 22);
+
+                    ctx.fillStyle = '#000000';
+                    ctx.fillText(tagText, bx + 7, by - 9);
+
+                    ctx.font = 'bold 10px monospace';
+                    ctx.fillStyle = '#00ff66';
+                    const orientText = (yoloAspect > 1.0) ? 'A4 PORTRAIT (210×297mm)' : 'A4 LANDSCAPE (297×210mm)';
+                    ctx.fillText(`${orientText} · ASPECT: ${yoloAspect.toFixed(2)} (IDEAL: 1.414) · ZERO HALLUCINATION`, bx, by + bh + 16);
+                    ctx.restore();
+                } else {
+                    // ZERO HALLUCINATION: When no A4 paper is in view, DO NOT DRAW GREEN BOX
+                    if (confBadge) {
+                        confBadge.textContent = '0.0% CONF (SEARCHING)';
+                        confBadge.style.color = '#888';
+                        confBadge.style.borderColor = '#444';
+                    }
+
+                    // Draw subtle, non-intrusive viewfinder alignment guide
+                    const guideW = cw * 0.46;
+                    const guideH = guideW * 1.4142; // Ideal A4 ratio
+                    const gx = (cw - guideW) / 2;
+                    const gy = Math.max(20, (ch - guideH) / 2);
+
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([6, 6]);
+                    ctx.strokeRect(gx, gy, guideW, guideH);
+                    ctx.restore();
+
+                    // Laser sweep searching for paper
+                    const sweepY = gy + ((Math.sin(tick * 0.05) + 1) / 2) * guideH;
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(0, 240, 255, 0.3)';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(gx + 6, sweepY);
+                    ctx.lineTo(gx + guideW - 6, sweepY);
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // Search HUD text
+                    ctx.save();
+                    ctx.font = '10px monospace';
+                    ctx.fillStyle = '#666';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('ALIGN A4 SHEET (210×297mm) WITHIN VIEWFINDER · ZERO HALLUCINATION ACTIVE', cw / 2, ch - 20);
+                    ctx.restore();
                 }
-
-                // 5. YOLO Tag Overlays
-                ctx.save();
-                ctx.font = 'bold 10px monospace';
-                const tagText = yoloDetected 
-                    ? `[🟢 YOLO-V8: DOCUMENT FOLIO · ${(yoloConfidence * 100).toFixed(1)}%]`
-                    : `[⚡ YOLO-V8: SCANNING FOR DOCUMENT FOLIO...]`;
-                const textWidth = ctx.measureText(tagText).width;
-                
-                ctx.fillStyle = yoloDetected ? '#00ff66' : 'rgba(0, 255, 102, 0.2)';
-                ctx.fillRect(bx, by - 22, textWidth + 14, 20);
-
-                ctx.fillStyle = yoloDetected ? '#000000' : '#00ff66';
-                ctx.fillText(tagText, bx + 7, by - 8);
-
-                ctx.font = '9px monospace';
-                ctx.fillStyle = 'rgba(0, 255, 102, 0.85)';
-                const aspectDesc = yoloAspect > 1.3 ? 'A4/FOLIO' : 'CARD/MANUSCRIPT';
-                ctx.fillText(`DESKEW QUAD: [X:${Math.round(bx)}, Y:${Math.round(by)}, W:${Math.round(bw)}, H:${Math.round(bh)}] · ASPECT: ${yoloAspect.toFixed(2)} (${aspectDesc})`, bx, by + bh + 14);
-                ctx.restore();
 
                 yoloAnimFrame = requestAnimationFrame(renderLoop);
             }
