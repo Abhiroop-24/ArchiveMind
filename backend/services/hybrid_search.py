@@ -74,10 +74,13 @@ def execute_hybrid_search(
     # Step 2: Keyword Search (SQLite FTS5)
     keyword_scores: Dict[int, float] = {}
     if clean_q:
-        # Sanitize query for FTS5 (escape quotes and special tokens)
         sanitized_fts = clean_q.replace('"', '""').replace("'", "''")
-        tokens = [f'"{tok}"' for tok in sanitized_fts.split() if tok.isalnum()]
-        fts_match_expr = " OR ".join(tokens) if tokens else f'"{sanitized_fts}"'
+        STOPWORDS = {"a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "has", "he", "in", "is", "it", "its", "of", "on", "that", "the", "to", "was", "were", "will", "with"}
+        raw_tokens = [tok for tok in sanitized_fts.split() if tok.isalnum()]
+        content_tokens = [tok for tok in raw_tokens if tok.lower() not in STOPWORDS]
+        tokens_to_use = content_tokens if content_tokens else raw_tokens
+        fts_tokens = [f'"{tok}"' for tok in tokens_to_use]
+        fts_match_expr = " OR ".join(fts_tokens) if fts_tokens else f'"{sanitized_fts}"'
 
         try:
             cur.execute(f"""

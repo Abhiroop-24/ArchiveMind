@@ -109,7 +109,7 @@ class TestArchiveMind:
         new_views = cur.fetchone()[0]
         assert new_views == initial_views + 1, "Trigger should have created a document_view audit row"
 
-        cur.execute("SELECT * FROM document_view ORDER BY viewed_at DESC LIMIT 1")
+        cur.execute("SELECT * FROM document_view ORDER BY view_id DESC LIMIT 1")
         latest_audit = cur.fetchone()
         assert "TRIGGER:CITATION_MLA" in latest_audit["ip_address"]
         conn.close()

@@ -16,3 +16,11 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Local manuscript test captures
+storage/originals/*.jpg
+storage/processed/*.jpg
+storage/uploads/*
+!storage/originals/.gitkeep
+!storage/processed/.gitkeep
+!storage/uploads/.gitkeep
+

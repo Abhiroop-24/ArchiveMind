@@ -109,8 +109,8 @@ def ask_archival_assistant(conn: sqlite3.Connection, question: str) -> Dict[str,
         limit=4
     )
 
-    # Filter out documents with near-zero relevance
-    relevant_sources = [d for d in retrieved if d["hybrid_score"] > 0.12]
+    # Filter out documents with near-zero relevance (requires keyword match or significant semantic similarity)
+    relevant_sources = [d for d in retrieved if (d.get("keyword_score", 0) > 0 or d.get("semantic_score", 0) > 0.40)]
 
     # Check evidence threshold
     if not relevant_sources:
