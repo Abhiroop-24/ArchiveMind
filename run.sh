@@ -10,7 +10,7 @@ cd "$SCRIPT_DIR"
 
 echo "=========================================================="
 echo "  ArchiveMind — AI Hybrid Search & Preservation System"
-echo "  Host: Laptop AI Server (RTX 2050 GPU / AMD Ryzen 5)"
+echo "  Host: Laptop AI Server (RTX GeForce GPU / AMD Ryzen 5)"
 echo "  Direct Ethernet: 10.42.0.1  <-->  Pi: 10.42.0.116"
 echo "=========================================================="
 

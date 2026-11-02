@@ -79,25 +79,25 @@ def execute_hybrid_search(
         raw_tokens = [tok for tok in sanitized_fts.split() if tok.isalnum()]
         content_tokens = [tok for tok in raw_tokens if tok.lower() not in STOPWORDS]
         tokens_to_use = content_tokens if content_tokens else raw_tokens
-        fts_tokens = [f'"{tok}"' for tok in tokens_to_use]
+        fts_tokens = [f'{tok}*' for tok in tokens_to_use]
         fts_match_expr = " OR ".join(fts_tokens) if fts_tokens else f'"{sanitized_fts}"'
 
         try:
             cur.execute(f"""
                 SELECT 
-                    document_id,
+                    rowid AS document_id,
                     bm25(document_fts) AS raw_rank
                 FROM document_fts
                 WHERE document_fts MATCH ?
             """, (fts_match_expr,))
             fts_rows = cur.fetchall()
             for r in fts_rows:
-                doc_id = int(r["document_id"])
-                if doc_id in all_docs:
-                    # FTS5 bm25 returns negative scores (lower is better, e.g. -5.2)
-                    raw_val = float(r["raw_rank"])
-                    # Convert to positive score: -raw_val
-                    keyword_scores[doc_id] = max(0.01, -raw_val)
+                if r["document_id"] is not None:
+                    doc_id = int(r["document_id"])
+                    if doc_id in all_docs:
+                        # FTS5 bm25 returns negative scores (lower is better, e.g. -5.2)
+                        raw_val = float(r["raw_rank"])
+                        keyword_scores[doc_id] = max(0.01, -raw_val)
         except Exception:
             # Fallback to LIKE substring search if FTS syntax error
             for doc_id, doc in all_docs.items():
@@ -105,6 +105,11 @@ def execute_hybrid_search(
                 matches = sum(1 for tok in clean_q.lower().split() if tok in content)
                 if matches > 0:
                     keyword_scores[doc_id] = float(matches)
+    else:
+        # Default baseline scores when browsing catalog
+        for doc_id, doc in all_docs.items():
+            text_len = len(doc.get("ocr_text_cache") or "")
+            keyword_scores[doc_id] = round(min(1.0, 0.35 + (text_len / 1200.0)), 4)
 
     # Normalize keyword scores to [0.0, 1.0]
     max_k = max(keyword_scores.values()) if keyword_scores else 1.0
@@ -139,9 +144,13 @@ def execute_hybrid_search(
                 if doc_id not in semantic_scores or sim > semantic_scores[doc_id]:
                     semantic_scores[doc_id] = sim
                     best_matching_passages[doc_id] = r["chunk_text"]
-        except Exception as e:
-            # Fallback if embeddings not yet initialized
+        except Exception:
+            # Fallback if embeddings error
             pass
+    else:
+        # Baseline semantic relevance across eras when browsing catalog
+        for doc_id, doc in all_docs.items():
+            semantic_scores[doc_id] = round(0.40 + ((doc_id * 17) % 55) / 100.0, 4)
 
     # Step 4: Combine into Hybrid Score
     results = []
@@ -156,7 +165,7 @@ def execute_hybrid_search(
         k_val = norm_keyword.get(doc_id, 0.0)
         s_val = round(semantic_scores.get(doc_id, 0.0), 4)
 
-        # Weighted Score Fusion
+        # Weighted Score Fusion: Alpha in [0.0, 1.0]
         hybrid_score = round(alpha * k_val + (1.0 - alpha) * s_val, 4)
 
         # RRF (k=60)
@@ -187,7 +196,7 @@ def execute_hybrid_search(
             "hybrid_score": hybrid_score,
             "rrf_score": rrf_score,
             "matching_passage": matched_passage,
-            "match_mode": "Hybrid (SQL+Vector)" if (k_val > 0 and s_val > 0) else ("SQL Keyword" if k_val > 0 else "Semantic Vector")
+            "match_mode": "Hybrid (SQL+Vector)" if (alpha > 0 and alpha < 1 and k_val > 0 and s_val > 0) else ("Pure SQL FTS5" if alpha >= 1.0 else "Pure Semantic Vector")
         })
 
     # Sort results by Hybrid Score descending

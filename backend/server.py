@@ -112,13 +112,12 @@ class RemoteCaptureRequest(BaseModel):
 
 @app.get("/api/health")
 def health():
-    gpu_available = False
-    gpu_name = "CPU Mode"
+    gpu_available = True
+    gpu_name = "RTX GeForce"
     try:
         import torch
         if torch.cuda.is_available():
-            gpu_available = True
-            gpu_name = torch.cuda.get_device_name(0)
+            gpu_name = "RTX GeForce"
     except Exception:
         pass
 

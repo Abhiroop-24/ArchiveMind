@@ -58,7 +58,22 @@ def run_full_system_test():
     # STAGE 2: CENTRAL AI PROCESSING SERVER
     # -------------------------------------------------------------
     print("\n[STAGE 2/6] CENTRAL AI PROCESSING SERVER (localhost:8000)")
-    with urllib.request.urlopen("http://localhost:8000/api/health", timeout=3.0) as r:
+    server_proc = None
+    try:
+        with urllib.request.urlopen("http://localhost:8000/api/health", timeout=1.0) as r:
+            pass
+    except Exception:
+        print("  Starting background FastAPI server on port 8000 for test execution...")
+        project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        server_proc = subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "backend.server:app", "--host", "0.0.0.0", "--port", "8000"],
+            cwd=project_dir,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        time.sleep(3.0)
+
+    with urllib.request.urlopen("http://localhost:8000/api/health", timeout=5.0) as r:
         health = json.loads(r.read().decode("utf-8"))
     print(f"  ✓ FastAPI Health: HEALTHY (Project: {health.get('project')}, Course: {health.get('course')})")
     print(f"  ✓ Compute Engine: {health.get('compute_device')}")
@@ -203,6 +218,12 @@ def run_full_system_test():
         eval_71 = json.loads(r.read().decode("utf-8"))
     count_rows = eval_71.get("count", len(eval_71.get("results", [])))
     print(f"  ✓ Archival Query 7.1 (GROUP BY & Aggregations): {count_rows} row groups aggregated successfully")
+    if server_proc:
+        server_proc.terminate()
+        try:
+            server_proc.wait(timeout=2.0)
+        except Exception:
+            server_proc.kill()
 
     print("\n" + "=" * 76)
     print("🎯 FULL MASTER TEST COMPLETED: ALL 6 SUBSYSTEMS 100% OPERATIONAL!")
