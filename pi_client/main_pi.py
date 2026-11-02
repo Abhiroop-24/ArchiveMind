@@ -10,7 +10,8 @@ import sys
 import time
 import json
 import threading
-from http.server import HTTPServer, BaseHTTPRequestHandler
+import threading
+from http.server import HTTPServer, ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlparse
 
 try:
@@ -34,6 +35,21 @@ except Exception:
     pass
 
 
+_LAPTOP_ONLINE = False
+_LAST_PROBE_TIME = 0
+
+def is_laptop_reachable():
+    global _LAPTOP_ONLINE, _LAST_PROBE_TIME
+    now = time.time()
+    if now - _LAST_PROBE_TIME > 5.0:
+        _LAST_PROBE_TIME = now
+        try:
+            _LAPTOP_ONLINE = uploader.check_laptop_online(timeout_sec=0.25)
+        except Exception:
+            _LAPTOP_ONLINE = False
+    return _LAPTOP_ONLINE
+
+
 class PiDaemonHandler(BaseHTTPRequestHandler):
     def _send_json(self, status_code: int, data: dict):
         body = json.dumps(data).encode("utf-8")
@@ -52,7 +68,7 @@ class PiDaemonHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path in ("/status", "/health", "/api/status"):
-            is_laptop_up = uploader.check_laptop_online(timeout_sec=1.0)
+            is_laptop_up = is_laptop_reachable()
             self._send_json(200, {
                 "status": "online",
                 "device_id": config.DEVICE_ID,
@@ -60,13 +76,46 @@ class PiDaemonHandler(BaseHTTPRequestHandler):
                 "camera_type": "5MP ov5647",
                 "laptop_primary_ip": getattr(config, "LAPTOP_PRIMARY_IP", "10.42.0.1"),
                 "laptop_wifi_ip": getattr(config, "LAPTOP_WIFI_IP", "192.168.1.3"),
-                "active_laptop_url": uploader.get_active_laptop_base(),
+                "active_laptop_url": uploader.get_active_laptop_base(probe_timeout=0.2),
                 "laptop_online": is_laptop_up,
                 "queue_size": queue_manager.queue_size(),
                 "resolution": f"{config.CAMERA_WIDTH}x{config.CAMERA_HEIGHT}",
                 "button_supported": BUTTON_AVAILABLE,
                 "timestamp": time.time()
             })
+        elif parsed.path in ("/snapshot.jpg", "/api/snapshot"):
+            frame = capture.get_live_frame_bytes()
+            if frame:
+                self.send_response(200)
+                self.send_header("Content-Type", "image/jpeg")
+                self.send_header("Content-Length", str(len(frame)))
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                self.end_headers()
+                self.wfile.write(frame)
+            else:
+                self._send_json(503, {"error": "Camera frame not available"})
+        elif parsed.path in ("/stream", "/stream.mjpg", "/api/stream"):
+            self.send_response(200)
+            self.send_header("Content-Type", "multipart/x-mixed-replace; boundary=frame")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+            self.send_header("Pragma", "no-cache")
+            self.end_headers()
+            try:
+                while True:
+                    frame = capture.get_live_frame_bytes()
+                    if frame:
+                        self.wfile.write(b"--frame\r\n")
+                        self.wfile.write(b"Content-Type: image/jpeg\r\n")
+                        self.wfile.write(f"Content-Length: {len(frame)}\r\n\r\n".encode("utf-8"))
+                        self.wfile.write(frame)
+                        self.wfile.write(b"\r\n")
+                    time.sleep(0.04)  # ~25 FPS
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+            except Exception:
+                pass
         elif parsed.path == "/queue":
             self._send_json(200, {
                 "queue_size": queue_manager.queue_size(),
@@ -169,7 +218,13 @@ def run_daemon():
     bg_thread = threading.Thread(target=background_worker, daemon=True)
     bg_thread.start()
 
-    server = HTTPServer((config.PI_HOST, config.PI_PORT), PiDaemonHandler)
+    # Pre-warm shared Picamera2 stream
+    try:
+        capture.get_shared_picam()
+    except Exception as e:
+        print(f"⚠ Camera pre-warm notice: {e}")
+
+    server = ThreadingHTTPServer((config.PI_HOST, config.PI_PORT), PiDaemonHandler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

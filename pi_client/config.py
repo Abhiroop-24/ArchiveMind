@@ -10,6 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent
 # Network Configuration
 # Supports Dual-Homed connection: Direct Ethernet (10.42.0.1) and Local Wi-Fi (192.168.1.3)
 LAPTOP_PRIMARY_IP = os.getenv("LAPTOP_IP", "10.42.0.1")
+LAPTOP_IP = LAPTOP_PRIMARY_IP
 LAPTOP_WIFI_IP = os.getenv("LAPTOP_WIFI_IP", "192.168.1.3")
 LAPTOP_CANDIDATE_IPS = [LAPTOP_PRIMARY_IP, LAPTOP_WIFI_IP]
 LAPTOP_PORT = int(os.getenv("LAPTOP_PORT", 8000))

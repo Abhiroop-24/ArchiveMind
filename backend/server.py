@@ -15,7 +15,8 @@ import threading
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
+import io
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, StreamingResponse
 from pydantic import BaseModel
 
 # Ensure base dir is accessible
@@ -258,6 +259,57 @@ def trigger_remote_capture(req: RemoteCaptureRequest):
     raise HTTPException(
         status_code=502,
         detail=f"Failed to communicate with Raspberry Pi on endpoints {candidate_hosts}: {str(last_error)}"
+    )
+
+
+@app.get("/api/devices/pi_snapshot")
+def get_pi_snapshot_proxy(pi_ip: str = "10.42.0.116", pi_port: int = 8082):
+    candidate_hosts = [pi_ip, "192.168.1.9"]
+    for host in candidate_hosts:
+        try:
+            url = f"http://{host}:{pi_port}/snapshot.jpg"
+            req = urllib.request.Request(url, headers={"User-Agent": "ArchiveMind-Server/2.0"})
+            with urllib.request.urlopen(req, timeout=3.0) as resp:
+                data = resp.read()
+                return StreamingResponse(io.BytesIO(data), media_type="image/jpeg")
+        except Exception:
+            continue
+    raise HTTPException(status_code=502, detail="Pi camera snapshot unreachable")
+
+
+@app.get("/api/devices/pi_stream")
+async def get_pi_stream_proxy(request: Request, pi_ip: str = "10.42.0.116", pi_port: int = 8082):
+    candidate_hosts = [pi_ip, "192.168.1.9"]
+    target_url = None
+    for host in candidate_hosts:
+        try:
+            test_url = f"http://{host}:{pi_port}/snapshot.jpg"
+            req = urllib.request.Request(test_url, headers={"User-Agent": "ArchiveMind-Server/2.0"})
+            with urllib.request.urlopen(req, timeout=1.5) as resp:
+                if resp.status == 200:
+                    target_url = f"http://{host}:{pi_port}/stream"
+                    break
+        except Exception:
+            continue
+
+    if not target_url:
+        raise HTTPException(status_code=502, detail="Pi camera stream unreachable")
+
+    def stream_generator():
+        try:
+            req = urllib.request.Request(target_url, headers={"User-Agent": "ArchiveMind-Server/2.0"})
+            with urllib.request.urlopen(req, timeout=60.0) as stream_resp:
+                while True:
+                    chunk = stream_resp.read(4096)
+                    if not chunk:
+                        break
+                    yield chunk
+        except Exception:
+            return
+
+    return StreamingResponse(
+        stream_generator(),
+        media_type="multipart/x-mixed-replace; boundary=frame"
     )
 
 

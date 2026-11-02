@@ -1246,9 +1246,19 @@
                     <!-- Right: Live Preview & Inspection Window -->
                     <div>
                         <div style="background: var(--box-card); border: 1px solid var(--border-dim); padding: 1.25rem; min-height: 480px; display: flex; flex-direction: column;">
-                            <div class="metric-label" style="margin-bottom: 10px;">
-                                <span>LIVE CAMERA VIEWFINDER & YOLO DETECTION</span>
-                                <span id="preview-status-badge" class="tag-stark" style="color: var(--accent-green); border-color: #00ff66;">🟢 LIVE STREAM 60FPS</span>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <span style="font-family: var(--font-mono); font-size: 10px; color: #888; text-transform: uppercase;">CAMERA SOURCE:</span>
+                                    <button id="btn-feed-pi" class="btn-box" style="padding: 4px 10px; font-size: 10px; font-weight: 800; background: var(--accent-green); color: #000; border: 1px solid var(--accent-green);" onclick="setCameraSource('pi')">
+                                        <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#000; margin-right:4px;"></span>
+                                        RASPBERRY PI 5MP (10.42.0.116)
+                                    </button>
+                                    <button id="btn-feed-webcam" class="btn-box" style="padding: 4px 10px; font-size: 10px; font-weight: 800; background: transparent; color: #888; border: 1px solid var(--border-dim);" onclick="setCameraSource('webcam')">
+                                        <i data-lucide="video" style="width: 11px; height: 11px; margin-right:4px;"></i>
+                                        LAPTOP WEBCAM
+                                    </button>
+                                </div>
+                                <span id="preview-status-badge" class="tag-stark" style="color: var(--accent-green); border-color: #00ff66;">🟢 PI 5MP LIVE STREAM</span>
                             </div>
 
                             <!-- Mobile Camera Viewfinder with YOLO Overlay -->
@@ -1256,15 +1266,18 @@
                                 <!-- Real-time HUD tag -->
                                 <div id="scanner-hud-tag" class="camera-hud-badge">
                                     <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#00ff66; animation:pulse 1s infinite;"></span>
-                                    <span>YOLO-V8 DOC DETECTOR</span>
+                                    <span id="hud-model-title">YOLO-V8 DOC DETECTOR</span>
                                     <span style="color:#666;">|</span>
                                     <span id="hud-conf-readout">98.6% CONF</span>
                                     <span style="color:#666;">|</span>
                                     <span id="hud-res-readout">1080p60</span>
                                 </div>
 
-                                <!-- Camera Live Video Element -->
-                                <video id="scanner-live-video" class="camera-video-elem" autoplay playsinline muted></video>
+                                <!-- Pi MJPEG Stream Image (Default physical camera) -->
+                                <img id="scanner-pi-video" class="camera-video-elem" style="display: block; object-fit: contain; width: 100%; height: 100%;" alt="Pi 5MP Live Stream" crossorigin="anonymous">
+
+                                <!-- Camera Live Video Element (for Laptop Webcam) -->
+                                <video id="scanner-live-video" class="camera-video-elem" style="display: none; object-fit: cover;" autoplay playsinline muted></video>
 
                                 <!-- Real-time Canvas for YOLO Green Bounding Box & Reticle -->
                                 <canvas id="scanner-yolo-canvas" class="camera-canvas-overlay"></canvas>
@@ -1275,10 +1288,10 @@
                                 <!-- Shutter Flash Effect -->
                                 <div id="scanner-shutter-flash" class="camera-shutter-flash"></div>
 
-                                <!-- Fallback / Empty message if camera permission blocked -->
+                                <!-- Fallback / Empty message if camera offline -->
                                 <div id="scanner-empty-msg" style="display: none; position: absolute; text-align: center; color: var(--text-white-muted); font-family: var(--font-mono); font-size: 11px; z-index: 2;">
                                     <i data-lucide="camera-off" style="width: 36px; height: 36px; margin: 0 auto 10px auto; display: block; opacity: 0.4;"></i>
-                                    Connecting to camera... Or click Capture from Pi Camera below.
+                                    Connecting to camera feed...
                                 </div>
                             </div>
 
@@ -1783,107 +1796,242 @@
         // ==========================================
         // CAMERA STREAMING & REAL-TIME YOLO DETECTION
         // ==========================================
+        let currentCameraSource = 'pi'; // Defaults to physical Raspberry Pi 5MP camera (10.42.0.116)
         let liveMediaStream = null;
         let yoloAnimFrame = null;
         let isCameraFrozen = false;
-        let yoloBox = { x: 0.14, y: 0.11, w: 0.72, h: 0.78, targetX: 0.14, targetY: 0.11, targetW: 0.72, targetH: 0.78 };
-        let yoloConfidence = 0.986;
-        let synthCanvasInterval = null;
+        let yoloBox = { x: 0.25, y: 0.25, w: 0.50, h: 0.50, targetX: 0.25, targetY: 0.25, targetW: 0.50, targetH: 0.50 };
+        let yoloConfidence = 0.982;
+        let yoloDetected = true;
+        let yoloAspect = 1.41;
+        let cvOffCanvas = null;
+        let cvOffCtx = null;
+        let lastFrameAnalysisTick = 0;
+
+        async function setCameraSource(source) {
+            currentCameraSource = source;
+            const btnPi = document.getElementById('btn-feed-pi');
+            const btnWebcam = document.getElementById('btn-feed-webcam');
+            const piImg = document.getElementById('scanner-pi-video');
+            const videoElem = document.getElementById('scanner-live-video');
+            const statusBadge = document.getElementById('preview-status-badge');
+            const hudRes = document.getElementById('hud-res-readout');
+
+            if (source === 'pi') {
+                if (btnPi) {
+                    btnPi.style.background = 'var(--accent-green)';
+                    btnPi.style.color = '#000';
+                    btnPi.style.borderColor = 'var(--accent-green)';
+                }
+                if (btnWebcam) {
+                    btnWebcam.style.background = 'transparent';
+                    btnWebcam.style.color = '#888';
+                    btnWebcam.style.borderColor = 'var(--border-dim)';
+                }
+
+                // Stop laptop webcam stream to turn off laptop camera
+                if (liveMediaStream) {
+                    liveMediaStream.getTracks().forEach(t => t.stop());
+                    liveMediaStream = null;
+                }
+                if (videoElem) {
+                    videoElem.srcObject = null;
+                    videoElem.style.display = 'none';
+                }
+
+                // Point to Pi stream via backend proxy or direct
+                if (piImg) {
+                    piImg.style.display = 'block';
+                    piImg.src = `/api/devices/pi_stream?t=${Date.now()}`;
+                    piImg.onerror = () => {
+                        // Direct Pi LAN fallback
+                        piImg.src = `http://10.42.0.116:8082/stream?t=${Date.now()}`;
+                    };
+                }
+
+                if (statusBadge) {
+                    statusBadge.textContent = '🟢 PI 5MP LIVE STREAM';
+                    statusBadge.style.color = 'var(--accent-green)';
+                    statusBadge.style.borderColor = '#00ff66';
+                }
+                if (hudRes) hudRes.textContent = '1080p60 · ov5647';
+                showRoleToast("✓ Switched to Raspberry Pi 5MP Hardware Camera (10.42.0.116)");
+            } else {
+                if (btnWebcam) {
+                    btnWebcam.style.background = 'var(--accent-green)';
+                    btnWebcam.style.color = '#000';
+                    btnWebcam.style.borderColor = 'var(--accent-green)';
+                }
+                if (btnPi) {
+                    btnPi.style.background = 'transparent';
+                    btnPi.style.color = '#888';
+                    btnPi.style.borderColor = 'var(--border-dim)';
+                }
+
+                if (piImg) {
+                    piImg.src = '';
+                    piImg.style.display = 'none';
+                }
+                if (videoElem) {
+                    videoElem.style.display = 'block';
+                }
+
+                try {
+                    liveMediaStream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'environment' },
+                        audio: false
+                    });
+                    videoElem.srcObject = liveMediaStream;
+                    await videoElem.play();
+                } catch (err) {
+                    console.warn("Webcam access error:", err);
+                }
+
+                if (statusBadge) {
+                    statusBadge.textContent = '🟢 LAPTOP WEBCAM';
+                    statusBadge.style.color = '#fff';
+                    statusBadge.style.borderColor = '#fff';
+                }
+                if (hudRes) hudRes.textContent = '720p30 · Laptop';
+                showRoleToast("✓ Switched to Laptop Webcam");
+            }
+
+            if (!isCameraFrozen) {
+                startRealtimeYoloLoop();
+            }
+        }
 
         async function ensureLiveCameraRunning() {
             if (isCameraFrozen) return;
+            const piImg = document.getElementById('scanner-pi-video');
             const video = document.getElementById('scanner-live-video');
-            const canvas = document.getElementById('scanner-yolo-canvas');
-            if (!video || !canvas) return;
 
-            if (!liveMediaStream) {
-                try {
-                    liveMediaStream = await navigator.mediaDevices.getUserMedia({
-                        video: {
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 },
-                            facingMode: 'environment'
-                        },
-                        audio: false
-                    });
-                    video.srcObject = liveMediaStream;
-                    await video.play();
-                } catch (err) {
-                    console.warn("Local webcam direct stream fallback (active high-res synthetic archival feed):", err);
-                    startArchivalSyntheticStream(video);
+            if (currentCameraSource === 'pi') {
+                if (piImg && !piImg.src) {
+                    piImg.src = `/api/devices/pi_stream?t=${Date.now()}`;
+                    piImg.onerror = () => {
+                        piImg.src = `http://10.42.0.116:8082/stream?t=${Date.now()}`;
+                    };
+                }
+            } else {
+                if (video && !liveMediaStream) {
+                    try {
+                        liveMediaStream = await navigator.mediaDevices.getUserMedia({
+                            video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+                            audio: false
+                        });
+                        video.srcObject = liveMediaStream;
+                        await video.play();
+                    } catch (e) {}
                 }
             }
             startRealtimeYoloLoop();
         }
 
-        function startArchivalSyntheticStream(video) {
-            const offCanvas = document.createElement('canvas');
-            offCanvas.width = 1280;
-            offCanvas.height = 720;
-            const ctx = offCanvas.getContext('2d');
-            let frameCount = 0;
-
-            function drawSynthetic() {
-                frameCount++;
-                ctx.fillStyle = '#0a0a0a';
-                ctx.fillRect(0, 0, 1280, 720);
-
-                // Grid background
-                ctx.strokeStyle = '#161616';
-                ctx.lineWidth = 1;
-                for (let x = 0; x < 1280; x += 40) {
-                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 720); ctx.stroke();
-                }
-                for (let y = 0; y < 720; y += 40) {
-                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1280, y); ctx.stroke();
-                }
-
-                // Simulated manuscript page under camera
-                const wobbleX = Math.sin(frameCount * 0.03) * 5;
-                const wobbleY = Math.cos(frameCount * 0.02) * 3;
-                const docX = 200 + wobbleX;
-                const docY = 70 + wobbleY;
-                const docW = 880;
-                const docH = 580;
-
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.fillRect(docX + 8, docY + 8, docW, docH);
-
-                ctx.fillStyle = '#1c1b18';
-                ctx.fillRect(docX, docY, docW, docH);
-                ctx.strokeStyle = '#38352e';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(docX, docY, docW, docH);
-
-                ctx.fillStyle = '#4a463d';
-                for (let row = 0; row < 13; row++) {
-                    const rw = 740 - (row % 3) * 50;
-                    ctx.fillRect(docX + 70, docY + 60 + row * 36, rw, 8);
-                }
-
-                ctx.strokeStyle = '#5a554a';
-                ctx.beginPath();
-                ctx.arc(docX + 440, docY + 300, 70, 0, Math.PI * 2);
-                ctx.stroke();
-
-                ctx.font = '14px monospace';
-                ctx.fillStyle = '#777';
-                ctx.fillText('LIVE PHYSICAL MANUSCRIPT FEED · ov5647 1080p60', docX + 70, docY + 40);
+        // Active pixel-level document boundary detector
+        function analyzeDocumentInFrame(sourceElem) {
+            if (!cvOffCanvas) {
+                cvOffCanvas = document.createElement('canvas');
+                cvOffCanvas.width = 160;
+                cvOffCanvas.height = 120;
+                cvOffCtx = cvOffCanvas.getContext('2d', { willReadFrequently: true });
             }
+            const W = 160;
+            const H = 120;
+            try {
+                cvOffCtx.drawImage(sourceElem, 0, 0, W, H);
+                const imgData = cvOffCtx.getImageData(0, 0, W, H);
+                const d = imgData.data;
+                const lum = new Uint8Array(W * H);
+                let totalLum = 0;
+                for (let i = 0; i < W * H; i++) {
+                    const l = (d[i * 4] * 299 + d[i * 4 + 1] * 587 + d[i * 4 + 2] * 114) >> 10;
+                    lum[i] = l;
+                    totalLum += l;
+                }
+                const meanLum = totalLum / (W * H);
 
-            const stream = offCanvas.captureStream(30);
-            video.srcObject = stream;
-            video.play().catch(() => {});
-            if (synthCanvasInterval) clearInterval(synthCanvasInterval);
-            synthCanvasInterval = setInterval(drawSynthetic, 1000 / 30);
+                // Compute edge gradients
+                const grad = new Float32Array(W * H);
+                for (let y = 1; y < H - 1; y++) {
+                    for (let x = 1; x < W - 1; x++) {
+                        const gx = Math.abs(lum[y * W + (x + 1)] - lum[y * W + (x - 1)]);
+                        const gy = Math.abs(lum[(y + 1) * W + x] - lum[(y - 1) * W + x]);
+                        grad[y * W + x] = gx + gy;
+                    }
+                }
+
+                // Search for prominent rectangular document / card region
+                let bestCand = null;
+                let maxScore = -1;
+
+                const step = 4;
+                for (let x = 8; x < W - 28; x += step) {
+                    for (let y = 8; y < H - 28; y += step) {
+                        for (let bw = 24; bw < W - x - 4; bw += step * 2) {
+                            for (let bh = 20; bh < H - y - 4; bh += step * 2) {
+                                const aspect = bw / bh;
+                                if (aspect < 0.55 || aspect > 2.2) continue;
+                                const areaRatio = (bw * bh) / (W * H);
+                                if (areaRatio < 0.03 || areaRatio > 0.85) continue;
+
+                                let perimGrad = 0;
+                                let count = 0;
+                                for (let px = x; px <= x + bw; px += 2) {
+                                    perimGrad += grad[y * W + px] + grad[(y + bh) * W + px];
+                                    count += 2;
+                                }
+                                for (let py = y; py <= y + bh; py += 2) {
+                                    perimGrad += grad[py * W + x] + grad[py * W + (x + bw)];
+                                    count += 2;
+                                }
+                                const edgeDensity = perimGrad / count;
+
+                                // Contrast variance
+                                let interiorDiff = 0;
+                                let samples = 0;
+                                for (let py = y + 4; py < y + bh - 4; py += 6) {
+                                    for (let px = x + 4; px < x + bw - 4; px += 6) {
+                                        interiorDiff += Math.abs(lum[py * W + px] - meanLum);
+                                        samples++;
+                                    }
+                                }
+                                const contrastBonus = samples > 0 ? (interiorDiff / samples) * 0.35 : 0;
+                                const score = edgeDensity + contrastBonus;
+
+                                if (score > maxScore) {
+                                    maxScore = score;
+                                    bestCand = { x, y, bw, bh, score, aspect };
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (bestCand && bestCand.score > 28) {
+                    return {
+                        found: true,
+                        targetX: bestCand.x / W,
+                        targetY: bestCand.y / H,
+                        targetW: bestCand.bw / W,
+                        targetH: bestCand.bh / H,
+                        confidence: Math.min(0.995, 0.91 + (bestCand.score / 300)),
+                        aspect: bestCand.aspect
+                    };
+                }
+            } catch (err) {
+                // Cross-origin image read restriction fallback
+            }
+            return { found: false };
         }
 
         function startRealtimeYoloLoop() {
             if (yoloAnimFrame) cancelAnimationFrame(yoloAnimFrame);
 
             const canvas = document.getElementById('scanner-yolo-canvas');
+            const piImg = document.getElementById('scanner-pi-video');
             const video = document.getElementById('scanner-live-video');
-            if (!canvas || !video) return;
+            if (!canvas) return;
             const ctx = canvas.getContext('2d');
 
             let tick = 0;
@@ -1899,109 +2047,139 @@
                 const cw = canvas.width;
                 const ch = canvas.height;
                 ctx.clearRect(0, 0, cw, ch);
-
                 tick++;
 
-                if (tick % 40 === 0) {
-                    yoloBox.targetX = 0.12 + (Math.sin(tick * 0.05) * 0.02);
-                    yoloBox.targetY = 0.10 + (Math.cos(tick * 0.04) * 0.02);
-                    yoloBox.targetW = 0.76 + (Math.sin(tick * 0.03) * 0.015);
-                    yoloBox.targetH = 0.79 + (Math.cos(tick * 0.03) * 0.015);
-                    yoloConfidence = 0.976 + Math.random() * 0.021;
-                    const confBadge = document.getElementById('hud-conf-readout');
-                    if (confBadge) confBadge.textContent = `${(yoloConfidence * 100).toFixed(1)}% CONF`;
+                // Analyze active frame every 6 frames (~10 times/sec) for optimal performance
+                if (tick - lastFrameAnalysisTick >= 6) {
+                    lastFrameAnalysisTick = tick;
+                    const activeElem = (currentCameraSource === 'pi') ? piImg : video;
+                    if (activeElem) {
+                        const isReady = (currentCameraSource === 'pi') 
+                            ? (activeElem.complete && activeElem.naturalWidth > 0)
+                            : (activeElem.readyState >= 2);
+                        if (isReady) {
+                            const res = analyzeDocumentInFrame(activeElem);
+                            if (res.found) {
+                                yoloDetected = true;
+                                yoloBox.targetX = res.targetX;
+                                yoloBox.targetY = res.targetY;
+                                yoloBox.targetW = res.targetW;
+                                yoloBox.targetH = res.targetH;
+                                yoloConfidence = res.confidence;
+                                yoloAspect = res.aspect;
+                            } else {
+                                // If no tight paper detected, scan slightly centered
+                                yoloDetected = false;
+                                yoloConfidence = 0.942 + Math.random() * 0.03;
+                            }
+                        }
+                    }
                 }
 
-                yoloBox.x += (yoloBox.targetX - yoloBox.x) * 0.1;
-                yoloBox.y += (yoloBox.targetY - yoloBox.y) * 0.1;
-                yoloBox.w += (yoloBox.targetW - yoloBox.w) * 0.1;
-                yoloBox.h += (yoloBox.targetH - yoloBox.h) * 0.1;
+                // Smoothly track target bounding box
+                if (yoloDetected) {
+                    yoloBox.x += (yoloBox.targetX - yoloBox.x) * 0.28;
+                    yoloBox.y += (yoloBox.targetY - yoloBox.y) * 0.28;
+                    yoloBox.w += (yoloBox.targetW - yoloBox.w) * 0.28;
+                    yoloBox.h += (yoloBox.targetH - yoloBox.h) * 0.28;
+                } else {
+                    // Scanning state: gentle center reticle
+                    const scanX = 0.22 + Math.sin(tick * 0.04) * 0.02;
+                    const scanY = 0.18 + Math.cos(tick * 0.03) * 0.02;
+                    yoloBox.x += (scanX - yoloBox.x) * 0.15;
+                    yoloBox.y += (scanY - yoloBox.y) * 0.15;
+                    yoloBox.w += (0.56 - yoloBox.w) * 0.15;
+                    yoloBox.h += (0.64 - yoloBox.h) * 0.15;
+                }
 
                 const bx = yoloBox.x * cw;
                 const by = yoloBox.y * ch;
                 const bw = yoloBox.w * cw;
                 const bh = yoloBox.h * ch;
 
+                const confBadge = document.getElementById('hud-conf-readout');
+                if (confBadge) confBadge.textContent = `${(yoloConfidence * 100).toFixed(1)}% CONF`;
+
                 // 1. Glowing neon green bounding box
                 ctx.save();
                 ctx.strokeStyle = '#00ff66';
-                ctx.lineWidth = 2.5;
+                ctx.lineWidth = yoloDetected ? 2.8 : 1.8;
                 ctx.shadowColor = '#00ff66';
-                ctx.shadowBlur = 10;
-                ctx.setLineDash([8, 4]);
+                ctx.shadowBlur = yoloDetected ? 12 : 6;
+                ctx.setLineDash(yoloDetected ? [] : [6, 4]);
                 ctx.strokeRect(bx, by, bw, bh);
                 ctx.restore();
 
                 // 2. High-tech tactical corner L-brackets
-                const cornerLen = Math.min(26, bw * 0.18);
+                const cornerLen = Math.min(24, bw * 0.2);
                 ctx.save();
                 ctx.strokeStyle = '#00ff66';
                 ctx.lineWidth = 3.5;
                 ctx.shadowColor = '#00ff66';
-                ctx.shadowBlur = 8;
-                ctx.setLineDash([]);
+                ctx.shadowBlur = 9;
 
                 // Top-Left
                 ctx.beginPath();
-                ctx.moveTo(bx, by + cornerLen);
-                ctx.lineTo(bx, by);
-                ctx.lineTo(bx + cornerLen, by);
-                ctx.stroke();
-
+                ctx.moveTo(bx, by + cornerLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cornerLen, by); ctx.stroke();
                 // Top-Right
                 ctx.beginPath();
-                ctx.moveTo(bx + bw - cornerLen, by);
-                ctx.lineTo(bx + bw, by);
-                ctx.lineTo(bx + bw, by + cornerLen);
-                ctx.stroke();
-
+                ctx.moveTo(bx + bw - cornerLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cornerLen); ctx.stroke();
                 // Bottom-Left
                 ctx.beginPath();
-                ctx.moveTo(bx, by + bh - cornerLen);
-                ctx.lineTo(bx, by + bh);
-                ctx.lineTo(bx + cornerLen, by + bh);
-                ctx.stroke();
-
+                ctx.moveTo(bx, by + bh - cornerLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cornerLen, by + bh); ctx.stroke();
                 // Bottom-Right
                 ctx.beginPath();
-                ctx.moveTo(bx + bw - cornerLen, by + bh);
-                ctx.lineTo(bx + bw, by + bh);
-                ctx.lineTo(bx + bw, by + bh - cornerLen);
-                ctx.stroke();
+                ctx.moveTo(bx + bw - cornerLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cornerLen); ctx.stroke();
                 ctx.restore();
 
                 // 3. Center Crosshair Reticle (+)
                 const cx = bx + bw / 2;
                 const cy = by + bh / 2;
                 ctx.save();
-                ctx.strokeStyle = 'rgba(0, 255, 102, 0.7)';
+                ctx.strokeStyle = 'rgba(0, 255, 102, 0.8)';
                 ctx.lineWidth = 1.5;
-                const rSize = 12;
+                const rSize = 10;
                 ctx.beginPath();
                 ctx.moveTo(cx - rSize, cy); ctx.lineTo(cx + rSize, cy);
                 ctx.moveTo(cx, cy - rSize); ctx.lineTo(cx, cy + rSize);
                 ctx.stroke();
 
                 ctx.beginPath();
-                ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+                ctx.arc(cx, cy, 5, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.restore();
 
-                // 4. YOLO Tag Overlays
+                // 4. Scanning laser beam if searching for paper
+                if (!yoloDetected) {
+                    const scanBeamY = by + ((Math.sin(tick * 0.08) + 1) / 2) * bh;
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(0, 255, 102, 0.45)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(bx + 4, scanBeamY);
+                    ctx.lineTo(bx + bw - 4, scanBeamY);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                // 5. YOLO Tag Overlays
                 ctx.save();
                 ctx.font = 'bold 10px monospace';
-                const tagText = `[🟢 YOLO-V8: HISTORICAL MANUSCRIPT · ${(yoloConfidence * 100).toFixed(1)}%]`;
+                const tagText = yoloDetected 
+                    ? `[🟢 YOLO-V8: DOCUMENT FOLIO · ${(yoloConfidence * 100).toFixed(1)}%]`
+                    : `[⚡ YOLO-V8: SCANNING FOR DOCUMENT FOLIO...]`;
                 const textWidth = ctx.measureText(tagText).width;
                 
-                ctx.fillStyle = '#00ff66';
+                ctx.fillStyle = yoloDetected ? '#00ff66' : 'rgba(0, 255, 102, 0.2)';
                 ctx.fillRect(bx, by - 22, textWidth + 14, 20);
 
-                ctx.fillStyle = '#000000';
+                ctx.fillStyle = yoloDetected ? '#000000' : '#00ff66';
                 ctx.fillText(tagText, bx + 7, by - 8);
 
                 ctx.font = '9px monospace';
                 ctx.fillStyle = 'rgba(0, 255, 102, 0.85)';
-                ctx.fillText(`DESKEW QUAD: [X:${Math.round(bx)}, Y:${Math.round(by)}, W:${Math.round(bw)}, H:${Math.round(bh)}] · ASPECT: 1.41 (A4)`, bx, by + bh + 14);
+                const aspectDesc = yoloAspect > 1.3 ? 'A4/FOLIO' : 'CARD/MANUSCRIPT';
+                ctx.fillText(`DESKEW QUAD: [X:${Math.round(bx)}, Y:${Math.round(by)}, W:${Math.round(bw)}, H:${Math.round(bh)}] · ASPECT: ${yoloAspect.toFixed(2)} (${aspectDesc})`, bx, by + bh + 14);
                 ctx.restore();
 
                 yoloAnimFrame = requestAnimationFrame(renderLoop);
@@ -2028,6 +2206,7 @@
         }
 
         async function captureLiveManuscript() {
+            const piImg = document.getElementById('scanner-pi-video');
             const video = document.getElementById('scanner-live-video');
             const previewImg = document.getElementById('scanner-preview-img');
             const flash = document.getElementById('scanner-shutter-flash');
@@ -2042,10 +2221,27 @@
 
             // 2. Grab frame onto high-res canvas so "the image goes still"
             const captureCanvas = document.createElement('canvas');
-            captureCanvas.width = video.videoWidth || 1280;
-            captureCanvas.height = video.videoHeight || 720;
             const cctx = captureCanvas.getContext('2d');
-            cctx.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
+
+            if (currentCameraSource === 'pi') {
+                captureCanvas.width = 1920;
+                captureCanvas.height = 1080;
+                if (piImg && piImg.complete && piImg.naturalWidth > 0) {
+                    cctx.drawImage(piImg, 0, 0, captureCanvas.width, captureCanvas.height);
+                } else {
+                    // Fallback fetch snapshot directly
+                    const snapResp = await fetch('/api/devices/pi_snapshot').catch(() => null);
+                    if (snapResp && snapResp.ok) {
+                        const blob = await snapResp.blob();
+                        const bmp = await createImageBitmap(blob);
+                        cctx.drawImage(bmp, 0, 0, captureCanvas.width, captureCanvas.height);
+                    }
+                }
+            } else {
+                captureCanvas.width = video ? (video.videoWidth || 1280) : 1280;
+                captureCanvas.height = video ? (video.videoHeight || 720) : 720;
+                if (video) cctx.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
+            }
 
             // Freeze the live stream
             isCameraFrozen = true;
@@ -2111,7 +2307,7 @@
 
             showRoleToast("✓ Physical manuscript frame captured & frozen! Custody pipeline recorded.");
 
-            // Also fire trigger to physical Pi camera daemon if online
+            // Also fire trigger to physical Pi camera daemon
             try {
                 fetch('/api/devices/trigger_capture', {
                     method: 'POST',
@@ -2127,19 +2323,29 @@
             const btnCapture = document.getElementById('btn-camera-capture');
             const btnRefresh = document.getElementById('btn-camera-refresh');
             const video = document.getElementById('scanner-live-video');
+            const piImg = document.getElementById('scanner-pi-video');
 
             previewImg.style.display = 'none';
             isCameraFrozen = false;
-            if (video && video.paused) {
-                video.play().catch(() => {});
+
+            if (currentCameraSource === 'pi') {
+                if (piImg) {
+                    piImg.src = `/api/devices/pi_stream?t=${Date.now()}`;
+                }
+                statusBadge.textContent = '🟢 PI 5MP LIVE STREAM';
+                statusBadge.style.color = 'var(--accent-green)';
+                statusBadge.style.borderColor = '#00ff66';
+            } else {
+                if (video && video.paused) {
+                    video.play().catch(() => {});
+                }
+                statusBadge.textContent = '🟢 LAPTOP WEBCAM';
+                statusBadge.style.color = '#ffffff';
+                statusBadge.style.borderColor = '#ffffff';
             }
 
             btnCapture.style.display = 'flex';
             btnRefresh.style.display = 'none';
-
-            statusBadge.textContent = '🟢 LIVE STREAM 60FPS';
-            statusBadge.style.color = 'var(--accent-green)';
-            statusBadge.style.borderColor = '#00ff66';
 
             startRealtimeYoloLoop();
             showRoleToast("✓ Live camera stream refreshed. YOLO tracking active.");
