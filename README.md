@@ -8,7 +8,7 @@
 
 ---
 
-## 🏛️ Project Overview
+## Project Overview
 **ArchiveMind** is a hybrid SQL-Vector semantic search engine designed for digitized historical document repositories. It bridges the gap between structured relational data (PostgreSQL 3NF schema, foreign keys, ACID transactions, access permissions) and unstructured AI forensics:
 - **Full-Text Search (FTS5)**: Fast tokenized keyword matching across OCR transcripts.
 - **Dense 128-dimensional Vector Similarity**: Cosine alignment of handwriting stroke features.
@@ -17,7 +17,7 @@
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 ArchiveMind/
@@ -44,7 +44,7 @@ ArchiveMind/
 
 ---
 
-## ⚡ Quick Start & Run Guide
+## Quick Start & Run Guide
 
 ### 1. Prerequisites
 - **Python 3.8+** (Tested and compatible with Python 3.8 through Python 3.14+)
@@ -74,11 +74,11 @@ The script will:
 
 ### 4. Open in Browser
 Open your browser and navigate to:
-👉 **`http://localhost:8000`**
+**`http://localhost:8000`**
 
 ---
 
-## 🎯 Features & Demo Walkthrough
+## Features & Demo Walkthrough
 
 ### 1. Hybrid SQL-Vector Search
 - Enter search terms like `"gravitation"`, `"imitation game"`, or `"bernoulli"`.
@@ -110,7 +110,7 @@ Execute all 5 mandatory evaluation query types with live execution time benchmar
 
 ---
 
-## 📄 Academic Project Report & Submission
+## Academic Project Report & Submission
 The complete project report formatted to the PES University template is located in `docs/`:
 - **Markdown**: `docs/ArchiveMind_DBMS_Project_Report.md`
 - **Printable HTML / PDF**: Open `docs/ArchiveMind_DBMS_Project_Report.html` in any browser and press **Ctrl+P** (Print $\rightarrow$ Save as PDF).
