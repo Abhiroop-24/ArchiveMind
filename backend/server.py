@@ -2,7 +2,7 @@
 ArchiveMind Backend API Server
 Course: UE23CS351A - DBMS Project | PES University
 FastAPI Server providing RESTful endpoints for Hybrid Search,
-Pi Ingestion Pipeline, Provenance Graph Traversal, and DBMS Query Execution.
+Document Ingestion & Digital Preservation, Provenance Graph Traversal, and DBMS Query Execution.
 """
 
 import os
@@ -49,7 +49,7 @@ class IngestDocumentRequest(BaseModel):
     language: str = "English"
     style_seed: str = "standard_historical_cursive"
     digitized_by: int = 3
-    image_name: str = "scanned_pi_capture.jpg"
+    image_name: str = "scanned_document.jpg"
 
 class CitationRequest(BaseModel):
     style: str = "Chicago-Archival"

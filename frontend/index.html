@@ -3,122 +3,1022 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArchiveMind - Hybrid SQL-Vector Archival Search Engine</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
+    <title>ArchiveMind — Intelligent Archival Forensics & Preserved Manuscripts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-        .font-serif-title { font-family: 'Cinzel', serif; }
-        .font-mono-code { font-family: 'JetBrains Mono', monospace; }
-        body { font-family: 'Inter', sans-serif; }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
+        /* ==========================================================================
+           OMARCHY VANTABLACK ELITE DESIGN SYSTEM
+           Pure OLED Black (#000000), Surgical Stark Grayscale, Micro-Dot Matrix,
+           1px Precision Borders, Monospaced Accents & Fluid Typography
+           ========================================================================== */
+        :root {
+            --black: #000000;
+            --surface-0: #050505;
+            --surface-1: #0a0a0a;
+            --surface-2: #111111;
+            --surface-3: #181818;
+            --border-dim: #1c1c1c;
+            --border-subtle: #272727;
+            --border-highlight: #3e3e3e;
+            --border-stark: #ffffff;
+            --fg-stark: #ffffff;
+            --fg-bright: #ededed;
+            --fg-secondary: #a0a0a0;
+            --fg-muted: #666666;
+            --fg-faint: #383838;
+            --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
+            --radius-xs: 3px;
+            --radius-sm: 5px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background-color: var(--black);
+            color: var(--fg-bright);
+            font-family: var(--font-sans);
+            font-size: 13px;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            letter-spacing: -0.01em;
+            /* Subtle Omarchy background grid */
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(#181818 1px, transparent 1px);
+            background-size: 100% 100%, 24px 24px;
+        }
+
+        /* Top Minimal Floating Status Bar */
+        .om-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-dim);
+        }
+
+        .om-header-inner {
+            max-width: 1440px;
+            margin: 0 auto;
+            height: 52px;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-logo {
+            width: 26px;
+            height: 26px;
+            background: #ffffff;
+            color: #000000;
+            border-radius: var(--radius-xs);
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            font-size: 14px;
+            font-family: var(--font-mono);
+            letter-spacing: -1px;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+        }
+
+        .brand-text {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13.5px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-tag {
+            font-family: var(--font-mono);
+            font-size: 9px;
+            font-weight: 500;
+            padding: 2px 6px;
+            border-radius: 100px;
+            border: 1px solid var(--border-subtle);
+            background: var(--surface-1);
+            color: var(--fg-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chip-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface-1);
+            border: 1px solid var(--border-dim);
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 11.5px;
+            color: var(--fg-secondary);
+            transition: border-color 0.15s;
+        }
+
+        .chip-pill:hover {
+            border-color: var(--border-subtle);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 0 8px #ffffff;
+            animation: pulse-dot 2.5s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .role-selector {
+            background: transparent;
+            border: none;
+            color: var(--fg-bright);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .role-selector option {
+            background: var(--black);
+            color: var(--fg-bright);
+        }
+
+        /* Clean Tiling Bar */
+        .om-nav-bar {
+            background: var(--black);
+            border-bottom: 1px solid var(--border-dim);
+            padding: 0 1.5rem;
+        }
+
+        .om-nav-inner {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .om-nav-inner::-webkit-scrollbar { display: none; }
+
+        .nav-btn {
+            appearance: none;
+            background: transparent;
+            border: none;
+            padding: 12px 14px;
+            color: var(--fg-muted);
+            font-family: var(--font-sans);
+            font-size: 12.5px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            color: var(--fg-bright);
+        }
+
+        .nav-btn.active {
+            color: var(--fg-stark);
+            border-bottom-color: var(--fg-stark);
+            font-weight: 600;
+        }
+
+        .nav-btn i {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2;
+        }
+
+        /* Main Shell Container */
+        main {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 3rem;
+            width: 100%;
+            flex: 1;
+        }
+
+        .tab-panel {
+            display: none;
+            animation: omarchy-fade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        @keyframes omarchy-fade {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Vantablack Card Container */
+        .b-card {
+            background: var(--surface-0);
+            border: 1px solid var(--border-dim);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            position: relative;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+            transition: border-color 0.2s ease;
+        }
+
+        .b-card:hover {
+            border-color: var(--border-subtle);
+        }
+
+        .b-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            gap: 1rem;
+        }
+
+        .b-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--fg-stark);
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .b-card-title i {
+            width: 15px;
+            height: 15px;
+            color: var(--fg-secondary);
+        }
+
+        .b-card-desc {
+            font-size: 12px;
+            color: var(--fg-muted);
+            margin-top: 3px;
+            font-weight: 400;
+        }
+
+        /* Minimal Search Box */
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: var(--fg-faint);
+            pointer-events: none;
+            transition: color 0.15s;
+        }
+
+        .input-wrapper input:focus + i,
+        .input-wrapper:focus-within i {
+            color: var(--fg-stark);
+        }
+
+        .om-input {
+            width: 100%;
+            background: var(--surface-1);
+            border: 1px solid var(--border-dim);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px 10px 42px;
+            color: var(--fg-stark);
+            font-family: var(--font-sans);
+            font-size: 13px;
+            outline: none;
+            transition: all 0.15s ease;
+        }
+
+        .om-input::placeholder {
+            color: var(--fg-muted);
+        }
+
+        .om-input:focus {
+            border-color: var(--fg-stark);
+            background: var(--black);
+            box-shadow: 0 0 0 1px var(--fg-stark);
+        }
+
+        .om-select {
+            width: 100%;
+            background: var(--surface-1);
+            border: 1px solid var(--border-dim);
+            border-radius: var(--radius-sm);
+            padding: 9px 12px;
+            color: var(--fg-bright);
+            font-family: var(--font-sans);
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .om-select:focus {
+            border-color: var(--fg-stark);
+            background: var(--black);
+        }
+
+        .btn-om {
+            appearance: none;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            padding: 9px 16px;
+            font-family: var(--font-sans);
+            font-size: 12.5px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .btn-om-white {
+            background: #ffffff;
+            color: #000000;
+            box-shadow: 0 0 14px rgba(255, 255, 255, 0.12);
+        }
+
+        .btn-om-white:hover {
+            background: #e5e5e5;
+            transform: translateY(-1px);
+        }
+
+        .btn-om-subtle {
+            background: var(--surface-1);
+            border-color: var(--border-dim);
+            color: var(--fg-secondary);
+        }
+
+        .btn-om-subtle:hover {
+            background: var(--surface-2);
+            color: var(--fg-stark);
+            border-color: var(--border-highlight);
+        }
+
+        /* Filter Tuning Controls */
+        .tuning-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.5rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border-dim);
+        }
+
+        @media (max-width: 900px) {
+            .tuning-grid { grid-template-columns: 1fr; }
+            .search-container { flex-direction: column; }
+        }
+
+        .tuning-cell label {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 500;
+            color: var(--fg-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .slider-meta-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--fg-muted);
+            margin-bottom: 10px;
+        }
+
+        .slider-meta-val {
+            color: var(--fg-stark);
+            font-weight: 600;
+            background: var(--surface-2);
+            padding: 2px 6px;
+            border-radius: var(--radius-xs);
+            border: 1px solid var(--border-subtle);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 3px;
+            background: var(--border-dim);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            border: 2px solid #000000;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        /* Status & Count Metadata Bar */
+        .meta-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--fg-muted);
+            margin: 1.5rem 0 1rem;
+            padding: 0 4px;
+        }
+
+        /* 3-Column Manuscript Showcase Cards */
+        .cards-masonry {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 600px) {
+            .cards-masonry { grid-template-columns: 1fr; }
+        }
+
+        .m-card {
+            background: var(--surface-0);
+            border: 1px solid var(--border-dim);
+            border-radius: var(--radius-md);
+            padding: 1.35rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .m-card:hover {
+            border-color: var(--border-highlight);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .m-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            gap: 8px;
+        }
+
+        .badge-pill {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 500;
+            padding: 2px 7px;
+            border-radius: var(--radius-xs);
+            border: 1px solid var(--border-subtle);
+            background: var(--surface-1);
+            color: var(--fg-bright);
+            letter-spacing: 0.02em;
+        }
+
+        .badge-pill.pristine { border-color: #ffffff; color: #ffffff; }
+
+        .m-card-date {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--fg-muted);
+        }
+
+        .m-card-title {
+            font-size: 14.5px;
+            font-weight: 600;
+            color: var(--fg-stark);
+            line-height: 1.35;
+            margin-bottom: 4px;
+            letter-spacing: -0.01em;
+        }
+
+        .m-card-author {
+            font-size: 12px;
+            color: var(--fg-secondary);
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .m-card-ocr {
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            line-height: 1.6;
+            color: var(--fg-bright);
+            background: #000000;
+            border: 1px solid var(--border-dim);
+            border-left: 2px solid #ffffff;
+            border-radius: var(--radius-xs);
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .m-card-repo {
+            font-size: 11px;
+            color: var(--fg-muted);
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .m-card-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-dim);
+            font-family: var(--font-mono);
+            font-size: 11px;
+        }
+
+        .score-cluster {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .score-cluster span { color: var(--fg-muted); }
+        .score-cluster strong { color: var(--fg-stark); font-weight: 600; }
+
+        .btn-inspect {
+            background: var(--surface-1);
+            border: 1px solid var(--border-dim);
+            color: var(--fg-stark);
+            padding: 4px 10px;
+            border-radius: var(--radius-xs);
+            font-family: var(--font-sans);
+            font-size: 11px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-inspect:hover {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+        }
+
+        /* Inspector View */
+        .inspect-grid {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .inspect-grid { grid-template-columns: 1fr; }
+        }
+
+        .spec-card {
+            background: #000000;
+            border: 1px solid var(--border-dim);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .spec-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .spec-item span:first-child {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--fg-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .spec-item span:last-child {
+            font-size: 12.5px;
+            color: var(--fg-stark);
+            font-weight: 500;
+        }
+
+        .hash-pill {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            background: var(--surface-1);
+            border: 1px solid var(--border-dim);
+            padding: 8px 10px;
+            border-radius: var(--radius-xs);
+            color: var(--fg-bright);
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .ocr-viewer {
+            font-family: var(--font-mono);
+            font-size: 12.5px;
+            line-height: 1.7;
+            background: #000000;
+            border: 1px solid var(--border-dim);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem;
+            color: var(--fg-bright);
+            white-space: pre-wrap;
+            max-height: 340px;
+            overflow-y: auto;
+        }
+
+        .citation-card {
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            background: var(--surface-1);
+            border: 1px solid var(--border-dim);
+            border-radius: var(--radius-xs);
+            padding: 8px 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .citation-tag {
+            background: #ffffff;
+            color: #000000;
+            font-size: 9.5px;
+            font-weight: 600;
+            padding: 1px 6px;
+            border-radius: 2px;
+            white-space: nowrap;
+        }
+
+        /* Canvas Provenance */
+        .canvas-frame {
+            width: 100%;
+            height: 520px;
+            background: #000000;
+            border: 1px solid var(--border-dim);
+            border-radius: var(--radius-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .canvas-footer {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-dim);
+            border-radius: var(--radius-xs);
+            padding: 6px 12px;
+            display: flex;
+            gap: 14px;
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+        }
+
+        .key-bullet {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--fg-muted);
+        }
+
+        .key-circle-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            border: 1px solid #ffffff;
+        }
+
+        /* Query Benchmark Sandboxes */
+        .query-tiles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 1.25rem;
+        }
+
+        .q-tile {
+            background: var(--surface-1);
+            border: 1px solid var(--border-dim);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .q-tile:hover {
+            border-color: var(--border-highlight);
+            background: var(--surface-2);
+        }
+
+        .q-tile.active {
+            border-color: #ffffff;
+            background: var(--surface-3);
+        }
+
+        .q-tile-code {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 2px;
+        }
+
+        .q-tile-sub {
+            font-size: 11.5px;
+            color: var(--fg-muted);
+        }
+
+        .sql-terminal {
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            background: #000000;
+            border: 1px solid var(--border-dim);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            color: var(--fg-bright);
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .table-frame {
+            overflow-x: auto;
+            border: 1px solid var(--border-dim);
+            border-radius: var(--radius-sm);
+            background: #000000;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            text-align: left;
+        }
+
+        thead {
+            background: var(--surface-1);
+            border-bottom: 1px solid var(--border-dim);
+        }
+
+        th {
+            padding: 10px 14px;
+            color: var(--fg-muted);
+            font-weight: 600;
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-family: var(--font-mono);
+        }
+
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #141414;
+            color: var(--fg-bright);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: var(--surface-1); color: #ffffff; }
+
+        /* Form Controls */
+        .form-grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 800px) {
+            .form-grid-layout { grid-template-columns: 1fr; }
+        }
+
+        .field-unit {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .field-unit label {
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            font-weight: 500;
+            color: var(--fg-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        textarea.om-input {
+            padding-left: 12px;
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            resize: vertical;
+        }
+
+        .alert-toast {
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            border: 1px solid var(--border-dim);
+            margin-top: 1.25rem;
+            background: var(--surface-1);
+        }
+
+        /* Minimal Footer */
+        footer {
+            border-top: 1px solid var(--border-dim);
+            padding: 1.5rem;
+            background: #000000;
+            font-size: 11px;
+            color: var(--fg-muted);
+            text-align: center;
+            font-family: var(--font-mono);
         }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+<body>
 
-    <!-- Top Header -->
-    <header class="bg-slate-950/80 border-b border-slate-800 sticky top-0 z-50 backdrop-blur-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-amber-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                    <i data-lucide="scroll" class="w-6 h-6 text-white"></i>
+    <!-- Minimal Header -->
+    <header class="om-header">
+        <div class="om-header-inner">
+            <a href="#" class="brand-section" onclick="switchTab('search'); return false;">
+                <div class="brand-logo">A</div>
+                <div class="brand-text">
+                    <span>ArchiveMind</span>
+                    <span class="brand-tag">SQL &middot; Vector</span>
                 </div>
-                <div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xl font-bold font-serif-title tracking-wider text-amber-300">ArchiveMind</span>
-                        <span class="px-2 py-0.5 text-xs font-semibold rounded bg-indigo-900/60 text-indigo-300 border border-indigo-700/50">DBMS UE23CS351A</span>
-                    </div>
-                    <p class="text-xs text-slate-400">Hybrid SQL-Vector Engine & Handwriting Forensics | PES University</p>
+            </a>
+
+            <div class="header-actions">
+                <div class="chip-pill">
+                    <span class="status-dot"></span>
+                    <select id="role-selector" class="role-selector">
+                        <option value="researcher_sheiman">A Sheiman Joshi (PES2UG24CS003)</option>
+                        <option value="researcher_abhiroop" selected>Abhiroop (PES2UG24CS024)</option>
+                        <option value="archivist">Dr. Shilpa S (Head Archivist)</option>
+                        <option value="curator">Preservation Curator</option>
+                    </select>
                 </div>
             </div>
-
-            <!-- Role Badge & Switcher -->
-            <div class="flex items-center space-x-3">
-                <span class="text-xs text-slate-400 hidden sm:inline">Active Role:</span>
-                <select id="role-selector" class="bg-slate-800 text-amber-200 border border-slate-700 text-xs rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-amber-500 outline-none">
-                    <option value="archivist">👑 Dr. Shilpa S (Head Archivist)</option>
-                    <option value="researcher_sheiman" selected>🔬 A Sheiman Joshi (Lead Database Researcher)</option>
-                    <option value="researcher_abhiroop">🔍 Abhiroop (Vector & Forensics Researcher)</option>
-                    <option value="tech">📷 Pi Scanner Tech (Ingestion)</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Navigation Tabs -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-800/80 flex space-x-1 sm:space-x-4 overflow-x-auto">
-            <button onclick="switchTab('search')" id="tab-btn-search" class="nav-tab active-tab px-4 py-3 text-sm font-medium border-b-2 border-amber-400 text-amber-300 flex items-center space-x-2">
-                <i data-lucide="search" class="w-4 h-4"></i>
-                <span>Hybrid Search</span>
-            </button>
-            <button onclick="switchTab('document')" id="tab-btn-document" class="nav-tab px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
-                <i data-lucide="file-text" class="w-4 h-4"></i>
-                <span>Manuscript Inspector</span>
-            </button>
-            <button onclick="switchTab('provenance')" id="tab-btn-provenance" class="nav-tab px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
-                <i data-lucide="git-fork" class="w-4 h-4"></i>
-                <span>Provenance Graph</span>
-            </button>
-            <button onclick="switchTab('ingest')" id="tab-btn-ingest" class="nav-tab px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
-                <i data-lucide="cpu" class="w-4 h-4"></i>
-                <span>Pi 3B+ Ingestion</span>
-            </button>
-            <button onclick="switchTab('queries')" id="tab-btn-queries" class="nav-tab px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
-                <i data-lucide="database" class="w-4 h-4"></i>
-                <span class="text-emerald-400 font-semibold">DBMS Evaluation Queries</span>
-            </button>
-            <button onclick="switchTab('audit')" id="tab-btn-audit" class="nav-tab px-4 py-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
-                <i data-lucide="shield-check" class="w-4 h-4"></i>
-                <span>Audit & Triggers</span>
-            </button>
         </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+    <!-- Nav Bar -->
+    <nav class="om-nav-bar">
+        <div class="om-nav-inner">
+            <button class="nav-btn active" id="tab-btn-search" onclick="switchTab('search')">
+                <i data-lucide="search"></i>
+                <span>Hybrid Search</span>
+            </button>
+            <button class="nav-btn" id="tab-btn-document" onclick="switchTab('document')">
+                <i data-lucide="file-text"></i>
+                <span>Inspector & Citation</span>
+            </button>
+            <button class="nav-btn" id="tab-btn-provenance" onclick="switchTab('provenance')">
+                <i data-lucide="git-merge"></i>
+                <span>Provenance Topology</span>
+            </button>
+            <button class="nav-btn" id="tab-btn-ingest" onclick="switchTab('ingest')">
+                <i data-lucide="upload-cloud"></i>
+                <span>Preserve & Ingest</span>
+            </button>
+            <button class="nav-btn" id="tab-btn-queries" onclick="switchTab('queries')">
+                <i data-lucide="terminal"></i>
+                <span>DBMS Evaluation</span>
+            </button>
+            <button class="nav-btn" id="tab-btn-audit" onclick="switchTab('audit')">
+                <i data-lucide="activity"></i>
+                <span>Audit & Triggers</span>
+            </button>
+        </div>
+    </nav>
 
-        <!-- ============================================================= -->
+    <!-- Main Container -->
+    <main>
+
+        <!-- ========================================================= -->
         <!-- TAB 1: HYBRID SEARCH -->
-        <!-- ============================================================= -->
-        <section id="tab-search" class="space-y-6">
-            <!-- Search Controls Box -->
-            <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl space-y-4">
-                <div class="flex flex-col md:flex-row gap-4">
-                    <div class="flex-1 relative">
-                        <i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-3.5 text-slate-400"></i>
-                        <input type="text" id="search-query" placeholder="Search OCR transcripts (e.g. 'gravitation', 'imitation game', 'theta functions', 'bernoulli')..."
-                               class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500">
+        <!-- ========================================================= -->
+        <section id="tab-search" class="tab-panel active">
+            <div class="b-card">
+                <div class="b-card-header">
+                    <div>
+                        <div class="b-card-title">
+                            <i data-lucide="sliders-horizontal"></i>
+                            <span>Hybrid Search Engine</span>
+                        </div>
+                        <div class="b-card-desc">Full-Text SQL Search fused with 128-dimensional dense handwriting stroke vector cosine similarity.</div>
                     </div>
-                    <button onclick="performSearch()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-6 py-3 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg shadow-amber-500/20">
-                        <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        <span>Search Archive</span>
+                </div>
+
+                <div class="search-container">
+                    <div class="input-wrapper">
+                        <input type="text" id="search-query" class="om-input" 
+                               placeholder="Search OCR transcripts (e.g. 'gravitation', 'imitation game', 'theta functions', 'bernoulli')..."
+                               onkeydown="if(event.key === 'Enter') performSearch()">
+                        <i data-lucide="search"></i>
+                    </div>
+                    <button class="btn-om btn-om-white" onclick="performSearch()">
+                        <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+                        <span>Search</span>
                     </button>
                 </div>
 
-                <!-- Hybrid Fusion & Handwriting Style Controls -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 border-t border-slate-700/60">
-                    <!-- Alpha Fusion Slider -->
-                    <div>
-                        <div class="flex justify-between items-center text-xs mb-1.5">
-                            <span class="text-indigo-400 font-medium">Vector (Handwriting)</span>
-                            <span id="alpha-label" class="text-amber-400 font-mono font-bold">Hybrid: 50% SQL / 50% Vec</span>
-                            <span class="text-emerald-400 font-medium">SQL (Full-Text)</span>
+                <div class="tuning-grid">
+                    <div class="tuning-cell">
+                        <div class="slider-meta-header">
+                            <span>Vector (Style)</span>
+                            <span class="slider-meta-val" id="alpha-label">50% SQL / 50% Vec</span>
+                            <span>SQL (Text)</span>
                         </div>
-                        <input type="range" id="alpha-slider" min="0" max="1" step="0.05" value="0.5" 
-                               oninput="updateAlphaLabel(this.value)"
-                               class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-400">
+                        <input type="range" id="alpha-slider" min="0" max="1" step="0.05" value="0.5" oninput="updateAlphaLabel(this.value)">
                     </div>
 
-                    <!-- Handwriting Style Selector -->
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1.5">Handwriting Forensic Reference Vector</label>
-                        <select id="style-selector" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-amber-200 outline-none focus:ring-1 focus:ring-amber-500">
-                            <option value="">-- No Handwriting Filter (Text Only) --</option>
+                    <div class="tuning-cell">
+                        <label>Forensic Reference Vector</label>
+                        <select id="style-selector" class="om-select" onchange="performSearch()">
+                            <option value="">-- No Vector Filter (Lexical Only) --</option>
                             <option value="newton_quill_flourish">Isaac Newton (Latin Cursive / Flourished Quill)</option>
                             <option value="davinci_left_mirror_dense">Leonardo da Vinci (Italian Mirror Script / Left-Handed)</option>
                             <option value="ramanujan_fine_nib_slanted">Srinivasa Ramanujan (Slanted Mathematical Formulae)</option>
@@ -128,53 +1028,52 @@
                         </select>
                     </div>
 
-                    <!-- Collection Filter -->
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1.5">Archival Collection Filter</label>
-                        <select id="filter-collection" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-300 outline-none focus:ring-1 focus:ring-amber-500">
+                    <div class="tuning-cell">
+                        <label>Archival Collection</label>
+                        <select id="filter-collection" class="om-select" onchange="performSearch()">
                             <option value="">All Collections</option>
                         </select>
                     </div>
                 </div>
             </div>
 
-            <!-- Search Results Summary -->
-            <div class="flex items-center justify-between text-xs text-slate-400 px-1">
-                <span id="results-count">Showing 10 preserved manuscripts</span>
-                <span class="flex items-center space-x-1.5">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                    <span>Database Online | FTS5 + Cosine Index Active</span>
-                </span>
+            <div class="meta-strip">
+                <span id="results-count">Retrieving archival records...</span>
+                <span>PostgreSQL 3NF / SQLite FTS5 Active</span>
             </div>
 
-            <!-- Results Grid -->
-            <div id="results-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div id="results-grid" class="cards-masonry">
                 <!-- Dynamically populated -->
             </div>
         </section>
 
-        <!-- ============================================================= -->
-        <!-- TAB 2: MANUSCRIPT INSPECTOR & CITATION GENERATOR -->
-        <!-- ============================================================= -->
-        <section id="tab-document" class="space-y-6 hidden">
-            <div id="doc-detail-view" class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl">
-                <p class="text-slate-400 text-sm">Select any manuscript from the Hybrid Search tab to inspect its forensic details, OCR transcript, and generate citations.</p>
+        <!-- ========================================================= -->
+        <!-- TAB 2: INSPECTOR & CITATIONS -->
+        <!-- ========================================================= -->
+        <section id="tab-document" class="tab-panel">
+            <div id="doc-detail-view" class="b-card">
+                <div style="text-align: center; padding: 3rem 1rem; color: var(--fg-muted); font-family: var(--font-mono);">
+                    Select any manuscript from the Hybrid Search tab to inspect its forensic record and generate citations.
+                </div>
             </div>
         </section>
 
-        <!-- ============================================================= -->
-        <!-- TAB 3: PROVENANCE GRAPH -->
-        <!-- ============================================================= -->
-        <section id="tab-provenance" class="space-y-6 hidden">
-            <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl space-y-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <!-- ========================================================= -->
+        <!-- TAB 3: PROVENANCE TOPOLOGY -->
+        <!-- ========================================================= -->
+        <section id="tab-provenance" class="tab-panel">
+            <div class="b-card">
+                <div class="b-card-header">
                     <div>
-                        <h2 class="text-lg font-bold font-serif-title text-amber-300">Document Provenance & Relational Graph</h2>
-                        <p class="text-xs text-slate-400">Traces relationships: Historical Author $\rightarrow$ Manuscript $\rightarrow$ Archival Collection $\rightarrow$ Institution $\rightarrow$ Audit Log</p>
+                        <div class="b-card-title">
+                            <i data-lucide="git-merge"></i>
+                            <span>Archival Provenance Topology</span>
+                        </div>
+                        <div class="b-card-desc">Relational trace: Author &rarr; Manuscript &rarr; Collection &rarr; Repository &rarr; Audit Trail.</div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <label class="text-xs text-slate-400">Inspect Document:</label>
-                        <select id="prov-doc-select" onchange="loadProvenanceGraph(this.value)" class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-3 py-1.5 text-amber-300 outline-none">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 11px; color: var(--fg-muted); font-family: var(--font-mono);">Document:</span>
+                        <select id="prov-doc-select" class="om-select" style="width: auto;" onchange="loadProvenanceGraph(this.value)">
                             <option value="1">Principia Mathematica (Newton)</option>
                             <option value="3">Codex Atlanticus (Da Vinci)</option>
                             <option value="5">Mock Theta Functions (Ramanujan)</option>
@@ -184,203 +1083,194 @@
                     </div>
                 </div>
 
-                <!-- Canvas Graph Container -->
-                <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 relative overflow-hidden h-[480px]">
-                    <canvas id="provenance-canvas" class="w-full h-full"></canvas>
-                    <div id="graph-legend" class="absolute bottom-3 left-3 bg-slate-900/90 border border-slate-800 p-3 rounded-lg text-xs space-y-1">
-                        <div class="font-semibold text-slate-300 mb-1">Graph Legend</div>
-                        <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span><span>Document</span></div>
-                        <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span><span>Person / Author</span></div>
-                        <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span><span>Archival Collection</span></div>
-                        <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-purple-500 inline-block"></span><span>Institution / Repository</span></div>
-                        <div class="flex items-center space-x-2"><span class="w-3 h-3 rounded-full bg-cyan-500 inline-block"></span><span>Access Audit View</span></div>
+                <div class="canvas-frame">
+                    <canvas id="provenance-canvas"></canvas>
+                    <div class="canvas-footer">
+                        <div class="key-bullet"><span class="key-circle-dot" style="background: #ffffff;"></span><span>Document</span></div>
+                        <div class="key-bullet"><span class="key-circle-dot" style="background: #a4a4a4;"></span><span>Author</span></div>
+                        <div class="key-bullet"><span class="key-circle-dot" style="background: #7a7a7a;"></span><span>Collection</span></div>
+                        <div class="key-bullet"><span class="key-circle-dot" style="background: #444444;"></span><span>Repository</span></div>
+                        <div class="key-bullet"><span class="key-circle-dot" style="background: #181818;"></span><span>Audit Event</span></div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ============================================================= -->
-        <!-- TAB 4: PI 3B+ DIGITIZATION STATION -->
-        <!-- ============================================================= -->
-        <section id="tab-ingest" class="space-y-6 hidden">
-            <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl space-y-6">
-                <div class="flex items-center justify-between border-b border-slate-700 pb-4">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-                            <i data-lucide="camera" class="w-5 h-5"></i>
+        <!-- ========================================================= -->
+        <!-- TAB 4: PRESERVE & INGEST -->
+        <!-- ========================================================= -->
+        <section id="tab-ingest" class="tab-panel">
+            <div class="b-card">
+                <div class="b-card-header">
+                    <div>
+                        <div class="b-card-title">
+                            <i data-lucide="upload-cloud"></i>
+                            <span>Preserve & Ingest Station</span>
                         </div>
-                        <div>
-                            <h2 class="text-lg font-bold font-serif-title text-emerald-400">Raspberry Pi 3B+ Ingestion & OCR Pipeline</h2>
-                            <p class="text-xs text-slate-400">Hardware Edge Capture $\rightarrow$ Deskewing $\rightarrow$ SHA-256 Checksum $\rightarrow$ Forensic Vector Extraction $\rightarrow$ SQL Ingestion</p>
-                        </div>
+                        <div class="b-card-desc">Register digitized manuscripts with SHA-256 integrity verification and vector extraction.</div>
                     </div>
-                    <span class="px-2.5 py-1 text-xs rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700">Pi Camera Online</span>
+                    <span class="badge-pill">ACID Ingestion Active</span>
                 </div>
 
-                <form id="ingest-form" onsubmit="handleIngest(event)" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1">Manuscript Title</label>
-                            <input type="text" id="ingest-title" required value="Lectiones Opticae: Prismatic Ray Theorems" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100 outline-none focus:ring-1 focus:ring-emerald-500">
+                <form id="ingest-form" onsubmit="handleIngest(event)">
+                    <div class="form-grid-layout">
+                        <div class="field-unit">
+                            <label>Manuscript Title</label>
+                            <input type="text" id="ingest-title" required value="Lectiones Opticae: Prismatic Ray Theorems" class="om-input" style="padding-left: 12px;">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 mb-1">Author / Contributor</label>
-                                <input type="text" id="ingest-author" required value="Sir Isaac Newton" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 mb-1">Date Written</label>
-                                <input type="text" id="ingest-date" required value="1670" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100 outline-none">
-                            </div>
+                        <div class="field-unit">
+                            <label>Author / Contributor</label>
+                            <input type="text" id="ingest-author" required value="Sir Isaac Newton" class="om-input" style="padding-left: 12px;">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 mb-1">Collection</label>
-                                <select id="ingest-collection" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 outline-none">
-                                    <option value="1">Newtonian Scientific Manuscripts</option>
-                                    <option value="2">Da Vinci Codex & Anatomy</option>
-                                    <option value="3">Ramanujan Lost Notebook</option>
-                                    <option value="4">Turing Decryption Dispatches</option>
-                                    <option value="5">Victorian Analytical Engine Papers</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 mb-1">Document Type</label>
-                                <select id="ingest-type" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 outline-none">
-                                    <option value="Manuscript">Manuscript</option>
-                                    <option value="Letter">Letter</option>
-                                    <option value="Notebook">Notebook</option>
-                                    <option value="Mathematical Treatise">Mathematical Treatise</option>
-                                </select>
-                            </div>
+                        <div class="field-unit">
+                            <label>Date Written / Circa</label>
+                            <input type="text" id="ingest-date" required value="1670" class="om-input" style="padding-left: 12px;">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 mb-1">Physical Condition</label>
-                                <select id="ingest-condition" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 outline-none">
-                                    <option value="Pristine">Pristine</option>
-                                    <option value="Good" selected>Good</option>
-                                    <option value="Fragile">Fragile</option>
-                                    <option value="Critical-Decay">Critical-Decay</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 mb-1">Forensic Style Seed</label>
-                                <input type="text" id="ingest-seed" value="newton_quill_flourish" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 outline-none">
-                            </div>
+                        <div class="field-unit">
+                            <label>Archival Collection</label>
+                            <select id="ingest-collection" class="om-select">
+                                <option value="1">Newtonian Scientific Manuscripts</option>
+                                <option value="2">Da Vinci Codex & Anatomy</option>
+                                <option value="3">Ramanujan Lost Notebook</option>
+                                <option value="4">Turing Decryption Dispatches</option>
+                                <option value="5">Victorian Analytical Engine Papers</option>
+                            </select>
+                        </div>
+
+                        <div class="field-unit">
+                            <label>Classification</label>
+                            <select id="ingest-type" class="om-select">
+                                <option value="Manuscript">Manuscript</option>
+                                <option value="Letter">Letter</option>
+                                <option value="Notebook">Notebook</option>
+                                <option value="Mathematical Treatise">Mathematical Treatise</option>
+                            </select>
+                        </div>
+
+                        <div class="field-unit">
+                            <label>Physical Preservation Condition</label>
+                            <select id="ingest-condition" class="om-select">
+                                <option value="Pristine">Pristine</option>
+                                <option value="Good" selected>Good</option>
+                                <option value="Fragile">Fragile</option>
+                                <option value="Critical-Decay">Critical-Decay</option>
+                            </select>
+                        </div>
+
+                        <div class="field-unit" style="grid-column: 1 / -1;">
+                            <label>Forensic Reference Seed</label>
+                            <input type="text" id="ingest-seed" value="newton_quill_flourish" class="om-input" style="padding-left: 12px;">
+                        </div>
+
+                        <div class="field-unit" style="grid-column: 1 / -1;">
+                            <label>OCR Transcript</label>
+                            <textarea id="ingest-ocr" rows="4" required class="om-input">Propositiones de refrangibilitate radiorum: Light consisting of rays differing in degree of refrangibility produces chromatic aberration when focused through spherical glass lenses.</textarea>
                         </div>
                     </div>
 
-                    <div class="space-y-4 flex flex-col justify-between">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-300 mb-1">Optical Character Recognition (OCR) Transcript</label>
-                            <textarea id="ingest-ocr" rows="6" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs text-slate-200 outline-none focus:ring-1 focus:ring-emerald-500 font-mono-code leading-relaxed">Propositiones de refrangibilitate radiorum: Light consisting of rays differing in degree of refrangibility produces chromatic aberration when focused through spherical glass lenses.</textarea>
-                        </div>
-
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center space-x-2 transition shadow-lg shadow-emerald-600/20">
-                            <i data-lucide="upload-cloud" class="w-5 h-5"></i>
-                            <span>Process & Ingest to ArchiveMind Database</span>
+                    <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn-om btn-om-white">
+                            <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                            <span>Commit Ingestion Transaction</span>
                         </button>
                     </div>
                 </form>
 
-                <div id="ingest-result" class="hidden rounded-xl p-4 border text-xs font-mono-code"></div>
+                <div id="ingest-result" style="display: none;"></div>
             </div>
         </section>
 
-        <!-- ============================================================= -->
-        <!-- TAB 5: DBMS EVALUATION QUERIES (PES University Grading Criteria) -->
-        <!-- ============================================================= -->
-        <section id="tab-queries" class="space-y-6 hidden">
-            <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl space-y-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700 pb-4">
+        <!-- ========================================================= -->
+        <!-- TAB 5: DBMS EVALUATION -->
+        <!-- ========================================================= -->
+        <section id="tab-queries" class="tab-panel">
+            <div class="b-card">
+                <div class="b-card-header">
                     <div>
-                        <div class="flex items-center space-x-2">
-                            <h2 class="text-lg font-bold font-serif-title text-amber-300">DBMS Evaluation Queries Sandbox</h2>
-                            <span class="px-2 py-0.5 text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 rounded">PES Lab Viva Suite</span>
+                        <div class="b-card-title">
+                            <i data-lucide="terminal"></i>
+                            <span>DBMS Evaluation Queries Sandbox</span>
                         </div>
-                        <p class="text-xs text-slate-400">All 5 mandatory query categories for UE23CS351A evaluation: Simple with Group By, Update, Delete, Correlated, Nested.</p>
+                        <div class="b-card-desc">All 5 mandatory query categories for UE23CS351A evaluation: GROUP BY, UPDATE, DELETE, Correlated, Nested.</div>
                     </div>
                 </div>
 
-                <!-- Query Buttons Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                    <button onclick="runQueryKey('7.1')" id="btn-q-7.1" class="q-btn bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl p-3 text-left transition space-y-1">
-                        <div class="text-xs font-bold text-amber-400">7.1 Simple + Group By</div>
-                        <div class="text-[11px] text-slate-400">Era & Condition Aggregation</div>
+                <div class="query-tiles">
+                    <button class="q-tile active" id="btn-q-7.1" onclick="runQueryKey('7.1')">
+                        <div class="q-tile-code">7.1 GROUP BY</div>
+                        <div class="q-tile-sub">Era & condition aggregation</div>
                     </button>
-                    <button onclick="runQueryKey('7.2')" id="btn-q-7.2" class="q-btn bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl p-3 text-left transition space-y-1">
-                        <div class="text-xs font-bold text-emerald-400">7.2 UPDATE Operation</div>
-                        <div class="text-[11px] text-slate-400">Conservation Checksum State</div>
+                    <button class="q-tile" id="btn-q-7.2" onclick="runQueryKey('7.2')">
+                        <div class="q-tile-code">7.2 UPDATE</div>
+                        <div class="q-tile-sub">Conservation status mutation</div>
                     </button>
-                    <button onclick="runQueryKey('7.3')" id="btn-q-7.3" class="q-btn bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl p-3 text-left transition space-y-1">
-                        <div class="text-xs font-bold text-rose-400">7.3 DELETE Operation</div>
-                        <div class="text-[11px] text-slate-400">Temp Audit Scrub</div>
+                    <button class="q-tile" id="btn-q-7.3" onclick="runQueryKey('7.3')">
+                        <div class="q-tile-code">7.3 DELETE</div>
+                        <div class="q-tile-sub">Scrub stale audit records</div>
                     </button>
-                    <button onclick="runQueryKey('7.4')" id="btn-q-7.4" class="q-btn bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl p-3 text-left transition space-y-1">
-                        <div class="text-xs font-bold text-indigo-400">7.4 Correlated Subquery</div>
-                        <div class="text-[11px] text-slate-400">Collection Length Relative</div>
+                    <button class="q-tile" id="btn-q-7.4" onclick="runQueryKey('7.4')">
+                        <div class="q-tile-code">7.4 CORRELATED</div>
+                        <div class="q-tile-sub">Above average collection length</div>
                     </button>
-                    <button onclick="runQueryKey('7.5')" id="btn-q-7.5" class="q-btn bg-slate-900 hover:bg-slate-700 border border-slate-700 rounded-xl p-3 text-left transition space-y-1">
-                        <div class="text-xs font-bold text-purple-400">7.5 Nested Subquery</div>
-                        <div class="text-[11px] text-slate-400">Multi-Collection Authors</div>
+                    <button class="q-tile" id="btn-q-7.5" onclick="runQueryKey('7.5')">
+                        <div class="q-tile-code">7.5 NESTED</div>
+                        <div class="q-tile-sub">Multi-collection author queries</div>
                     </button>
                 </div>
 
-                <!-- Query Details & SQL View -->
-                <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span id="query-active-title" class="text-sm font-semibold text-slate-200">Select a query above</span>
-                        <span id="query-runtime" class="text-xs font-mono text-emerald-400"></span>
-                    </div>
-                    <pre id="query-sql-display" class="font-mono-code text-xs text-amber-200/90 bg-slate-900/80 p-3 rounded-lg overflow-x-auto border border-slate-800">-- SQL Statement will appear here</pre>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span id="query-active-title" style="font-size: 13px; font-weight: 600; color: #ffffff;">Loading query...</span>
+                    <span id="query-runtime" style="font-family: var(--font-mono); font-size: 11px; color: var(--fg-muted);"></span>
                 </div>
 
-                <!-- Result Table -->
-                <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden">
-                    <div class="p-3 bg-slate-900/60 border-b border-slate-800 flex justify-between items-center text-xs text-slate-400">
-                        <span>Database Result Set</span>
-                        <span id="query-result-meta">0 rows returned</span>
-                    </div>
-                    <div id="query-table-container" class="overflow-x-auto max-h-96">
-                        <div class="p-6 text-center text-slate-500 text-xs">Run a query to inspect live database output.</div>
-                    </div>
+                <pre id="query-sql-display" class="sql-terminal">-- SQL statement will appear here</pre>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; color: var(--fg-muted); margin-bottom: 6px; font-family: var(--font-mono);">
+                    <span>RESULT SET</span>
+                    <span id="query-result-meta">0 rows</span>
+                </div>
+
+                <div id="query-table-container" class="table-frame">
+                    <div style="padding: 2.5rem; text-align: center; color: var(--fg-muted); font-size: 11.5px; font-family: var(--font-mono);">Run a query above to inspect output.</div>
                 </div>
             </div>
         </section>
 
-        <!-- ============================================================= -->
-        <!-- TAB 6: AUDIT TRAIL & TRIGGER VERIFICATION -->
-        <!-- ============================================================= -->
-        <section id="tab-audit" class="space-y-6 hidden">
-            <div class="bg-slate-800/90 rounded-2xl border border-slate-700 p-6 shadow-xl space-y-4">
-                <div class="flex justify-between items-center border-b border-slate-700 pb-4">
+        <!-- ========================================================= -->
+        <!-- TAB 6: AUDIT TRAIL -->
+        <!-- ========================================================= -->
+        <section id="tab-audit" class="tab-panel">
+            <div class="b-card">
+                <div class="b-card-header">
                     <div>
-                        <h2 class="text-lg font-bold font-serif-title text-amber-300">Chain-of-Custody & View Audit Trail</h2>
-                        <p class="text-xs text-slate-400">Maintained automatically via SQL Triggers on document inspection events.</p>
+                        <div class="b-card-title">
+                            <i data-lucide="activity"></i>
+                            <span>Audit Trail & Triggers</span>
+                        </div>
+                        <div class="b-card-desc">Automatic chain-of-custody logging triggered on manuscript inspection events.</div>
                     </div>
-                    <button onclick="loadAuditTrail()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs flex items-center space-x-1.5 text-slate-200">
-                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    <button class="btn-om btn-om-subtle" onclick="loadAuditTrail()">
+                        <i data-lucide="refresh-cw" style="width: 13px; height: 13px;"></i>
                         <span>Refresh Trail</span>
                     </button>
                 </div>
 
-                <div class="overflow-x-auto rounded-xl border border-slate-800">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-slate-900 text-slate-400 border-b border-slate-800">
+                <div class="table-frame">
+                    <table>
+                        <thead>
                             <tr>
-                                <th class="p-3">View ID</th>
-                                <th class="p-3">Manuscript</th>
-                                <th class="p-3">Audited Access Timestamp</th>
-                                <th class="p-3">IP Address</th>
-                                <th class="p-3">User / Identity</th>
-                                <th class="p-3">Security Role</th>
+                                <th>View ID</th>
+                                <th>Manuscript</th>
+                                <th>Timestamp</th>
+                                <th>IP Address</th>
+                                <th>Viewer</th>
+                                <th>Security Role</th>
                             </tr>
                         </thead>
-                        <tbody id="audit-table-body" class="divide-y divide-slate-800/60 font-mono-code">
+                        <tbody id="audit-table-body" style="font-family: var(--font-mono); font-size: 11.5px;">
                             <!-- Populated dynamically -->
                         </tbody>
                     </table>
@@ -390,31 +1280,29 @@
 
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-slate-950 border-t border-slate-800 py-4 text-center text-xs text-slate-500">
-        <p>ArchiveMind: A Hybrid SQL-Vector Semantic Search Engine | PES University Dept of CSE | Authors: A Sheiman Joshi (PES2UG24CS003) & Abhiroop (PES2UG24CS024) | Guide: Dr. Shilpa S</p>
+    <!-- Clean Monochrome Footer -->
+    <footer>
+        ArchiveMind &middot; UE23CS351A DBMS Project &middot; A Sheiman Joshi (PES2UG24CS003) & Abhiroop (PES2UG24CS024) &middot; Dr. Shilpa S &middot; PES University
     </footer>
 
-    <!-- JavaScript Application Logic -->
     <script>
         let currentDocuments = [];
         let metadata = {};
 
         // Tab Switching
         function switchTab(tabId) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.querySelectorAll('.nav-tab').forEach(b => {
-                b.classList.remove('border-amber-400', 'text-amber-300');
-                b.classList.add('border-transparent', 'text-slate-400');
-            });
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
-            if (activeBtn) {
-                activeBtn.classList.add('border-amber-400', 'text-amber-300');
-                activeBtn.classList.remove('border-transparent', 'text-slate-400');
-            }
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+            const targetPanel = document.getElementById(`tab-${tabId}`);
+            const targetBtn = document.getElementById(`tab-btn-${tabId}`);
+
+            if (targetPanel) targetPanel.classList.add('active');
+            if (targetBtn) targetBtn.classList.add('active');
+
             if (tabId === 'provenance') {
-                loadProvenanceGraph(document.getElementById('prov-doc-select').value);
+                const docId = document.getElementById('prov-doc-select').value;
+                loadProvenanceGraph(docId);
             } else if (tabId === 'audit') {
                 loadAuditTrail();
             } else if (tabId === 'queries') {
@@ -426,7 +1314,7 @@
             const v = parseFloat(val);
             const sqlPct = Math.round(v * 100);
             const vecPct = 100 - sqlPct;
-            document.getElementById('alpha-label').textContent = `Hybrid: ${sqlPct}% SQL / ${vecPct}% Vec`;
+            document.getElementById('alpha-label').textContent = `${sqlPct}% SQL / ${vecPct}% Vec`;
         }
 
         // Initialize Metadata
@@ -434,25 +1322,26 @@
             try {
                 const res = await fetch('/api/meta');
                 metadata = await res.json();
-                
-                // Populate Collections dropdowns
+
                 const colSelect = document.getElementById('filter-collection');
                 const ingestColSelect = document.getElementById('ingest-collection');
-                metadata.collections.forEach(c => {
-                    const opt = document.createElement('option');
-                    opt.value = c.collection_id;
-                    opt.textContent = `${c.name} (${c.era})`;
-                    colSelect.appendChild(opt);
-                });
 
-                // Load Initial Search
+                if (colSelect && metadata.collections) {
+                    metadata.collections.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.collection_id;
+                        opt.textContent = `${c.name} (${c.era})`;
+                        colSelect.appendChild(opt);
+                    });
+                }
+
                 await performSearch();
             } catch (err) {
-                console.error("Init Error:", err);
+                console.error("Initialization error:", err);
             }
         }
 
-        // Perform Hybrid Search
+        // Perform Search
         async function performSearch() {
             const queryText = document.getElementById('search-query').value;
             const alpha = parseFloat(document.getElementById('alpha-slider').value);
@@ -460,7 +1349,7 @@
             const collectionId = document.getElementById('filter-collection').value || null;
 
             const grid = document.getElementById('results-grid');
-            grid.innerHTML = '<div class="col-span-2 text-center py-12 text-slate-400">Executing hybrid SQL-Vector ranking...</div>';
+            grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 4rem; color: var(--fg-muted); font-size: 12px; font-family: var(--font-mono);">Executing hybrid SQL-Vector ranking...</div>';
 
             try {
                 const res = await fetch('/api/search/hybrid', {
@@ -475,9 +1364,9 @@
                 });
                 const data = await res.json();
                 renderSearchResults(data.results);
-                document.getElementById('results-count').textContent = `Found ${data.count} manuscripts matching criteria`;
+                document.getElementById('results-count').textContent = `Showing ${data.count} manuscripts matching criteria`;
             } catch (err) {
-                grid.innerHTML = `<div class="col-span-2 text-red-400 py-8 text-center">Search failed: ${err.message}</div>`;
+                grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #ffffff; font-family: var(--font-mono);">Search error: ${err.message}</div>`;
             }
         }
 
@@ -485,56 +1374,42 @@
             currentDocuments = docs;
             const grid = document.getElementById('results-grid');
             if (!docs || docs.length === 0) {
-                grid.innerHTML = '<div class="col-span-2 text-center py-12 text-slate-400">No archival documents found matching query and vector parameters.</div>';
+                grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 4rem; color: var(--fg-muted); font-size: 12px; font-family: var(--font-mono);">No manuscripts found.</div>';
                 return;
             }
 
-            grid.innerHTML = docs.map(doc => {
-                const conditionColor = {
-                    'Pristine': 'bg-emerald-950 text-emerald-300 border-emerald-800',
-                    'Good': 'bg-blue-950 text-blue-300 border-blue-800',
-                    'Fragile': 'bg-amber-950 text-amber-300 border-amber-800',
-                    'Critical-Decay': 'bg-rose-950 text-rose-300 border-rose-800'
-                }[doc.physical_condition] || 'bg-slate-800 text-slate-300';
-
-                return `
-                    <div class="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 rounded-2xl p-5 shadow-lg flex flex-col justify-between transition group">
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-start gap-2">
-                                <span class="px-2.5 py-0.5 text-[11px] rounded-full border ${conditionColor}">${doc.physical_condition}</span>
-                                <span class="text-xs font-mono text-slate-400">${doc.date_written || 'Circa unknown'}</span>
-                            </div>
-
-                            <div>
-                                <h3 class="text-base font-bold text-slate-100 group-hover:text-amber-300 transition">${doc.title}</h3>
-                                <p class="text-xs text-amber-400/90 font-medium mt-0.5">Author(s): ${doc.authors}</p>
-                            </div>
-
-                            <p class="text-xs text-slate-300/80 line-clamp-3 bg-slate-900/60 p-3 rounded-lg border border-slate-800 font-mono-code">
-                                "${doc.ocr_snippet}"
-                            </p>
-
-                            <div class="text-[11px] text-slate-400 space-y-0.5">
-                                <div><span class="text-slate-500">Collection:</span> ${doc.collection_name}</div>
-                                <div><span class="text-slate-500">Archive:</span> ${doc.archive_name} (${doc.institution})</div>
-                            </div>
+            grid.innerHTML = docs.map(doc => `
+                <div class="m-card">
+                    <div>
+                        <div class="m-card-top">
+                            <span class="badge-pill ${doc.physical_condition === 'Pristine' ? 'pristine' : ''}">${doc.physical_condition}</span>
+                            <span class="m-card-date">${doc.date_written || 'Circa unknown'}</span>
                         </div>
 
-                        <!-- Scores & Action -->
-                        <div class="mt-4 pt-4 border-t border-slate-700/60 flex items-center justify-between">
-                            <div class="flex items-center space-x-3 text-xs font-mono">
-                                <div title="FTS Score"><span class="text-slate-500">FTS:</span> <span class="text-emerald-400 font-bold">${doc.fts_score}</span></div>
-                                <div title="Handwriting Cosine Similarity"><span class="text-slate-500">Vec:</span> <span class="text-indigo-400 font-bold">${doc.vector_similarity}</span></div>
-                                <div title="Hybrid Fusion Rank"><span class="text-slate-500">Score:</span> <span class="text-amber-300 font-bold">${doc.hybrid_score}</span></div>
-                            </div>
-                            <button onclick="inspectDocument(${doc.document_id})" class="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 rounded-lg text-xs font-semibold transition flex items-center space-x-1">
-                                <span>Inspect</span>
-                                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
-                            </button>
+                        <div class="m-card-title">${doc.title}</div>
+                        <div class="m-card-author">${doc.authors}</div>
+
+                        <div class="m-card-ocr">"${doc.ocr_snippet}"</div>
+
+                        <div class="m-card-repo">
+                            <div>Collection: ${doc.collection_name}</div>
+                            <div>Archive: ${doc.archive_name} (${doc.institution})</div>
                         </div>
                     </div>
-                `;
-            }).join('');
+
+                    <div class="m-card-foot">
+                        <div class="score-cluster">
+                            <div><span>FTS:</span> <strong>${doc.fts_score}</strong></div>
+                            <div><span>Vec:</span> <strong>${doc.vector_similarity}</strong></div>
+                            <div><span>Score:</span> <strong>${doc.hybrid_score}</strong></div>
+                        </div>
+                        <button class="btn-inspect" onclick="inspectDocument(${doc.document_id})">
+                            <span>Inspect</span>
+                            <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
             lucide.createIcons();
         }
 
@@ -542,7 +1417,7 @@
         async function inspectDocument(docId) {
             switchTab('document');
             const container = document.getElementById('doc-detail-view');
-            container.innerHTML = '<div class="text-center py-12 text-slate-400">Loading manuscript details and registering view audit trigger...</div>';
+            container.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--fg-muted); font-family: var(--font-mono);">Retrieving record...</div>';
 
             try {
                 const res = await fetch(`/api/documents/${docId}`);
@@ -550,66 +1425,69 @@
                 const doc = data.document;
 
                 container.innerHTML = `
-                    <div class="space-y-6">
-                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-700 pb-4">
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
                             <div>
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-xs px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">ID #${doc.document_id}</span>
-                                    <span class="text-xs px-2.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">${doc.doc_type}</span>
-                                    <span class="text-xs px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">${doc.physical_condition}</span>
+                                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                                    <span class="badge-pill">#${doc.document_id}</span>
+                                    <span class="badge-pill">${doc.doc_type}</span>
+                                    <span class="badge-pill pristine">${doc.physical_condition}</span>
                                 </div>
-                                <h1 class="text-xl font-bold font-serif-title text-slate-100 mt-2">${doc.title}</h1>
-                                <p class="text-xs text-amber-300 mt-0.5">Author(s): ${doc.authors} | Language: ${doc.language} | Date: ${doc.date_written}</p>
+                                <h1 style="font-size: 18px; font-weight: 700; color: #ffffff; letter-spacing: -0.02em;">${doc.title}</h1>
+                                <p style="font-size: 12px; color: var(--fg-secondary); margin-top: 3px;">
+                                    ${doc.authors} &middot; ${doc.date_written} &middot; Language: ${doc.language}
+                                </p>
                             </div>
-                            <div class="flex items-center space-x-2">
-                                <button onclick="triggerCitation(${doc.document_id}, 'Chicago-Archival')" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-semibold text-slate-200">
-                                    + Chicago Citation
-                                </button>
-                                <button onclick="triggerCitation(${doc.document_id}, 'MLA')" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-semibold text-slate-200">
-                                    + MLA Citation
-                                </button>
-                                <button onclick="triggerCitation(${doc.document_id}, 'APA')" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-semibold text-slate-200">
-                                    + APA Citation
-                                </button>
+
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                <button class="btn-om btn-om-subtle" onclick="triggerCitation(${doc.document_id}, 'Chicago-Archival')">+ Chicago</button>
+                                <button class="btn-om btn-om-subtle" onclick="triggerCitation(${doc.document_id}, 'MLA')">+ MLA</button>
+                                <button class="btn-om btn-om-subtle" onclick="triggerCitation(${doc.document_id}, 'APA')">+ APA</button>
                             </div>
                         </div>
 
-                        <!-- 3-Column Inspector Grid -->
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <!-- Column 1: Archival Provenance & Checksum -->
-                            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
-                                <h3 class="font-bold text-amber-300 border-b border-slate-800 pb-2">Archival Repository Provenance</h3>
-                                <div><span class="text-slate-400">Collection:</span> <span class="text-slate-200">${doc.collection_name}</span></div>
-                                <div><span class="text-slate-400">Historical Era:</span> <span class="text-slate-200">${doc.era}</span></div>
-                                <div><span class="text-slate-400">Repository:</span> <span class="text-slate-200">${doc.archive_name}</span></div>
-                                <div><span class="text-slate-400">Institution:</span> <span class="text-slate-200">${doc.institution} (${doc.location})</span></div>
-                                <div><span class="text-slate-400">Digitized By:</span> <span class="text-slate-200">${doc.digitized_by_name || 'Station Pi'}</span></div>
-
-                                <div class="pt-2 border-t border-slate-800">
-                                    <div class="font-semibold text-slate-300 mb-1">Cryptographic Checksum (SHA-256):</div>
-                                    <div class="font-mono-code text-[10px] break-all bg-slate-950 p-2 rounded text-emerald-400 border border-slate-800">
-                                        ${doc.checksum_value}
-                                    </div>
+                        <div class="inspect-grid">
+                            <div class="spec-card">
+                                <div class="spec-item">
+                                    <span>Collection</span>
+                                    <span>${doc.collection_name}</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span>Historical Era</span>
+                                    <span>${doc.era}</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span>Repository</span>
+                                    <span>${doc.archive_name}</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span>Institution</span>
+                                    <span>${doc.institution} (${doc.location})</span>
+                                </div>
+                                <div class="spec-item">
+                                    <span>Integrity SHA-256</span>
+                                    <span class="hash-pill">${doc.checksum_value}</span>
                                 </div>
                             </div>
 
-                            <!-- Column 2: Full OCR Transcript -->
-                            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-3 lg:col-span-2 text-xs">
-                                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                                    <h3 class="font-bold text-emerald-400">Decoded OCR Transcript (Full-Text Virtual Table)</h3>
-                                    <span class="text-[10px] text-slate-400 font-mono">Status: ${doc.ocr_status}</span>
-                                </div>
-                                <div class="bg-slate-950 p-4 rounded-lg font-mono-code text-xs text-slate-200 leading-relaxed border border-slate-800 whitespace-pre-wrap max-h-64 overflow-y-auto">
-${doc.ocr_text_cache}
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 10.5px; font-family: var(--font-mono); color: var(--fg-muted); margin-bottom: 6px;">
+                                        <span>OCR TRANSCRIPT (FTS5 INDEXED)</span>
+                                        <span style="color: #ffffff;">STATUS: ${doc.ocr_status}</span>
+                                    </div>
+                                    <div class="ocr-viewer">${doc.ocr_text_cache}</div>
                                 </div>
 
-                                <!-- Citation Display Box -->
-                                <div class="pt-2 border-t border-slate-800">
-                                    <h4 class="font-semibold text-amber-300 mb-1">Registered Academic Citations:</h4>
-                                    <div id="citation-list" class="space-y-1.5">
+                                <div>
+                                    <div style="font-size: 10.5px; font-weight: 600; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: var(--font-mono);">
+                                        Archival Citations
+                                    </div>
+                                    <div id="citation-list" style="display: flex; flex-direction: column; gap: 4px;">
                                         ${data.citations.map(c => `
-                                            <div class="bg-slate-950 p-2 rounded border border-slate-800 text-slate-300 text-[11px] font-serif">
-                                                <span class="text-amber-400 font-mono font-bold mr-1">[${c.citation_style}]</span> ${c.citation_text}
+                                            <div class="citation-card">
+                                                <span class="citation-tag">${c.citation_style}</span>
+                                                <span style="color: #ffffff; font-size: 11.5px;">${c.citation_text}</span>
                                             </div>
                                         `).join('')}
                                     </div>
@@ -620,11 +1498,11 @@ ${doc.ocr_text_cache}
                 `;
                 lucide.createIcons();
             } catch (err) {
-                container.innerHTML = `<div class="text-red-400">Error loading manuscript: ${err.message}</div>`;
+                container.innerHTML = `<div style="text-align: center; color: var(--fg-muted); padding: 2rem;">Error: ${err.message}</div>`;
             }
         }
 
-        // Trigger Citation Generator Procedure
+        // Trigger Citation
         async function triggerCitation(docId, style) {
             try {
                 const res = await fetch(`/api/documents/${docId}/citation`, {
@@ -635,20 +1513,25 @@ ${doc.ocr_text_cache}
                 const citation = await res.json();
                 const list = document.getElementById('citation-list');
                 const newElem = document.createElement('div');
-                newElem.className = 'bg-slate-950 p-2 rounded border border-emerald-800/80 text-emerald-200 text-[11px] font-serif animate-pulse';
-                newElem.innerHTML = `<span class="text-amber-400 font-mono font-bold mr-1">[${citation.citation_style}]</span> ${citation.citation_text}`;
+                newElem.className = 'citation-card';
+                newElem.style.borderColor = '#ffffff';
+                newElem.innerHTML = `
+                    <span class="citation-tag">${citation.citation_style}</span>
+                    <span style="color: #ffffff; font-size: 11.5px;">${citation.citation_text}</span>
+                `;
                 list.prepend(newElem);
             } catch (err) {
-                alert("Citation generation error: " + err.message);
+                alert("Citation error: " + err.message);
             }
         }
 
-        // Ingest Document Handler (Pi Pipeline)
+        // Ingest Document
         async function handleIngest(e) {
             e.preventDefault();
             const resultBox = document.getElementById('ingest-result');
-            resultBox.classList.remove('hidden');
-            resultBox.innerHTML = 'Connecting to Pi Station, computing SHA-256 checksum and vector embeddings...';
+            resultBox.style.display = 'block';
+            resultBox.className = 'alert-toast';
+            resultBox.innerHTML = 'Computing SHA-256 integrity checksum & registering vector...';
 
             const payload = {
                 title: document.getElementById('ingest-title').value,
@@ -668,25 +1551,21 @@ ${doc.ocr_text_cache}
                     body: JSON.stringify(payload)
                 });
                 const data = await res.json();
-                resultBox.className = 'rounded-xl p-4 border border-emerald-700 bg-emerald-950/60 text-emerald-300 font-mono-code text-xs space-y-1';
                 resultBox.innerHTML = `
-                    <div class="font-bold text-sm text-emerald-400">✓ Ingestion Transaction Committed to ArchiveMind!</div>
-                    <div>Document ID: #${data.document_id}</div>
-                    <div>Cryptographic Checksum: ${data.checksum}</div>
-                    <div>Vector ID: ${data.vector_id}</div>
-                    <div>Full-Text Search FTS5 Virtual Table Synchronized.</div>
+                    <div style="font-weight: 600; color: #ffffff; margin-bottom: 2px;">✓ Ingestion Transaction Committed to ArchiveMind</div>
+                    <div style="color: var(--fg-secondary); font-size: 11px;">Document #${data.document_id} &middot; Vector: ${data.vector_id}</div>
+                    <div style="color: var(--fg-muted); font-size: 10px; word-break: break-all; margin-top: 2px;">SHA-256: ${data.checksum}</div>
                 `;
             } catch (err) {
-                resultBox.className = 'rounded-xl p-4 border border-rose-700 bg-rose-950 text-rose-300 font-mono-code text-xs';
                 resultBox.innerHTML = `Ingestion Failed: ${err.message}`;
             }
         }
 
-        // Run DBMS Evaluation Queries (Tab 5)
+        // Run DBMS Evaluation Queries
         async function runQueryKey(key) {
-            document.querySelectorAll('.q-btn').forEach(b => b.classList.remove('ring-2', 'ring-amber-500'));
+            document.querySelectorAll('.q-tile').forEach(b => b.classList.remove('active'));
             const activeBtn = document.getElementById(`btn-q-${key}`);
-            if (activeBtn) activeBtn.classList.add('ring-2', 'ring-amber-500');
+            if (activeBtn) activeBtn.classList.add('active');
 
             const titleElem = document.getElementById('query-active-title');
             const sqlElem = document.getElementById('query-sql-display');
@@ -695,7 +1574,7 @@ ${doc.ocr_text_cache}
             const runtimeElem = document.getElementById('query-runtime');
 
             titleElem.textContent = `Executing Query ${key}...`;
-            tableContainer.innerHTML = '<div class="p-6 text-center text-slate-400 text-xs">Executing relational query and calculating plan...</div>';
+            tableContainer.innerHTML = '<div style="padding: 2.5rem; text-align: center; color: var(--fg-muted); font-size: 11.5px; font-family: var(--font-mono);">Executing query plan...</div>';
 
             const startT = performance.now();
             try {
@@ -709,26 +1588,26 @@ ${doc.ocr_text_cache}
 
                 titleElem.textContent = data.name;
                 sqlElem.textContent = data.sql;
-                runtimeElem.textContent = `Executed in ${elapsed} ms`;
+                runtimeElem.textContent = `${elapsed} ms`;
 
                 const rows = data.results || [];
-                metaElem.textContent = `${rows.length} records returned ${data.rows_affected ? `(${data.rows_affected} rows affected)` : ''}`;
+                metaElem.textContent = `${rows.length} records returned ${data.rows_affected ? `(${data.rows_affected} affected)` : ''}`;
 
                 if (rows.length === 0) {
-                    tableContainer.innerHTML = '<div class="p-6 text-center text-slate-500 text-xs">Query executed successfully. Result set empty or operation completed.</div>';
+                    tableContainer.innerHTML = '<div style="padding: 2.5rem; text-align: center; color: var(--fg-muted); font-size: 11.5px; font-family: var(--font-mono);">Operation executed successfully.</div>';
                     return;
                 }
 
                 const columns = Object.keys(rows[0]);
                 let tableHtml = `
-                    <table class="w-full text-left text-xs font-mono-code">
-                        <thead class="bg-slate-900 text-amber-300 border-b border-slate-800">
-                            <tr>${columns.map(c => `<th class="p-2.5 whitespace-nowrap">${c}</th>`).join('')}</tr>
+                    <table>
+                        <thead>
+                            <tr>${columns.map(c => `<th>${c}</th>`).join('')}</tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-800">
+                        <tbody style="font-family: var(--font-mono); font-size: 11.5px;">
                             ${rows.map(r => `
-                                <tr class="hover:bg-slate-900/60 transition">
-                                    ${columns.map(c => `<td class="p-2.5 text-slate-200 whitespace-nowrap">${r[c] !== null ? r[c] : '<span class="text-slate-600">NULL</span>'}</td>`).join('')}
+                                <tr>
+                                    ${columns.map(c => `<td>${r[c] !== null ? r[c] : '<span style="color: var(--fg-faint);">NULL</span>'}</td>`).join('')}
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -736,33 +1615,33 @@ ${doc.ocr_text_cache}
                 `;
                 tableContainer.innerHTML = tableHtml;
             } catch (err) {
-                tableContainer.innerHTML = `<div class="p-6 text-rose-400 text-xs">Query Error: ${err.message}</div>`;
+                tableContainer.innerHTML = `<div style="padding: 2.5rem; text-align: center; color: var(--fg-muted); font-size: 11.5px; font-family: var(--font-mono);">Query error: ${err.message}</div>`;
             }
         }
 
         // Load Audit Trail
         async function loadAuditTrail() {
             const tbody = document.getElementById('audit-table-body');
-            tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-slate-400">Loading audit records...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2.5rem; color: var(--fg-muted); font-family: var(--font-mono);">Loading audit records...</td></tr>';
             try {
                 const res = await fetch('/api/audit/views');
                 const views = await res.json();
                 tbody.innerHTML = views.map(v => `
-                    <tr class="hover:bg-slate-900/50">
-                        <td class="p-3 text-amber-400 font-bold">#${v.view_id}</td>
-                        <td class="p-3 text-slate-200 font-sans">${v.title}</td>
-                        <td class="p-3 text-slate-400">${v.viewed_at}</td>
-                        <td class="p-3 text-emerald-400">${v.ip_address}</td>
-                        <td class="p-3 text-slate-300 font-sans">${v.viewer_name}</td>
-                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300">${v.role_name || 'Guest'}</span></td>
+                    <tr>
+                        <td style="color: #ffffff; font-weight: 600;">#${v.view_id}</td>
+                        <td style="color: #ffffff; font-family: var(--font-sans); font-weight: 500;">${v.title}</td>
+                        <td style="color: var(--fg-muted);">${v.viewed_at}</td>
+                        <td style="color: var(--fg-bright);">${v.ip_address}</td>
+                        <td style="font-family: var(--font-sans); color: var(--fg-bright);">${v.viewer_name}</td>
+                        <td><span class="badge-pill">${v.role_name || 'Guest'}</span></td>
                     </tr>
                 `).join('');
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-red-400">${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--fg-muted); padding: 2rem; font-family: var(--font-mono);">Audit trail error: ${err.message}</td></tr>`;
             }
         }
 
-        // Interactive Provenance Graph (Canvas-based)
+        // Interactive Provenance Canvas Graph (High-Contrast Monochrome Vantablack)
         async function loadProvenanceGraph(docId) {
             const canvas = document.getElementById('provenance-canvas');
             const ctx = canvas.getContext('2d');
@@ -771,16 +1650,16 @@ ${doc.ocr_text_cache}
             canvas.height = rect.height;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#94a3b8";
-            ctx.font = "12px sans-serif";
-            ctx.fillText("Rendering provenance graph nodes...", 20, 30);
+            ctx.fillStyle = "#505050";
+            ctx.font = "11px 'Geist Mono', monospace";
+            ctx.fillText("Rendering topology nodes...", 16, 24);
 
             try {
                 const res = await fetch(`/api/provenance/${docId}`);
                 const data = await res.json();
                 renderCanvasGraph(ctx, canvas.width, canvas.height, data.nodes, data.edges);
             } catch (err) {
-                ctx.fillText("Failed to load provenance: " + err.message, 20, 30);
+                ctx.fillText("Failed to load provenance: " + err.message, 16, 24);
             }
         }
 
@@ -789,14 +1668,13 @@ ${doc.ocr_text_cache}
             if (!nodes || nodes.length === 0) return;
 
             const colorMap = {
-                document: '#f59e0b',
-                person: '#6366f1',
-                collection: '#10b981',
-                archive: '#a855f7',
-                audit: '#06b6d4'
+                document: '#ffffff',
+                person: '#b6b6b6',
+                collection: '#8d8d8d',
+                archive: '#5c5c5c',
+                audit: '#2a2a2a'
             };
 
-            // Layout coordinates around center
             const centerX = width / 2;
             const centerY = height / 2;
             const docNode = nodes.find(n => n.type === 'document') || nodes[0];
@@ -804,7 +1682,7 @@ ${doc.ocr_text_cache}
             docNode.y = centerY;
 
             const otherNodes = nodes.filter(n => n !== docNode);
-            const radius = Math.min(width, height) * 0.38;
+            const radius = Math.min(width, height) * 0.35;
             const angleStep = (2 * Math.PI) / (otherNodes.length || 1);
 
             otherNodes.forEach((node, i) => {
@@ -821,42 +1699,48 @@ ${doc.ocr_text_cache}
                     ctx.beginPath();
                     ctx.moveTo(s.x, s.y);
                     ctx.lineTo(t.x, t.y);
-                    ctx.strokeStyle = '#334155';
-                    ctx.lineWidth = 1.5;
+                    ctx.strokeStyle = '#222222';
+                    ctx.lineWidth = 1;
                     ctx.stroke();
 
-                    // Edge label
                     const midX = (s.x + t.x) / 2;
                     const midY = (s.y + t.y) / 2;
-                    ctx.fillStyle = '#64748b';
-                    ctx.font = '9px monospace';
-                    ctx.fillText(edge.label, midX - 20, midY);
+                    ctx.fillStyle = '#666666';
+                    ctx.font = "9.5px 'Geist Mono', monospace";
+                    ctx.fillText(edge.label, midX - 16, midY);
                 }
             });
 
             // Draw Nodes
             nodes.forEach(node => {
                 ctx.beginPath();
-                ctx.arc(node.x, node.y, node.type === 'document' ? 22 : 16, 0, 2 * Math.PI);
-                ctx.fillStyle = colorMap[node.type] || '#64748b';
+                ctx.arc(node.x, node.y, node.type === 'document' ? 15 : 10, 0, 2 * Math.PI);
+                ctx.fillStyle = colorMap[node.type] || '#505050';
                 ctx.fill();
-                ctx.strokeStyle = '#0f172a';
-                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2.5;
                 ctx.stroke();
 
-                // Text
-                ctx.fillStyle = '#f8fafc';
-                ctx.font = 'bold 11px sans-serif';
+                ctx.fillStyle = '#ffffff';
+                ctx.font = "500 11px 'Geist', sans-serif";
                 ctx.textAlign = 'center';
-                ctx.fillText(node.label.length > 22 ? node.label.slice(0, 20) + '...' : node.label, node.x, node.y - 22);
+                const labelText = node.label.length > 24 ? node.label.slice(0, 22) + '...' : node.label;
+                ctx.fillText(labelText, node.x, node.y - 14);
 
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = '9px monospace';
-                ctx.fillText(node.details || '', node.x, node.y + 28);
+                ctx.fillStyle = '#7a7a7a';
+                ctx.font = "9.5px 'Geist Mono', monospace";
+                ctx.fillText(node.details || '', node.x, node.y + 18);
             });
         }
 
-        // Start App
+        window.addEventListener('resize', () => {
+            const activeTab = document.querySelector('.tab-panel.active');
+            if (activeTab && activeTab.id === 'tab-provenance') {
+                const docId = document.getElementById('prov-doc-select').value;
+                loadProvenanceGraph(docId);
+            }
+        });
+
         window.addEventListener('DOMContentLoaded', () => {
             initApp();
             lucide.createIcons();
@@ -864,4 +1748,3 @@ ${doc.ocr_text_cache}
     </script>
 </body>
 </html>
-

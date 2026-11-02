@@ -564,7 +564,7 @@ class ArchiveMindDB:
         return view_id
 
     # -------------------------------------------------------------
-    # INGESTION WORKFLOW (Raspberry Pi Digitization Simulation)
+    # INGESTION WORKFLOW (Digital Document Preservation & Vector Indexing)
     # -------------------------------------------------------------
     def ingest_document(
         self,
@@ -618,7 +618,7 @@ class ArchiveMindDB:
             emb = generate_deterministic_embedding(style_seed or title)
             cur.execute("""
                 INSERT INTO handwriting_sample (document_id, vector_id, embedding_json, extraction_method)
-                VALUES (?, ?, ?, 'Pi3B-OpenCV-ForensicMoments')
+                VALUES (?, ?, ?, 'Archival-ForensicMoments')
             """, (doc_id, f"vec_ingest_{doc_id}", json.dumps(emb)))
 
             # Auto-generate initial Citation
