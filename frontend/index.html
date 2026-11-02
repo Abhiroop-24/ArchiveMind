@@ -6,34 +6,34 @@
     <title>ArchiveMind — Intelligent Document Preservation & Forensics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Geist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700;800&family=Geist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         /* ==========================================================================
-           NOTHING OS / BRUTALIST OMARCHY MONOCHROME DESIGN SYSTEM
-           Background: Pure Stark White (#ffffff)
-           Cards & Modals: Pure Deep Black (#000000)
-           Zero Radius: 0px (Completely Sharp Box Geometry, No Rounded Curves)
-           Typography: Bold Industrial Geist + Geist Mono
+           NOTHING OS / BRUTALIST GOD-TIER DESIGN SYSTEM
+           Canvas: Pure Stark White (#ffffff) with subtle dot-matrix & hairline rules
+           Cards: Deep Obsidian Black (#000000) with crisp 1px razor borders
+           Zero Curves: border-radius: 0px !important (Strict architectural box geometry)
+           Type: High-density Geist & Geist Mono, uppercase labeling, stark micro-badges
            ========================================================================== */
         :root {
-            --bg-page: #f4f4f4;
+            --bg-page: #f8f8f8;
             --bg-white: #ffffff;
             --box-black: #000000;
-            --box-dark: #0a0a0a;
-            --box-elevated: #141414;
-            --box-subtle: #1c1c1c;
+            --box-card: #080808;
+            --box-elevated: #111111;
+            --box-subtle: #181818;
             
-            --border-dark: #000000;
-            --border-dim: #262626;
-            --border-mid: #404040;
+            --border-heavy: #000000;
+            --border-dim: #222222;
+            --border-mid: #333333;
             --border-light: #e5e5e5;
             
-            --text-on-white: #000000;
-            --text-on-white-muted: #666666;
-            --text-on-black: #ffffff;
-            --text-on-black-muted: #888888;
-            --text-on-black-faint: #444444;
+            --text-black: #000000;
+            --text-black-muted: #555555;
+            --text-white: #ffffff;
+            --text-white-muted: #888888;
+            --text-white-faint: #444444;
 
             --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
             --font-mono: 'Geist Mono', monospace;
@@ -49,7 +49,7 @@
 
         body {
             background-color: var(--bg-white);
-            color: var(--text-on-white);
+            color: var(--text-black);
             font-family: var(--font-sans);
             font-size: 13px;
             line-height: 1.4;
@@ -57,55 +57,55 @@
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
-            /* Subtle Brutalist Grid on white background */
+            /* Nothing OS dot matrix texture */
             background-image: 
-                linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-            background-size: 32px 32px;
+                radial-gradient(circle at 50% 0%, rgba(0, 0, 0, 0.04) 0%, transparent 60%),
+                radial-gradient(#d1d1d1 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px;
         }
 
-        /* Top Bar - High Contrast Brutalist Header */
+        /* Top Bar - Architectural Minimal Header */
         .box-header {
             background: var(--bg-white);
-            border-bottom: 2px solid var(--border-dark);
+            border-bottom: 2px solid var(--border-heavy);
             position: sticky;
             top: 0;
             z-index: 1000;
         }
 
         .box-header-inner {
-            max-width: 1480px;
+            max-width: 1520px;
             margin: 0 auto;
-            height: 56px;
+            height: 60px;
             padding: 0 1.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .brand-box {
+        .brand-cluster {
             display: flex;
             align-items: center;
             gap: 12px;
             text-decoration: none;
-            color: var(--text-on-white);
+            color: var(--text-black);
         }
 
-        .brand-badge {
+        .brand-sq {
             background: var(--box-black);
-            color: var(--text-on-black);
+            color: var(--text-white);
             font-family: var(--font-mono);
-            font-weight: 800;
-            font-size: 14px;
-            width: 28px;
-            height: 28px;
+            font-weight: 900;
+            font-size: 15px;
+            width: 32px;
+            height: 32px;
             display: grid;
             place-items: center;
-            border: 1px solid var(--box-black);
+            border: 2px solid var(--box-black);
         }
 
         .brand-title {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 900;
             letter-spacing: -0.04em;
             text-transform: uppercase;
@@ -114,59 +114,59 @@
             gap: 8px;
         }
 
-        .brand-tag {
+        .brand-badge {
             font-family: var(--font-mono);
-            font-size: 10px;
-            font-weight: 600;
-            padding: 2px 6px;
+            font-size: 9.5px;
+            font-weight: 700;
+            padding: 2px 7px;
             background: var(--box-black);
-            color: var(--text-on-black);
+            color: var(--text-white);
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.08em;
         }
 
-        .header-meta {
+        .header-controls {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .user-box {
+        .user-chip {
             display: flex;
             align-items: center;
             gap: 8px;
-            border: 2px solid var(--border-dark);
+            border: 2px solid var(--border-heavy);
             background: var(--bg-white);
-            padding: 4px 10px;
+            padding: 5px 12px;
             font-family: var(--font-mono);
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
+            box-shadow: 2px 2px 0px #000000;
         }
 
-        .role-select {
+        .role-dropdown {
             background: transparent;
             border: none;
             font-family: var(--font-mono);
             font-size: 11px;
-            font-weight: 700;
-            color: var(--text-on-white);
+            font-weight: 800;
+            color: var(--text-black);
             outline: none;
             cursor: pointer;
             text-transform: uppercase;
         }
 
-        /* Nav Tabs - Stark Box Buttons */
+        /* Nav Tabs - Stark Architectural Buttons */
         .box-nav {
             background: var(--bg-white);
-            border-bottom: 2px solid var(--border-dark);
+            border-bottom: 2px solid var(--border-heavy);
             padding: 0 1.5rem;
         }
 
         .box-nav-inner {
-            max-width: 1480px;
+            max-width: 1520px;
             margin: 0 auto;
             display: flex;
-            gap: 0;
             overflow-x: auto;
             scrollbar-width: none;
         }
@@ -176,15 +176,14 @@
             appearance: none;
             background: var(--bg-white);
             border: none;
-            border-right: 1px solid var(--border-light);
-            border-left: 1px solid transparent;
-            padding: 12px 18px;
-            color: var(--text-on-white-muted);
+            border-right: 1px solid #e0e0e0;
+            padding: 14px 20px;
+            color: var(--text-black-muted);
             font-family: var(--font-mono);
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.05em;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -194,17 +193,21 @@
         }
 
         .tab-box-btn:first-child {
-            border-left: 1px solid var(--border-light);
+            border-left: 2px solid var(--border-heavy);
+        }
+
+        .tab-box-btn:last-child {
+            border-right: 2px solid var(--border-heavy);
         }
 
         .tab-box-btn:hover {
-            background: #e9e9e9;
-            color: var(--text-on-white);
+            background: #ededed;
+            color: var(--text-black);
         }
 
         .tab-box-btn.active {
             background: var(--box-black);
-            color: var(--text-on-black);
+            color: var(--text-white);
             border-color: var(--box-black);
         }
 
@@ -214,57 +217,66 @@
             stroke-width: 2.5;
         }
 
-        /* Main Workspace Layout */
+        /* Workspace Main Layout */
         main {
-            max-width: 1480px;
+            max-width: 1520px;
             margin: 0 auto;
-            padding: 2rem 1.5rem 3rem;
+            padding: 2.25rem 1.5rem 3.5rem;
             width: 100%;
             flex: 1;
         }
 
         .tab-panel {
             display: none;
+            animation: fadeInTab 0.12s ease-out;
         }
 
         .tab-panel.active {
             display: block;
         }
 
-        /* Hero / Index Banner (Nothing OS style) */
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Nothing OS Architectural Banner */
         .hero-banner {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.75rem;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            border-bottom: 2px solid var(--border-dark);
-            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-heavy);
+            padding-bottom: 1.25rem;
+            gap: 1rem;
         }
 
         .hero-headline {
-            font-size: 42px;
+            font-size: 48px;
             font-weight: 900;
-            letter-spacing: -0.05em;
-            line-height: 1;
+            letter-spacing: -0.06em;
+            line-height: 0.95;
             text-transform: uppercase;
         }
 
-        .hero-sub {
+        .hero-meta-right {
             font-family: var(--font-mono);
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-on-white-muted);
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--text-black-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            text-align: right;
+            line-height: 1.5;
         }
 
-        /* Pure Black Box Cards */
+        /* Box Cards (Black on White) */
         .box-card-black {
-            background: var(--box-black);
-            color: var(--text-on-black);
-            border: 2px solid var(--border-dark);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            background: var(--box-card);
+            color: var(--text-white);
+            border: 2px solid var(--border-heavy);
+            padding: 1.75rem;
+            margin-bottom: 1.75rem;
             box-shadow: 6px 6px 0px #000000;
         }
 
@@ -280,7 +292,7 @@
 
         .box-title {
             font-size: 15px;
-            font-weight: 800;
+            font-weight: 900;
             letter-spacing: -0.02em;
             text-transform: uppercase;
             display: flex;
@@ -290,17 +302,19 @@
 
         .box-desc {
             font-size: 12px;
-            color: var(--text-on-black-muted);
-            margin-top: 2px;
+            color: var(--text-white-muted);
+            margin-top: 3px;
+            font-family: var(--font-sans);
         }
 
-        /* Sharp Brutalist Search Bar */
+        /* Stark Search Bar Block */
         .search-block {
             display: flex;
             gap: 0;
-            border: 2px solid var(--border-mid);
-            margin-bottom: 1.25rem;
-            background: var(--box-dark);
+            border: 2px solid #333333;
+            margin-bottom: 1.5rem;
+            background: #000000;
+            box-shadow: 3px 3px 0px rgba(255, 255, 255, 0.15);
         }
 
         .search-input-wrap {
@@ -313,38 +327,39 @@
         .search-input-wrap i {
             position: absolute;
             left: 14px;
-            color: var(--text-on-black-muted);
-            width: 16px;
-            height: 16px;
+            color: var(--text-white-muted);
+            width: 17px;
+            height: 17px;
         }
 
         .box-input {
             width: 100%;
             background: transparent;
             border: none;
-            padding: 12px 14px 12px 42px;
-            color: var(--text-on-black);
+            padding: 14px 16px 14px 44px;
+            color: var(--text-white);
             font-family: var(--font-sans);
-            font-size: 13.5px;
+            font-size: 14px;
             outline: none;
+            letter-spacing: -0.01em;
         }
 
         .box-input::placeholder {
-            color: var(--text-on-black-faint);
+            color: var(--text-white-faint);
         }
 
-        /* Box Buttons (Pure Rectangular, 0px curves) */
+        /* Rectangular Box Buttons */
         .btn-box {
             appearance: none;
             background: var(--bg-white);
             color: var(--box-black);
             border: 2px solid var(--bg-white);
-            padding: 10px 20px;
+            padding: 12px 24px;
             font-family: var(--font-mono);
             font-size: 12px;
-            font-weight: 800;
+            font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.08em;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -360,64 +375,69 @@
             border-color: #ffffff;
         }
 
-        .btn-box-secondary {
-            background: var(--box-subtle);
-            color: var(--text-on-black);
-            border: 1px solid var(--border-dim);
+        .btn-box-ghost {
+            background: transparent;
+            color: var(--text-white);
+            border: 2px solid #333333;
+            padding: 8px 14px;
+            font-size: 11px;
         }
 
-        .btn-box-secondary:hover {
+        .btn-box-ghost:hover {
             background: #ffffff;
             color: #000000;
             border-color: #ffffff;
         }
 
-        /* Filter Tuning Grid inside Black Card */
-        .tuning-row {
+        /* Tuning Grid */
+        .tuning-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 1.25rem;
-            padding-top: 1rem;
+            gap: 1.5rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border-dim);
         }
 
         @media (max-width: 900px) {
-            .tuning-row { grid-template-columns: 1fr; }
-            .hero-banner { flex-direction: column; align-items: flex-start; gap: 8px; }
-            .hero-headline { font-size: 28px; }
+            .tuning-grid { grid-template-columns: 1fr; }
+            .hero-banner { flex-direction: column; align-items: flex-start; }
+            .hero-headline { font-size: 32px; }
+            .hero-meta-right { text-align: left; }
         }
 
-        .tune-box label {
+        .tune-unit label {
             display: block;
             font-family: var(--font-mono);
             font-size: 10.5px;
-            font-weight: 700;
-            color: var(--text-on-black-muted);
+            font-weight: 800;
+            color: var(--text-white-muted);
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
-        .slider-box-meta {
+        .slider-meta-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-family: var(--font-mono);
             font-size: 11px;
-            color: var(--text-on-black-muted);
-            margin-bottom: 8px;
+            color: var(--text-white-muted);
+            margin-bottom: 10px;
         }
 
         .slider-val-badge {
             background: #ffffff;
             color: #000000;
-            font-weight: 800;
-            padding: 1px 6px;
+            font-weight: 900;
+            padding: 2px 8px;
+            font-size: 11px;
         }
 
         input[type="range"] {
             width: 100%;
             height: 4px;
-            background: var(--border-dim);
+            background: #222222;
             outline: none;
             -webkit-appearance: none;
             cursor: pointer;
@@ -434,12 +454,12 @@
 
         .box-select {
             width: 100%;
-            background: var(--box-dark);
+            background: #000000;
             border: 1px solid var(--border-dim);
-            color: var(--text-on-black);
-            padding: 9px 12px;
+            color: var(--text-white);
+            padding: 10px 12px;
             font-family: var(--font-sans);
-            font-size: 12px;
+            font-size: 12.5px;
             outline: none;
             cursor: pointer;
         }
@@ -454,242 +474,248 @@
             align-items: center;
             justify-content: space-between;
             font-family: var(--font-mono);
-            font-size: 11.5px;
-            font-weight: 700;
+            font-size: 12px;
+            font-weight: 800;
             text-transform: uppercase;
-            color: var(--text-on-white);
-            margin: 1.5rem 0 1rem;
-            padding: 6px 0;
-            border-top: 2px solid var(--border-dark);
-            border-bottom: 1px solid var(--border-dark);
+            color: var(--text-black);
+            margin: 1.75rem 0 1.25rem;
+            padding: 8px 0;
+            border-top: 2px solid var(--border-heavy);
+            border-bottom: 2px solid var(--border-heavy);
+            letter-spacing: 0.04em;
         }
 
-        /* Black Cards Grid (White page, Black Cards) */
-        .manuscript-boxes {
+        /* Grid of Black Boxes on White Page */
+        .manuscript-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
-            gap: 1.25rem;
+            grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+            gap: 1.5rem;
         }
 
         @media (max-width: 600px) {
-            .manuscript-boxes { grid-template-columns: 1fr; }
+            .manuscript-grid { grid-template-columns: 1fr; }
         }
 
-        .manuscript-box {
+        .manuscript-card {
             background: var(--box-black);
-            color: var(--text-on-black);
-            border: 2px solid var(--border-dark);
-            padding: 1.35rem;
+            color: var(--text-white);
+            border: 2px solid var(--border-heavy);
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             box-shadow: 4px 4px 0px #000000;
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            transition: all 0.15s ease;
         }
 
-        .manuscript-box:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0px #000000;
+        .manuscript-card:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 7px 7px 0px #000000;
         }
 
-        .box-top-line {
+        .card-top-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.85rem;
             border-bottom: 1px solid var(--border-dim);
-            padding-bottom: 6px;
+            padding-bottom: 8px;
         }
 
-        .tag-block {
+        .tag-stark {
             font-family: var(--font-mono);
             font-size: 10px;
-            font-weight: 700;
+            font-weight: 800;
             text-transform: uppercase;
             background: #ffffff;
             color: #000000;
-            padding: 2px 6px;
+            padding: 2px 7px;
+            letter-spacing: 0.05em;
         }
 
-        .box-year {
-            font-family: var(--font-mono);
-            font-size: 11px;
-            color: var(--text-on-black-muted);
-            font-weight: 600;
-        }
-
-        .box-card-heading {
-            font-size: 15px;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            line-height: 1.3;
-            color: var(--text-on-black);
-            margin-bottom: 4px;
-        }
-
-        .box-author-sub {
-            font-size: 12px;
-            color: var(--text-on-black-muted);
-            margin-bottom: 12px;
-            font-family: var(--font-mono);
-            font-weight: 500;
-        }
-
-        .box-ocr-preview {
+        .card-year-stamp {
             font-family: var(--font-mono);
             font-size: 11.5px;
-            line-height: 1.55;
-            color: #dddddd;
-            background: var(--box-dark);
+            color: var(--text-white-muted);
+            font-weight: 700;
+        }
+
+        .card-doc-title {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.35;
+            color: var(--text-white);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .card-author-line {
+            font-size: 12px;
+            color: var(--text-white-muted);
+            margin-bottom: 12px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .card-ocr-quote {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background: #0c0c0c;
             border: 1px solid var(--border-dim);
             border-left: 3px solid #ffffff;
-            padding: 10px 12px;
-            margin-bottom: 12px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        .box-archival-info {
+        .card-repo-meta {
             font-size: 11px;
-            color: var(--text-on-black-muted);
-            margin-bottom: 12px;
+            color: var(--text-white-muted);
+            margin-bottom: 14px;
             display: flex;
             flex-direction: column;
             gap: 2px;
             font-family: var(--font-mono);
+            text-transform: uppercase;
         }
 
-        .box-foot-action {
+        .card-bottom-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding-top: 10px;
+            padding-top: 12px;
             border-top: 1px solid var(--border-dim);
             font-family: var(--font-mono);
-            font-size: 11px;
+            font-size: 11.5px;
         }
 
-        .score-pill-group {
+        .score-pill-box {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
-        .score-pill-group span { color: var(--text-on-black-muted); }
-        .score-pill-group strong { color: #ffffff; font-weight: 700; }
+        .score-pill-box span { color: var(--text-white-muted); font-size: 10.5px; }
+        .score-pill-box strong { color: #ffffff; font-weight: 800; }
 
-        .btn-inspect-box {
+        .btn-inspect-stark {
             background: #ffffff;
             color: #000000;
             border: none;
-            padding: 5px 12px;
+            padding: 6px 14px;
             font-family: var(--font-mono);
-            font-size: 11px;
-            font-weight: 800;
+            font-size: 11.5px;
+            font-weight: 900;
             text-transform: uppercase;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             transition: all 0.1s ease;
         }
 
-        .btn-inspect-box:hover {
-            background: #cccccc;
+        .btn-inspect-stark:hover {
+            background: #d4d4d4;
         }
 
-        /* Inspector View (Two Black Panels) */
-        .inspector-split-layout {
+        /* Inspector Layout */
+        .inspector-split {
             display: grid;
-            grid-template-columns: 340px 1fr;
+            grid-template-columns: 360px 1fr;
             gap: 1.5rem;
         }
 
         @media (max-width: 900px) {
-            .inspector-split-layout { grid-template-columns: 1fr; }
+            .inspector-split { grid-template-columns: 1fr; }
         }
 
-        .spec-block {
-            background: var(--box-dark);
+        .spec-container {
+            background: #000000;
             border: 1px solid var(--border-dim);
-            padding: 1.25rem;
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
         }
 
-        .spec-row {
+        .spec-entry {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 3px;
         }
 
-        .spec-row span:first-child {
+        .spec-entry span:first-child {
             font-family: var(--font-mono);
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--text-on-black-muted);
+            font-size: 10.5px;
+            font-weight: 800;
+            color: var(--text-white-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
 
-        .spec-row span:last-child {
-            font-size: 13px;
+        .spec-entry span:last-child {
+            font-size: 13.5px;
             color: #ffffff;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .sha-box {
             font-family: var(--font-mono);
-            font-size: 10px;
-            background: #000000;
+            font-size: 10.5px;
+            background: #0a0a0a;
             border: 1px solid var(--border-dim);
-            padding: 8px;
+            padding: 10px;
             word-break: break-all;
             color: #ffffff;
+            line-height: 1.4;
         }
 
-        .ocr-terminal {
+        .ocr-viewer-box {
             font-family: var(--font-mono);
-            font-size: 12px;
-            line-height: 1.6;
-            background: var(--box-dark);
+            font-size: 12.5px;
+            line-height: 1.65;
+            background: #000000;
             border: 1px solid var(--border-dim);
-            padding: 1.25rem;
+            padding: 1.5rem;
             color: #ffffff;
             white-space: pre-wrap;
-            max-height: 340px;
+            max-height: 360px;
             overflow-y: auto;
         }
 
-        .citation-box-item {
+        .citation-box {
             font-family: var(--font-mono);
-            font-size: 11.5px;
-            background: var(--box-dark);
+            font-size: 12px;
+            background: #000000;
             border: 1px solid var(--border-dim);
-            padding: 8px 12px;
+            padding: 10px 14px;
             display: flex;
             align-items: flex-start;
             gap: 10px;
-            margin-top: 6px;
+            margin-top: 8px;
         }
 
-        .citation-label-badge {
+        .citation-badge {
             background: #ffffff;
             color: #000000;
-            font-size: 10px;
-            font-weight: 800;
-            padding: 1px 6px;
+            font-size: 10.5px;
+            font-weight: 900;
+            padding: 2px 7px;
             white-space: nowrap;
         }
 
-        /* Provenance Canvas (Deep Black Box inside White Canvas Frame) */
-        .canvas-black-box {
+        /* Provenance Topology (Canvas inside pure Black Frame) */
+        .canvas-frame {
             width: 100%;
-            height: 520px;
+            height: 540px;
             background: #000000;
-            border: 2px solid var(--border-dark);
+            border: 2px solid var(--border-heavy);
             position: relative;
             box-shadow: 4px 4px 0px #000000;
             overflow: hidden;
@@ -701,105 +727,106 @@
             height: 100%;
         }
 
-        .canvas-key-strip {
+        .canvas-keys {
             position: absolute;
-            bottom: 12px;
-            left: 12px;
+            bottom: 14px;
+            left: 14px;
             background: #000000;
             border: 1px solid var(--border-dim);
-            padding: 6px 12px;
+            padding: 8px 14px;
             display: flex;
-            gap: 14px;
+            gap: 16px;
             font-family: var(--font-mono);
             font-size: 10.5px;
             text-transform: uppercase;
+            font-weight: 700;
         }
 
-        .key-indicator {
+        .key-item {
             display: flex;
             align-items: center;
             gap: 6px;
-            color: var(--text-on-black-muted);
+            color: var(--text-white-muted);
         }
 
-        .key-sq {
-            width: 8px;
-            height: 8px;
+        .key-rect {
+            width: 9px;
+            height: 9px;
             border: 1px solid #ffffff;
         }
 
-        /* DBMS Evaluation Query Tiles */
-        .query-box-tiles {
+        /* Query Sandbox Grid */
+        .query-tiles {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-bottom: 1.25rem;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 12px;
+            margin-bottom: 1.5rem;
         }
 
-        .q-box-btn {
-            background: var(--box-dark);
+        .query-tile {
+            background: #000000;
             border: 1px solid var(--border-dim);
-            padding: 12px;
+            padding: 14px;
             text-align: left;
             cursor: pointer;
             transition: all 0.1s ease;
-            color: var(--text-on-black);
+            color: var(--text-white);
         }
 
-        .q-box-btn:hover {
+        .query-tile:hover {
             border-color: #ffffff;
             background: var(--box-elevated);
         }
 
-        .q-box-btn.active {
+        .query-tile.active {
             border: 2px solid #ffffff;
             background: #ffffff;
             color: #000000;
         }
 
-        .q-box-code {
+        .query-tile-code {
             font-family: var(--font-mono);
-            font-size: 11px;
-            font-weight: 800;
-            margin-bottom: 2px;
+            font-size: 11.5px;
+            font-weight: 900;
+            margin-bottom: 3px;
         }
 
-        .q-box-btn.active .q-box-code {
+        .query-tile.active .query-tile-code {
             color: #000000;
         }
 
-        .q-box-sub {
+        .query-tile-sub {
             font-size: 11px;
-            color: var(--text-on-black-muted);
+            color: var(--text-white-muted);
             font-family: var(--font-mono);
         }
 
-        .q-box-btn.active .q-box-sub {
-            color: #333333;
+        .query-tile.active .query-tile-sub {
+            color: #444444;
         }
 
         .sql-pre-box {
             font-family: var(--font-mono);
-            font-size: 11.5px;
-            background: var(--box-dark);
+            font-size: 12px;
+            background: #000000;
             border: 1px solid var(--border-dim);
-            padding: 14px;
+            padding: 16px;
             color: #ffffff;
             overflow-x: auto;
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
             line-height: 1.5;
         }
 
         .table-black-box {
             overflow-x: auto;
             border: 1px solid var(--border-dim);
-            background: var(--box-dark);
+            background: #000000;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 11.5px;
+            font-size: 12px;
             text-align: left;
         }
 
@@ -809,30 +836,30 @@
         }
 
         th {
-            padding: 10px 14px;
-            color: var(--text-on-black-muted);
-            font-weight: 700;
-            font-size: 10.5px;
+            padding: 12px 16px;
+            color: var(--text-white-muted);
+            font-weight: 800;
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             font-family: var(--font-mono);
         }
 
         td {
-            padding: 10px 14px;
-            border-bottom: 1px solid #1c1c1c;
-            color: var(--text-on-black);
+            padding: 12px 16px;
+            border-bottom: 1px solid #161616;
+            color: var(--text-white);
             font-family: var(--font-mono);
         }
 
         tr:last-child td { border-bottom: none; }
         tr:hover td { background: var(--box-elevated); }
 
-        /* Form Ingestion Layout */
+        /* Form Ingestion Box */
         .form-grid-box {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.25rem;
+            gap: 1.5rem;
         }
 
         @media (max-width: 800px) {
@@ -847,20 +874,20 @@
 
         .form-unit label {
             font-family: var(--font-mono);
-            font-size: 10.5px;
-            font-weight: 700;
-            color: var(--text-on-black-muted);
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-white-muted);
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
 
         .form-input-black {
-            background: var(--box-dark);
+            background: #000000;
             border: 1px solid var(--border-dim);
             color: #ffffff;
-            padding: 10px 12px;
+            padding: 12px 14px;
             font-family: var(--font-sans);
-            font-size: 13px;
+            font-size: 13.5px;
             outline: none;
         }
 
@@ -878,20 +905,20 @@
             border: 2px solid #ffffff;
             background: #000000;
             color: #ffffff;
-            padding: 12px 14px;
+            padding: 14px 16px;
             font-family: var(--font-mono);
-            font-size: 11.5px;
-            margin-top: 1.25rem;
+            font-size: 12px;
+            margin-top: 1.5rem;
         }
 
         /* Footer */
         footer {
-            border-top: 2px solid var(--border-dark);
-            padding: 1.5rem;
+            border-top: 2px solid var(--border-heavy);
+            padding: 1.75rem 1.5rem;
             background: var(--bg-white);
-            font-size: 11.5px;
-            font-weight: 700;
-            color: var(--text-on-white);
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text-black);
             text-align: center;
             font-family: var(--font-mono);
             text-transform: uppercase;
@@ -901,31 +928,31 @@
 </head>
 <body>
 
-    <!-- Top High Contrast Header -->
+    <!-- Architectural Top Bar -->
     <header class="box-header">
         <div class="box-header-inner">
-            <a href="#" class="brand-box" onclick="switchTab('search'); return false;">
-                <div class="brand-badge">A</div>
+            <a href="#" class="brand-cluster" onclick="switchTab('search'); return false;">
+                <div class="brand-sq">A</div>
                 <div class="brand-title">
                     <span>ArchiveMind</span>
-                    <span class="brand-tag">SQL &middot; Vector</span>
+                    <span class="brand-badge">SQL &middot; Vector</span>
                 </div>
             </a>
 
-            <div class="header-meta">
-                <div class="user-box">
-                    <span>AUTHOR:</span>
-                    <select id="role-selector" class="role-select">
+            <div class="header-controls">
+                <div class="user-chip">
+                    <span>ROLE:</span>
+                    <select id="role-selector" class="role-dropdown">
                         <option value="researcher_abhiroop" selected>Abhiroop (PES2UG24CS024)</option>
                         <option value="researcher_sheiman">A Sheiman Joshi (PES2UG24CS003)</option>
-                        <option value="archivist">Dr. Shilpa S (Project Guide)</option>
+                        <option value="archivist">Demo Teacher (Project Guide)</option>
                     </select>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Box Nav Bar (Nothing OS Zero Curves) -->
+    <!-- Sharp Box Navigation (Nothing OS Zero Curves) -->
     <nav class="box-nav">
         <div class="box-nav-inner">
             <button class="tab-box-btn active" id="tab-btn-search" onclick="switchTab('search')">
@@ -962,14 +989,17 @@
         <!-- TAB 1: HYBRID SEARCH -->
         <!-- ========================================================= -->
         <section id="tab-search" class="tab-panel active">
-            <!-- Hero Banner -->
+            <!-- Architectural Banner -->
             <div class="hero-banner">
                 <div>
                     <h1 class="hero-headline">ARCHIVEMIND.</h1>
-                    <div class="hero-sub">HYBRID SQL-VECTOR ARCHIVAL PRESERVATION & FORENSICS</div>
+                    <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 700; text-transform: uppercase; margin-top: 4px;">
+                        HYBRID SQL-VECTOR ARCHIVAL PRESERVATION & FORENSICS
+                    </div>
                 </div>
-                <div class="hero-sub" style="text-align: right;">
-                    UE23CS351A DBMS LAB &middot; PES UNIVERSITY
+                <div class="hero-meta-right">
+                    UE23CS351A DBMS LAB &middot; PES UNIVERSITY<br>
+                    GUIDE: DEMO TEACHER &middot; AUTHOR: ABHIROOP
                 </div>
             </div>
 
@@ -979,13 +1009,13 @@
                     <div>
                         <div class="box-title">
                             <i data-lucide="sliders-horizontal" style="width: 16px; height: 16px;"></i>
-                            <span>Search & Forensic Weighting</span>
+                            <span>Search & Forensic Weighting Fusion</span>
                         </div>
                         <div class="box-desc">Exact FTS5 full-text queries coupled with 128-dimensional dense handwriting vector cosine similarity.</div>
                     </div>
                 </div>
 
-                <!-- Rectangular Search Block -->
+                <!-- Search Input Block -->
                 <div class="search-block">
                     <div class="search-input-wrap">
                         <i data-lucide="search"></i>
@@ -999,9 +1029,9 @@
                     </button>
                 </div>
 
-                <div class="tuning-row">
-                    <div class="tune-box">
-                        <div class="slider-box-meta">
+                <div class="tuning-grid">
+                    <div class="tune-unit">
+                        <div class="slider-meta-header">
                             <span>VECTOR (STYLE)</span>
                             <span class="slider-val-badge" id="alpha-label">50% SQL / 50% VEC</span>
                             <span>SQL (TEXT)</span>
@@ -1009,7 +1039,7 @@
                         <input type="range" id="alpha-slider" min="0" max="1" step="0.05" value="0.5" oninput="updateAlphaLabel(this.value)">
                     </div>
 
-                    <div class="tune-box">
+                    <div class="tune-unit">
                         <label>Forensic Reference Vector</label>
                         <select id="style-selector" class="box-select" onchange="performSearch()">
                             <option value="">-- No Vector Filter (Lexical Only) --</option>
@@ -1022,7 +1052,7 @@
                         </select>
                     </div>
 
-                    <div class="tune-box">
+                    <div class="tune-unit">
                         <label>Archival Collection</label>
                         <select id="filter-collection" class="box-select" onchange="performSearch()">
                             <option value="">All Collections</option>
@@ -1033,13 +1063,13 @@
 
             <!-- Live Index Strip -->
             <div class="index-strip">
-                <span id="results-count">&#9632; LIVE INDEX / RETRIEVING MANUSCRIPTS...</span>
-                <span>POSTGRESQL 3NF SCHEMA / FTS5 ACTIVE</span>
+                <span id="results-count">&#9632; LIVE INDEX / RETRIEVING ARCHIVE RECORDS...</span>
+                <span>POSTGRESQL 3NF SCHEMA / FTS5 VIRTUAL INDEX ACTIVE</span>
             </div>
 
-            <!-- Black Cards on White Background Grid -->
-            <div id="results-grid" class="manuscript-boxes">
-                <!-- Populated dynamically -->
+            <!-- Black Cards on White Page -->
+            <div id="results-grid" class="manuscript-grid">
+                <!-- Dynamically populated -->
             </div>
         </section>
 
@@ -1048,7 +1078,7 @@
         <!-- ========================================================= -->
         <section id="tab-document" class="tab-panel">
             <div id="doc-detail-view" class="box-card-black">
-                <div style="text-align: center; padding: 4rem 1rem; color: var(--text-on-black-muted); font-family: var(--font-mono); text-transform: uppercase;">
+                <div style="text-align: center; padding: 5rem 1rem; color: var(--text-white-muted); font-family: var(--font-mono); text-transform: uppercase;">
                     Select any manuscript from the Hybrid Search tab to inspect its forensic record and generate citations.
                 </div>
             </div>
@@ -1068,7 +1098,7 @@
                         <div class="box-desc">Relational graph: Author &rarr; Manuscript &rarr; Collection &rarr; Repository &rarr; Audit Trail.</div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 11px; font-family: var(--font-mono); text-transform: uppercase;">Document:</span>
+                        <span style="font-size: 11px; font-family: var(--font-mono); text-transform: uppercase; font-weight: 700;">Document:</span>
                         <select id="prov-doc-select" class="box-select" style="width: auto;" onchange="loadProvenanceGraph(this.value)">
                             <option value="1">Principia Mathematica (Newton)</option>
                             <option value="3">Codex Atlanticus (Da Vinci)</option>
@@ -1079,14 +1109,14 @@
                     </div>
                 </div>
 
-                <div class="canvas-black-box">
+                <div class="canvas-frame">
                     <canvas id="provenance-canvas"></canvas>
-                    <div class="canvas-key-strip">
-                        <div class="key-indicator"><span class="key-sq" style="background: #ffffff;"></span><span>Document</span></div>
-                        <div class="key-indicator"><span class="key-sq" style="background: #aaaaaa;"></span><span>Author</span></div>
-                        <div class="key-indicator"><span class="key-sq" style="background: #777777;"></span><span>Collection</span></div>
-                        <div class="key-indicator"><span class="key-sq" style="background: #444444;"></span><span>Repository</span></div>
-                        <div class="key-indicator"><span class="key-sq" style="background: #222222;"></span><span>Audit Event</span></div>
+                    <div class="canvas-keys">
+                        <div class="key-item"><span class="key-rect" style="background: #ffffff;"></span><span>Document</span></div>
+                        <div class="key-item"><span class="key-rect" style="background: #aaaaaa;"></span><span>Author</span></div>
+                        <div class="key-item"><span class="key-rect" style="background: #777777;"></span><span>Collection</span></div>
+                        <div class="key-item"><span class="key-rect" style="background: #444444;"></span><span>Repository</span></div>
+                        <div class="key-item"><span class="key-rect" style="background: #222222;"></span><span>Audit Event</span></div>
                     </div>
                 </div>
             </div>
@@ -1105,7 +1135,7 @@
                         </div>
                         <div class="box-desc">Commit digitized records with cryptographic SHA-256 integrity verification and vector extraction.</div>
                     </div>
-                    <span class="tag-block">ACID Ingestion Active</span>
+                    <span class="tag-stark">ACID Ingestion Active</span>
                 </div>
 
                 <form id="ingest-form" onsubmit="handleIngest(event)">
@@ -1190,47 +1220,47 @@
                             <i data-lucide="terminal" style="width: 16px; height: 16px;"></i>
                             <span>DBMS Evaluation Queries Sandbox</span>
                         </div>
-                        <div class="box-desc">Mandatory queries for evaluation: GROUP BY, UPDATE, DELETE, Correlated Subquery, and Nested Subquery.</div>
+                        <div class="box-desc">All 5 mandatory query categories for UE23CS351A evaluation: GROUP BY, UPDATE, DELETE, Correlated, and Nested Subqueries.</div>
                     </div>
                 </div>
 
-                <div class="query-box-tiles">
-                    <button class="q-box-btn active" id="btn-q-7.1" onclick="runQueryKey('7.1')">
-                        <div class="q-box-code">7.1 GROUP BY</div>
-                        <div class="q-box-sub">Era & condition aggregation</div>
+                <div class="query-tiles">
+                    <button class="query-tile active" id="btn-q-7.1" onclick="runQueryKey('7.1')">
+                        <div class="query-tile-code">7.1 GROUP BY</div>
+                        <div class="query-tile-sub">Era & condition aggregation</div>
                     </button>
-                    <button class="q-box-btn" id="btn-q-7.2" onclick="runQueryKey('7.2')">
-                        <div class="q-box-code">7.2 UPDATE</div>
-                        <div class="q-box-sub">Conservation status mutation</div>
+                    <button class="query-tile" id="btn-q-7.2" onclick="runQueryKey('7.2')">
+                        <div class="query-tile-code">7.2 UPDATE</div>
+                        <div class="query-tile-sub">Conservation status mutation</div>
                     </button>
-                    <button class="q-box-btn" id="btn-q-7.3" onclick="runQueryKey('7.3')">
-                        <div class="q-box-code">7.3 DELETE</div>
-                        <div class="q-box-sub">Scrub stale audit events</div>
+                    <button class="query-tile" id="btn-q-7.3" onclick="runQueryKey('7.3')">
+                        <div class="query-tile-code">7.3 DELETE</div>
+                        <div class="query-tile-sub">Scrub stale audit events</div>
                     </button>
-                    <button class="q-box-btn" id="btn-q-7.4" onclick="runQueryKey('7.4')">
-                        <div class="q-box-code">7.4 CORRELATED</div>
-                        <div class="q-box-sub">Relative collection length</div>
+                    <button class="query-tile" id="btn-q-7.4" onclick="runQueryKey('7.4')">
+                        <div class="query-tile-code">7.4 CORRELATED</div>
+                        <div class="query-tile-sub">Relative collection length</div>
                     </button>
-                    <button class="q-box-btn" id="btn-q-7.5" onclick="runQueryKey('7.5')">
-                        <div class="q-box-code">7.5 NESTED</div>
-                        <div class="q-box-sub">Cross-collection authors</div>
+                    <button class="query-tile" id="btn-q-7.5" onclick="runQueryKey('7.5')">
+                        <div class="query-tile-code">7.5 NESTED</div>
+                        <div class="query-tile-sub">Cross-collection authors</div>
                     </button>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <span id="query-active-title" style="font-size: 13px; font-weight: 700; color: #ffffff;">Loading query...</span>
-                    <span id="query-runtime" style="font-family: var(--font-mono); font-size: 11px; color: var(--text-on-black-muted);"></span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span id="query-active-title" style="font-size: 13.5px; font-weight: 800; color: #ffffff; text-transform: uppercase;">Loading query...</span>
+                    <span id="query-runtime" style="font-family: var(--font-mono); font-size: 11px; color: var(--text-white-muted);"></span>
                 </div>
 
                 <pre id="query-sql-display" class="sql-pre-box">-- SQL statement will appear here</pre>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10.5px; color: var(--text-on-black-muted); margin-bottom: 6px; font-family: var(--font-mono);">
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-white-muted); margin-bottom: 8px; font-family: var(--font-mono); text-transform: uppercase;">
                     <span>RESULT SET</span>
                     <span id="query-result-meta">0 rows</span>
                 </div>
 
                 <div id="query-table-container" class="table-black-box">
-                    <div style="padding: 3rem; text-align: center; color: var(--text-on-black-muted); font-size: 12px; font-family: var(--font-mono);">Run a query above to inspect output.</div>
+                    <div style="padding: 3.5rem; text-align: center; color: var(--text-white-muted); font-size: 12px; font-family: var(--font-mono);">Run a query above to inspect output.</div>
                 </div>
             </div>
         </section>
@@ -1278,7 +1308,7 @@
 
     <!-- Footer -->
     <footer>
-        ARCHIVEMIND &middot; UE23CS351A DBMS &middot; ABHIROOP (PES2UG24CS024) &middot; PES UNIVERSITY
+        ARCHIVEMIND &middot; UE23CS351A DBMS &middot; ABHIROOP (PES2UG24CS024) &middot; GUIDE: DEMO TEACHER &middot; PES UNIVERSITY
     </footer>
 
     <script>
@@ -1345,7 +1375,7 @@
             const collectionId = document.getElementById('filter-collection').value || null;
 
             const grid = document.getElementById('results-grid');
-            grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 4rem; color: #000000; font-size: 13px; font-family: var(--font-mono); font-weight: 700;">EXECUTING HYBRID SQL-VECTOR RANKING...</div>';
+            grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 5rem; color: #000000; font-size: 13px; font-family: var(--font-mono); font-weight: 800; letter-spacing: 0.05em;">EXECUTING HYBRID SQL-VECTOR RANKING...</div>';
 
             try {
                 const res = await fetch('/api/search/hybrid', {
@@ -1362,7 +1392,7 @@
                 renderSearchResults(data.results);
                 document.getElementById('results-count').textContent = `&#9632; LIVE INDEX / ${data.count} MANUSCRIPTS MATCHING CRITERIA`;
             } catch (err) {
-                grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #000000; font-family: var(--font-mono); font-weight: 700;">SEARCH ERROR: ${err.message}</div>`;
+                grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: #000000; font-family: var(--font-mono); font-weight: 800;">SEARCH ERROR: ${err.message}</div>`;
             }
         }
 
@@ -1370,36 +1400,36 @@
             currentDocuments = docs;
             const grid = document.getElementById('results-grid');
             if (!docs || docs.length === 0) {
-                grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 4rem; color: #000000; font-size: 13px; font-family: var(--font-mono); font-weight: 700;">NO ARCHIVAL MANUSCRIPTS FOUND.</div>';
+                grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 5rem; color: #000000; font-size: 13px; font-family: var(--font-mono); font-weight: 800;">NO ARCHIVAL MANUSCRIPTS FOUND.</div>';
                 return;
             }
 
             grid.innerHTML = docs.map(doc => `
-                <div class="manuscript-box">
+                <div class="manuscript-card">
                     <div>
-                        <div class="box-top-line">
-                            <span class="tag-block">${doc.physical_condition}</span>
-                            <span class="box-year">${doc.date_written || 'CIRCA UNKNOWN'}</span>
+                        <div class="card-top-bar">
+                            <span class="tag-stark">${doc.physical_condition}</span>
+                            <span class="card-year-stamp">${doc.date_written || 'CIRCA UNKNOWN'}</span>
                         </div>
 
-                        <div class="box-card-heading">${doc.title}</div>
-                        <div class="box-author-sub">AUTHOR: ${doc.authors}</div>
+                        <div class="card-doc-title">${doc.title}</div>
+                        <div class="card-author-line">AUTHOR: ${doc.authors}</div>
 
-                        <div class="box-ocr-preview">"${doc.ocr_snippet}"</div>
+                        <div class="card-ocr-quote">"${doc.ocr_snippet}"</div>
 
-                        <div class="box-archival-info">
+                        <div class="card-repo-meta">
                             <div>COLLECTION: ${doc.collection_name}</div>
                             <div>ARCHIVE: ${doc.archive_name} (${doc.institution})</div>
                         </div>
                     </div>
 
-                    <div class="box-foot-action">
-                        <div class="score-pill-group">
+                    <div class="card-bottom-bar">
+                        <div class="score-pill-box">
                             <div><span>FTS:</span> <strong>${doc.fts_score}</strong></div>
                             <div><span>VEC:</span> <strong>${doc.vector_similarity}</strong></div>
                             <div><span>SCORE:</span> <strong>${doc.hybrid_score}</strong></div>
                         </div>
-                        <button class="btn-inspect-box" onclick="inspectDocument(${doc.document_id})">
+                        <button class="btn-inspect-stark" onclick="inspectDocument(${doc.document_id})">
                             <span>INSPECT</span>
                             <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i>
                         </button>
@@ -1413,7 +1443,7 @@
         async function inspectDocument(docId) {
             switchTab('document');
             const container = document.getElementById('doc-detail-view');
-            container.innerHTML = '<div style="text-align: center; padding: 4rem; color: var(--text-on-black-muted); font-family: var(--font-mono); text-transform: uppercase;">Retrieving preservation record...</div>';
+            container.innerHTML = '<div style="text-align: center; padding: 5rem; color: var(--text-white-muted); font-family: var(--font-mono); text-transform: uppercase;">Retrieving preservation record...</div>';
 
             try {
                 const res = await fetch(`/api/documents/${docId}`);
@@ -1421,69 +1451,69 @@
                 const doc = data.document;
 
                 container.innerHTML = `
-                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div style="display: flex; flex-direction: column; gap: 1.75rem;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
                             <div>
-                                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
-                                    <span class="tag-block">#${doc.document_id}</span>
-                                    <span class="tag-block">${doc.doc_type}</span>
-                                    <span class="tag-block">${doc.physical_condition}</span>
+                                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                                    <span class="tag-stark">#${doc.document_id}</span>
+                                    <span class="tag-stark">${doc.doc_type}</span>
+                                    <span class="tag-stark">${doc.physical_condition}</span>
                                 </div>
-                                <h1 style="font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em; text-transform: uppercase;">${doc.title}</h1>
-                                <p style="font-size: 12px; color: var(--text-on-black-muted); margin-top: 3px; font-family: var(--font-mono);">
+                                <h1 style="font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -0.03em; text-transform: uppercase;">${doc.title}</h1>
+                                <p style="font-size: 12px; color: var(--text-white-muted); margin-top: 4px; font-family: var(--font-mono);">
                                     AUTHOR(S): ${doc.authors} &middot; DATE: ${doc.date_written} &middot; LANG: ${doc.language}
                                 </p>
                             </div>
 
-                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                                 <button class="btn-box" onclick="triggerCitation(${doc.document_id}, 'Chicago-Archival')">+ CHICAGO</button>
                                 <button class="btn-box" onclick="triggerCitation(${doc.document_id}, 'MLA')">+ MLA</button>
                                 <button class="btn-box" onclick="triggerCitation(${doc.document_id}, 'APA')">+ APA</button>
                             </div>
                         </div>
 
-                        <div class="inspector-split-layout">
-                            <div class="spec-block">
-                                <div class="spec-row">
+                        <div class="inspector-split">
+                            <div class="spec-container">
+                                <div class="spec-entry">
                                     <span>COLLECTION</span>
                                     <span>${doc.collection_name}</span>
                                 </div>
-                                <div class="spec-row">
+                                <div class="spec-entry">
                                     <span>HISTORICAL ERA</span>
                                     <span>${doc.era}</span>
                                 </div>
-                                <div class="spec-row">
+                                <div class="spec-entry">
                                     <span>REPOSITORY</span>
                                     <span>${doc.archive_name}</span>
                                 </div>
-                                <div class="spec-row">
+                                <div class="spec-entry">
                                     <span>INSTITUTION</span>
                                     <span>${doc.institution} (${doc.location})</span>
                                 </div>
-                                <div class="spec-row">
+                                <div class="spec-entry">
                                     <span>INTEGRITY SHA-256</span>
                                     <span class="sha-box">${doc.checksum_value}</span>
                                 </div>
                             </div>
 
-                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
                                 <div>
-                                    <div style="display: flex; justify-content: space-between; font-size: 10.5px; font-family: var(--font-mono); color: var(--text-on-black-muted); margin-bottom: 6px; text-transform: uppercase;">
-                                        <span>OCR TRANSCRIPT (FTS5 INDEXED)</span>
-                                        <span>STATUS: ${doc.ocr_status}</span>
+                                    <div style="display: flex; justify-content: space-between; font-size: 11px; font-family: var(--font-mono); color: var(--text-white-muted); margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">
+                                        <span>OCR TRANSCRIPT (FTS5 VIRTUAL TABLE)</span>
+                                        <span style="color: #ffffff;">STATUS: ${doc.ocr_status}</span>
                                     </div>
-                                    <div class="ocr-terminal">${doc.ocr_text_cache}</div>
+                                    <div class="ocr-viewer-box">${doc.ocr_text_cache}</div>
                                 </div>
 
                                 <div>
-                                    <div style="font-size: 10.5px; font-weight: 700; color: var(--text-on-black-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: var(--font-mono);">
+                                    <div style="font-size: 11px; font-weight: 800; color: var(--text-white-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-family: var(--font-mono);">
                                         ARCHIVAL CITATIONS
                                     </div>
-                                    <div id="citation-list" style="display: flex; flex-direction: column; gap: 6px;">
+                                    <div id="citation-list" style="display: flex; flex-direction: column; gap: 8px;">
                                         ${data.citations.map(c => `
-                                            <div class="citation-box-item">
-                                                <span class="citation-label-badge">${c.citation_style}</span>
-                                                <span style="color: #ffffff; font-size: 12px;">${c.citation_text}</span>
+                                            <div class="citation-box">
+                                                <span class="citation-badge">${c.citation_style}</span>
+                                                <span style="color: #ffffff; font-size: 12.5px;">${c.citation_text}</span>
                                             </div>
                                         `).join('')}
                                     </div>
@@ -1494,7 +1524,7 @@
                 `;
                 lucide.createIcons();
             } catch (err) {
-                container.innerHTML = `<div style="text-align: center; color: var(--text-on-black-muted); padding: 2rem;">Error: ${err.message}</div>`;
+                container.innerHTML = `<div style="text-align: center; color: var(--text-white-muted); padding: 3rem;">Error: ${err.message}</div>`;
             }
         }
 
@@ -1509,11 +1539,11 @@
                 const citation = await res.json();
                 const list = document.getElementById('citation-list');
                 const newElem = document.createElement('div');
-                newElem.className = 'citation-box-item';
+                newElem.className = 'citation-box';
                 newElem.style.borderColor = '#ffffff';
                 newElem.innerHTML = `
-                    <span class="citation-label-badge">${citation.citation_style}</span>
-                    <span style="color: #ffffff; font-size: 12px;">${citation.citation_text}</span>
+                    <span class="citation-badge">${citation.citation_style}</span>
+                    <span style="color: #ffffff; font-size: 12.5px;">${citation.citation_text}</span>
                 `;
                 list.prepend(newElem);
             } catch (err) {
@@ -1548,9 +1578,9 @@
                 });
                 const data = await res.json();
                 resultBox.innerHTML = `
-                    <div style="font-weight: 800; color: #ffffff; margin-bottom: 2px;">&#10003; INGESTION TRANSACTION COMMITTED TO ARCHIVEMIND</div>
-                    <div style="color: var(--text-on-black-muted); font-size: 11px;">DOCUMENT #${data.document_id} &middot; VECTOR: ${data.vector_id}</div>
-                    <div style="color: var(--text-on-black-muted); font-size: 10px; word-break: break-all; margin-top: 2px;">SHA-256: ${data.checksum}</div>
+                    <div style="font-weight: 900; color: #ffffff; margin-bottom: 3px;">&#10003; INGESTION TRANSACTION COMMITTED TO ARCHIVEMIND</div>
+                    <div style="color: var(--text-white-muted); font-size: 11.5px;">DOCUMENT #${data.document_id} &middot; VECTOR: ${data.vector_id}</div>
+                    <div style="color: var(--text-white-muted); font-size: 10.5px; word-break: break-all; margin-top: 3px;">SHA-256: ${data.checksum}</div>
                 `;
             } catch (err) {
                 resultBox.innerHTML = `INGESTION FAILED: ${err.message}`;
@@ -1559,7 +1589,7 @@
 
         // Run DBMS Evaluation Queries
         async function runQueryKey(key) {
-            document.querySelectorAll('.q-box-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.query-tile').forEach(b => b.classList.remove('active'));
             const activeBtn = document.getElementById(`btn-q-${key}`);
             if (activeBtn) activeBtn.classList.add('active');
 
@@ -1570,7 +1600,7 @@
             const runtimeElem = document.getElementById('query-runtime');
 
             titleElem.textContent = `EXECUTING QUERY ${key}...`;
-            tableContainer.innerHTML = '<div style="padding: 3rem; text-align: center; color: var(--text-on-black-muted); font-size: 11.5px; font-family: var(--font-mono);">EXECUTING QUERY PLAN...</div>';
+            tableContainer.innerHTML = '<div style="padding: 3.5rem; text-align: center; color: var(--text-white-muted); font-size: 12px; font-family: var(--font-mono);">EXECUTING QUERY PLAN...</div>';
 
             const startT = performance.now();
             try {
@@ -1590,7 +1620,7 @@
                 metaElem.textContent = `${rows.length} ROWS RETURNED ${data.rows_affected ? `(${data.rows_affected} AFFECTED)` : ''}`;
 
                 if (rows.length === 0) {
-                    tableContainer.innerHTML = '<div style="padding: 3rem; text-align: center; color: var(--text-on-black-muted); font-size: 11.5px; font-family: var(--font-mono);">OPERATION EXECUTED SUCCESSFULLY.</div>';
+                    tableContainer.innerHTML = '<div style="padding: 3.5rem; text-align: center; color: var(--text-white-muted); font-size: 12px; font-family: var(--font-mono);">OPERATION EXECUTED SUCCESSFULLY.</div>';
                     return;
                 }
 
@@ -1611,33 +1641,33 @@
                 `;
                 tableContainer.innerHTML = tableHtml;
             } catch (err) {
-                tableContainer.innerHTML = `<div style="padding: 3rem; text-align: center; color: #ffffff; font-size: 11.5px; font-family: var(--font-mono);">QUERY ERROR: ${err.message}</div>`;
+                tableContainer.innerHTML = `<div style="padding: 3.5rem; text-align: center; color: #ffffff; font-size: 12px; font-family: var(--font-mono);">QUERY ERROR: ${err.message}</div>`;
             }
         }
 
         // Load Audit Trail
         async function loadAuditTrail() {
             const tbody = document.getElementById('audit-table-body');
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-on-black-muted); font-family: var(--font-mono);">LOADING AUDIT RECORDS...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 3.5rem; color: var(--text-white-muted); font-family: var(--font-mono);">LOADING AUDIT RECORDS...</td></tr>';
             try {
                 const res = await fetch('/api/audit/views');
                 const views = await res.json();
                 tbody.innerHTML = views.map(v => `
                     <tr>
-                        <td style="color: #ffffff; font-weight: 700;">#${v.view_id}</td>
-                        <td style="color: #ffffff; font-weight: 600;">${v.title}</td>
-                        <td style="color: var(--text-on-black-muted);">${v.viewed_at}</td>
+                        <td style="color: #ffffff; font-weight: 800;">#${v.view_id}</td>
+                        <td style="color: #ffffff; font-weight: 700;">${v.title}</td>
+                        <td style="color: var(--text-white-muted);">${v.viewed_at}</td>
                         <td style="color: #ffffff;">${v.ip_address}</td>
                         <td style="color: #ffffff;">${v.viewer_name}</td>
-                        <td><span class="tag-block">${v.role_name || 'GUEST'}</span></td>
+                        <td><span class="tag-stark">${v.role_name || 'GUEST'}</span></td>
                     </tr>
                 `).join('');
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ffffff; padding: 2rem; font-family: var(--font-mono);">AUDIT TRAIL ERROR: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ffffff; padding: 2.5rem; font-family: var(--font-mono);">AUDIT TRAIL ERROR: ${err.message}</td></tr>`;
             }
         }
 
-        // Interactive Provenance Canvas Graph (Nothing OS Box Geometry)
+        // Interactive Provenance Canvas Graph (Nothing OS Rectangular Geometry)
         async function loadProvenanceGraph(docId) {
             const canvas = document.getElementById('provenance-canvas');
             const ctx = canvas.getContext('2d');
@@ -1646,16 +1676,16 @@
             canvas.height = rect.height;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#666666";
+            ctx.fillStyle = "#555555";
             ctx.font = "11px 'Geist Mono', monospace";
-            ctx.fillText("RENDERING TOPOLOGY NODES...", 16, 24);
+            ctx.fillText("RENDERING TOPOLOGY NODES...", 16, 26);
 
             try {
                 const res = await fetch(`/api/provenance/${docId}`);
                 const data = await res.json();
                 renderCanvasGraph(ctx, canvas.width, canvas.height, data.nodes, data.edges);
             } catch (err) {
-                ctx.fillText("FAILED TO LOAD PROVENANCE: " + err.message, 16, 24);
+                ctx.fillText("FAILED TO LOAD PROVENANCE: " + err.message, 16, 26);
             }
         }
 
@@ -1678,7 +1708,7 @@
             docNode.y = centerY;
 
             const otherNodes = nodes.filter(n => n !== docNode);
-            const radius = Math.min(width, height) * 0.35;
+            const radius = Math.min(width, height) * 0.36;
             const angleStep = (2 * Math.PI) / (otherNodes.length || 1);
 
             otherNodes.forEach((node, i) => {
@@ -1702,7 +1732,7 @@
                     const midX = (s.x + t.x) / 2;
                     const midY = (s.y + t.y) / 2;
                     ctx.fillStyle = '#666666';
-                    ctx.font = "9px 'Geist Mono', monospace";
+                    ctx.font = "9.5px 'Geist Mono', monospace";
                     ctx.fillText(edge.label.toUpperCase(), midX - 16, midY);
                 }
             });
@@ -1710,7 +1740,7 @@
             // Draw Rectangular Nodes (Nothing OS Box Geometry, 0px curves)
             nodes.forEach(node => {
                 const isDoc = node.type === 'document';
-                const size = isDoc ? 22 : 14;
+                const size = isDoc ? 24 : 15;
                 ctx.fillStyle = colorMap[node.type] || '#555555';
                 ctx.fillRect(node.x - size/2, node.y - size/2, size, size);
                 ctx.strokeStyle = '#000000';
@@ -1718,14 +1748,14 @@
                 ctx.strokeRect(node.x - size/2, node.y - size/2, size, size);
 
                 ctx.fillStyle = '#ffffff';
-                ctx.font = "700 11px 'Geist', sans-serif";
+                ctx.font = "800 11.5px 'Geist', sans-serif";
                 ctx.textAlign = 'center';
                 const labelText = node.label.length > 24 ? node.label.slice(0, 22) + '...' : node.label;
-                ctx.fillText(labelText.toUpperCase(), node.x, node.y - 14);
+                ctx.fillText(labelText.toUpperCase(), node.x, node.y - 15);
 
                 ctx.fillStyle = '#888888';
-                ctx.font = "9px 'Geist Mono', monospace";
-                ctx.fillText((node.details || '').toUpperCase(), node.x, node.y + 20);
+                ctx.font = "9.5px 'Geist Mono', monospace";
+                ctx.fillText((node.details || '').toUpperCase(), node.x, node.y + 22);
             });
         }
 

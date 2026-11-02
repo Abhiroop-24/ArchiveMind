@@ -13,7 +13,7 @@ ON CONFLICT (role_id) DO NOTHING;
 
 -- 2. SEED APP_USERS
 INSERT INTO app_user (user_id, role_id, username, password_hash, full_name, email) VALUES
-(1, 1, 'dr_shilpa', 'pbkdf2:sha256:archivist_hash_99', 'Dr. Shilpa S', 'shilpa.s@pes.edu'),
+(1, 1, 'demo_teacher', 'pbkdf2:sha256:archivist_hash_99', 'Demo Teacher', 'demo.teacher@pes.edu'),
 (2, 2, 'sheiman_j', 'pbkdf2:sha256:researcher_hash_01', 'A Sheiman Joshi', 'sheiman.pes2ug24cs003@pes.edu'),
 (3, 2, 'abhiroop_r', 'pbkdf2:sha256:researcher_hash_02', 'Abhiroop', 'abhiroop.pes2ug24cs024@pes.edu'),
 (4, 3, 'pi_station_tech', 'pbkdf2:sha256:tech_hash_44', 'Raspberry Pi Scanner Tech', 'digitization.tech@pes.edu'),

@@ -194,7 +194,7 @@ class ArchiveMindDB:
 
         # 2. Users
         users = [
-            (1, 1, 'dr_shilpa', 'hash_shilpa_admin', 'Dr. Shilpa S', 'shilpa.s@pes.edu'),
+            (1, 1, 'demo_teacher', 'hash_teacher_admin', 'Demo Teacher', 'demo.teacher@pes.edu'),
             (2, 2, 'sheiman_j', 'hash_sheiman_res', 'A Sheiman Joshi', 'sheiman.pes2ug24cs003@pes.edu'),
             (3, 2, 'abhiroop_r', 'hash_abhiroop_res', 'Abhiroop', 'abhiroop.pes2ug24cs024@pes.edu'),
             (4, 3, 'pi_station_tech', 'hash_scanner_pi', 'Raspberry Pi Station Tech', 'scanner.pi@pes.edu'),

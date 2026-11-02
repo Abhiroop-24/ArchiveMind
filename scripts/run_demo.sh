@@ -13,7 +13,7 @@ echo "=========================================================="
 echo "  🏛️  ArchiveMind: Hybrid SQL-Vector Archival Search Engine"
 echo "  🎓  PES University - UE23CS351A DBMS Project"
 echo "  👨‍💻  Team: A Sheiman Joshi (PES2UG24CS003) & Abhiroop (PES2UG24CS024)"
-echo "  👩‍🏫  Guide: Dr. Shilpa S"
+echo "  👩‍🏫  Guide: Demo Teacher"
 echo "=========================================================="
 
 cd "$PROJECT_ROOT"

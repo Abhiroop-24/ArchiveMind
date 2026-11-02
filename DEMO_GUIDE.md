@@ -3,7 +3,7 @@
 **Team Members**:
 - **A Sheiman Joshi** (`PES2UG24CS003`) — *Database Architecture & Relational Engine*
 - **Abhiroop** (`PES2UG24CS024`) — *Vector Embeddings & Search Fusion*  
-**Project Guide**: Dr. Shilpa S  
+**Project Guide**: Demo Teacher  
 
 ---
 
@@ -31,7 +31,7 @@ Open **`docs/ArchiveMind_DBMS_Project_Report.html`** in any web browser and clic
 
 ## ⏱️ 2. The 5-Minute Flawless Presentation Script
 
-When Dr. Shilpa S or the external examiner asks you to demonstrate your project, follow this exact sequence:
+When Demo Teacher or the external examiner asks you to demonstrate your project, follow this exact sequence:
 
 ### **Minute 1: The Problem & Architecture (The "Hook")**
 > *"Good morning ma'am / sir. My project is **ArchiveMind: A Hybrid SQL-Vector Semantic Search Engine for Digitized Document Repositories**.*  

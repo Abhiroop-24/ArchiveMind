@@ -19,7 +19,7 @@
 ---
 
 ### Under the Guidance of:
-**Dr. Shilpa S**  
+**Demo Teacher**  
 *Assistant Professor*  
 Department of Computer Science and Engineering  
 PES University, Electronic City Campus, Bengaluru – 560 100  
@@ -53,7 +53,7 @@ It is certified that all corrections / suggestions indicated for internal assess
 
 <br><br><br>
 ______________________________________  
-**Dr. Shilpa S**  
+**Demo Teacher**  
 *Assistant Professor & Project Guide*  
 Department of Computer Science and Engineering  
 PES University, Bengaluru  
@@ -64,7 +64,7 @@ PES University, Bengaluru
 
 ## DECLARATION
 
-We hereby declare that the DBMS Project entitled **"ArchiveMind: A Hybrid SQL-Vector Semantic Search Engine for Digitized Document Repositories"** has been carried out by us under the guidance of **Dr. Shilpa S**, Assistant Professor, and submitted in partial fulfilment of the course requirements for the award of degree of *Bachelor of Technology in Computer Science and Engineering* of PES University, Bengaluru during the academic semester **AUG – DEC 2026**.
+We hereby declare that the DBMS Project entitled **"ArchiveMind: A Hybrid SQL-Vector Semantic Search Engine for Digitized Document Repositories"** has been carried out by us under the guidance of **Demo Teacher**, Assistant Professor, and submitted in partial fulfilment of the course requirements for the award of degree of *Bachelor of Technology in Computer Science and Engineering* of PES University, Bengaluru during the academic semester **AUG – DEC 2026**.
 
 We further declare that this project work has not formed the basis for the award of any other Degree, Diploma, or Certificate in any other University or Institution.
 
@@ -81,7 +81,7 @@ We further declare that this project work has not formed the basis for the award
 
 ## ACKNOWLEDGEMENT
 
-We would like to express our sincere gratitude to our project guide, **Dr. Shilpa S**, Department of Computer Science and Engineering, PES University, for her continuous guidance, constructive suggestions, and encouragement throughout the development of this UE23CS351A - DBMS Project.
+We would like to express our sincere gratitude to our project guide, **Demo Teacher**, Department of Computer Science and Engineering, PES University, for her continuous guidance, constructive suggestions, and encouragement throughout the development of this UE23CS351A - DBMS Project.
 
 We take this opportunity to thank **Dr. Sandesh B J**, Professor and Chairperson, Department of Computer Science and Engineering, PES University, for all the facilities, academic ecosystem, and support received from the department.
 
@@ -213,7 +213,7 @@ ArchiveMind provides a **Hybrid SQL-Vector Engine**:
 
 ## 2.3 User Roles and Privileges
 ArchiveMind implements three distinct security roles managed in the `ROLE` and `ACCESS_PERMISSION` tables:
-* **Head Archivist (e.g., Dr. Shilpa S)**: Full administrative access; can create collections, modify document statuses, initiate atomic manuscript transfers, and inspect security audit logs.
+* **Head Archivist (e.g., Demo Teacher)**: Full administrative access; can create collections, modify document statuses, initiate atomic manuscript transfers, and inspect security audit logs.
 * **Lead Researcher (e.g., T. Lohith Srinivas)**: Read access to manuscripts; can perform hybrid searches, inspect OCR texts, generate scholarly citations, and explore provenance graphs. Cannot alter or delete archival records.
 * **Digitization Technician (Pi Scanner Tech)**: Ingestion access; permitted to upload scanned documents, compute checksums, and trigger OCR extraction pipelines.
 
@@ -549,7 +549,7 @@ INSERT INTO role (role_id, role_name) VALUES
 
 -- Users
 INSERT INTO app_user (user_id, role_id, username, password_hash, full_name, email) VALUES
-(1, 1, 'dr_shilpa', 'pbkdf2:sha256:archivist_hash_99', 'Dr. Shilpa S', 'shilpa.s@pes.edu'),
+(1, 1, 'demo_teacher', 'pbkdf2:sha256:archivist_hash_99', 'Demo Teacher', 'demo.teacher@pes.edu'),
 (2, 2, 'lohith_s', 'pbkdf2:sha256:researcher_hash_01', 'T. Lohith Srinivas', 'lohith.pes2ug19cs203@pes.edu'),
 (3, 3, 'pi_station_tech', 'pbkdf2:sha256:tech_hash_44', 'Raspberry Pi Scanner Tech', 'digitization.tech@pes.edu');
 

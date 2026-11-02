@@ -4,7 +4,7 @@
 **Team Members**:  
 - **A Sheiman Joshi** (`PES2UG24CS003`)
 - **Abhiroop** (`PES2UG24CS024`)  
-**Project Guide**: Dr. Shilpa S  
+**Project Guide**: Demo Teacher  
 
 ---
 
