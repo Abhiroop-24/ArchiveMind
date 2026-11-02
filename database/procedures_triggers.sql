@@ -51,7 +51,7 @@ BEGIN
     INSERT INTO document_view (document_id, user_id, ip_address, viewed_at)
     VALUES (
         NEW.document_id,
-        3, -- Active researcher (Abhiroop)
+        COALESCE(NEW.user_id, 3), -- Dynamic operator (Abhiroop / Sheiman / Demo Teacher)
         '127.0.0.1 [TRIGGER:CITATION_' || UPPER(NEW.citation_style) || ']',
         CURRENT_TIMESTAMP
     );

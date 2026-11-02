@@ -942,15 +942,19 @@
             <div class="header-controls">
                 <div class="user-chip">
                     <span>ROLE:</span>
-                    <select id="role-selector" class="role-dropdown">
+                    <select id="role-selector" class="role-dropdown" onchange="onRoleChange(this.value)">
                         <option value="researcher_abhiroop" selected>Abhiroop (PES2UG24CS024)</option>
                         <option value="researcher_sheiman">A Sheiman Joshi (PES2UG24CS003)</option>
                         <option value="archivist">Demo Teacher (Project Guide)</option>
                     </select>
+                    <span id="role-badge" class="tag-stark" style="font-weight: 800; font-size: 10px; background: #000000; color: #ffffff; border: 1px solid #ffffff; margin-left: 6px;">RESEARCHER</span>
                 </div>
             </div>
         </div>
     </header>
+
+    <!-- Role Switch Toast Notification -->
+    <div id="role-alert-toast" style="display:none; position: fixed; top: 70px; right: 24px; z-index: 9999; background: #000000; border: 2px solid #ffffff; box-shadow: 4px 4px 0px #000000; color: #ffffff; padding: 12px 18px; font-family: var(--font-mono); font-size: 11px; max-width: 440px; line-height: 1.4;"></div>
 
     <!-- Sharp Box Navigation (Nothing OS Zero Curves) -->
     <nav class="box-nav">
@@ -1139,6 +1143,10 @@
                 </div>
 
                 <form id="ingest-form" onsubmit="handleIngest(event)">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1.25rem; font-family: var(--font-mono); font-size: 11px; color: var(--text-white-muted);">
+                        <span>AUTHENTICATED OPERATOR:</span>
+                        <span id="ingest-user-tag" style="background: #222222; color: #ffffff; padding: 3px 8px; border: 1px solid #555555; font-weight: 700;">Abhiroop (RESEARCHER)</span>
+                    </div>
                     <div class="form-grid-box">
                         <div class="form-unit">
                             <label>Manuscript Title</label>
@@ -1230,11 +1238,17 @@
                         <div class="query-tile-sub">Era & condition aggregation</div>
                     </button>
                     <button class="query-tile" id="btn-q-7.2" onclick="runQueryKey('7.2')">
-                        <div class="query-tile-code">7.2 UPDATE</div>
+                        <div class="query-tile-code" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>7.2 UPDATE</span>
+                            <span class="tag-stark" style="font-size: 9px; padding: 1px 5px; background: #222222; color: #ffffff; border-color: #555555;">MUTATION &middot; ADMIN</span>
+                        </div>
                         <div class="query-tile-sub">Conservation status mutation</div>
                     </button>
                     <button class="query-tile" id="btn-q-7.3" onclick="runQueryKey('7.3')">
-                        <div class="query-tile-code">7.3 DELETE</div>
+                        <div class="query-tile-code" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>7.3 DELETE</span>
+                            <span class="tag-stark" style="font-size: 9px; padding: 1px 5px; background: #222222; color: #ffffff; border-color: #555555;">MUTATION &middot; ADMIN</span>
+                        </div>
                         <div class="query-tile-sub">Scrub stale audit events</div>
                     </button>
                     <button class="query-tile" id="btn-q-7.4" onclick="runQueryKey('7.4')">
@@ -1312,6 +1326,92 @@
     </footer>
 
     <script>
+        const USER_PROFILES = {
+            'researcher_abhiroop': {
+                id: 3,
+                name: 'Abhiroop',
+                usn: 'PES2UG24CS024',
+                role: 'Researcher',
+                roleLabel: 'RESEARCHER',
+                canMutate: false,
+                desc: 'Academic Researcher · Full Search, Inspection, Citations, Provenance'
+            },
+            'researcher_sheiman': {
+                id: 2,
+                name: 'A Sheiman Joshi',
+                usn: 'PES2UG24CS003',
+                role: 'Researcher',
+                roleLabel: 'RESEARCHER',
+                canMutate: false,
+                desc: 'Academic Researcher · Full Search, Inspection, Citations, Provenance'
+            },
+            'archivist': {
+                id: 1,
+                name: 'Demo Teacher',
+                usn: 'PROJECT GUIDE',
+                role: 'Head Archivist',
+                roleLabel: 'HEAD ARCHIVIST (ADMIN)',
+                canMutate: true,
+                desc: 'Head Archivist & Faculty Guide · Full Administrative, Ingestion & Mutation Privileges'
+            }
+        };
+
+        let currentUser = USER_PROFILES['researcher_abhiroop'];
+
+        function onRoleChange(key) {
+            currentUser = USER_PROFILES[key] || USER_PROFILES['researcher_abhiroop'];
+
+            // Update role badge in header
+            const badge = document.getElementById('role-badge');
+            if (badge) {
+                badge.textContent = currentUser.roleLabel;
+                badge.style.background = currentUser.canMutate ? '#ffffff' : '#000000';
+                badge.style.color = currentUser.canMutate ? '#000000' : '#ffffff';
+            }
+
+            // Update Ingestion form user indicator
+            const ingestTag = document.getElementById('ingest-user-tag');
+            if (ingestTag) {
+                ingestTag.textContent = `${currentUser.name} (${currentUser.roleLabel})`;
+            }
+
+            // Toast alert
+            showRoleToast(`
+                <div style="font-weight: 800; color: #ffffff; margin-bottom: 4px;">&#9881; ACTIVE ROLE SWITCHED</div>
+                <div><strong>${currentUser.name}</strong> (${currentUser.usn}) &mdash; <span style="color: #bbbbbb;">${currentUser.roleLabel}</span></div>
+                <div style="font-size: 10px; color: #888888; margin-top: 4px;">${currentUser.desc}</div>
+            `);
+
+            // If on document inspector or audit tab, refresh context
+            const activeTab = document.querySelector('.tab-panel.active');
+            if (activeTab && activeTab.id === 'tab-audit') {
+                loadAuditTrail();
+            } else if (activeTab && activeTab.id === 'tab-queries') {
+                const activeQueryBtn = document.querySelector('.query-tile.active');
+                if (activeQueryBtn) {
+                    const qkey = activeQueryBtn.id.replace('btn-q-', '');
+                    runQueryKey(qkey);
+                }
+            }
+        }
+
+        function showRoleToast(html, duration = 3500) {
+            const toast = document.getElementById('role-alert-toast');
+            if (!toast) return;
+            toast.innerHTML = html;
+            toast.style.display = 'block';
+            if (toast.timer) clearTimeout(toast.timer);
+            toast.timer = setTimeout(() => { toast.style.display = 'none'; }, duration);
+        }
+
+        function elevateRoleToArchivist() {
+            const sel = document.getElementById('role-selector');
+            if (sel) {
+                sel.value = 'archivist';
+                onRoleChange('archivist');
+            }
+        }
+
         let currentDocuments = [];
         let metadata = {};
 
@@ -1446,7 +1546,7 @@
             container.innerHTML = '<div style="text-align: center; padding: 5rem; color: var(--text-white-muted); font-family: var(--font-mono); text-transform: uppercase;">Retrieving preservation record...</div>';
 
             try {
-                const res = await fetch(`/api/documents/${docId}`);
+                const res = await fetch(`/api/documents/${docId}?user_id=${currentUser.id}`);
                 const data = await res.json();
                 const doc = data.document;
 
@@ -1458,6 +1558,7 @@
                                     <span class="tag-stark">#${doc.document_id}</span>
                                     <span class="tag-stark">${doc.doc_type}</span>
                                     <span class="tag-stark">${doc.physical_condition}</span>
+                                    <span class="tag-stark" style="background: #222222; color: #ffffff; border-color: #555555;">VIEWED AS: ${currentUser.name.toUpperCase()}</span>
                                 </div>
                                 <h1 style="font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: -0.03em; text-transform: uppercase;">${doc.title}</h1>
                                 <p style="font-size: 12px; color: var(--text-white-muted); margin-top: 4px; font-family: var(--font-mono);">
@@ -1534,7 +1635,7 @@
                 const res = await fetch(`/api/documents/${docId}/citation`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ style: style })
+                    body: JSON.stringify({ style: style, user_id: currentUser.id })
                 });
                 const citation = await res.json();
                 const list = document.getElementById('citation-list');
@@ -1545,10 +1646,16 @@
                     <span class="citation-badge">${citation.citation_style}</span>
                     <span style="color: #ffffff; font-size: 12.5px;">${citation.citation_text}</span>
                     <span style="margin-left: auto; font-size: 10px; color: #ffffff; background: #222222; border: 1px solid #555555; padding: 3px 8px; white-space: nowrap; font-family: var(--font-mono); font-weight: 700;">
-                        TRIGGER FIRED &rarr; LOGGED TO AUDIT TAB
+                        TRIGGER FIRED &rarr; LOGGED UNDER ${currentUser.name.toUpperCase()}
                     </span>
                 `;
                 list.prepend(newElem);
+
+                showRoleToast(`
+                    <div style="font-weight: 800; color: #ffffff; margin-bottom: 2px;">&#10003; CITATION AUDIT TRIGGER FIRED</div>
+                    <div>Generated <strong>${style}</strong> citation for document #${docId}.</div>
+                    <div style="color: #888888; font-size: 10px; margin-top: 3px;">Logged in DBMS audit trail under: <strong>${currentUser.name}</strong> (${currentUser.roleLabel}).</div>
+                `, 3500);
 
                 // Auto-refresh the audit trail in the background
                 await loadAuditTrail();
@@ -1570,7 +1677,7 @@
             const resultBox = document.getElementById('ingest-result');
             resultBox.style.display = 'block';
             resultBox.className = 'notification-toast';
-            resultBox.innerHTML = 'COMPUTING SHA-256 INTEGRITY CHECKSUM & REGISTERING VECTOR...';
+            resultBox.innerHTML = `COMPUTING SHA-256 INTEGRITY CHECKSUM & COMMITTING INGESTION AS ${currentUser.name.toUpperCase()}...`;
 
             const payload = {
                 title: document.getElementById('ingest-title').value,
@@ -1580,7 +1687,8 @@
                 doc_type: document.getElementById('ingest-type').value,
                 physical_condition: document.getElementById('ingest-condition').value,
                 style_seed: document.getElementById('ingest-seed').value,
-                ocr_text: document.getElementById('ingest-ocr').value
+                ocr_text: document.getElementById('ingest-ocr').value,
+                digitized_by: currentUser.id
             };
 
             try {
@@ -1592,9 +1700,13 @@
                 const data = await res.json();
                 resultBox.innerHTML = `
                     <div style="font-weight: 900; color: #ffffff; margin-bottom: 3px;">&#10003; INGESTION TRANSACTION COMMITTED TO ARCHIVEMIND</div>
-                    <div style="color: var(--text-white-muted); font-size: 11.5px;">DOCUMENT #${data.document_id} &middot; VECTOR: ${data.vector_id}</div>
+                    <div style="color: var(--text-white-muted); font-size: 11.5px;">DOCUMENT #${data.document_id} &middot; VECTOR: ${data.vector_id} &middot; DIGITIZED BY: ${currentUser.name.toUpperCase()}</div>
                     <div style="color: var(--text-white-muted); font-size: 10.5px; word-break: break-all; margin-top: 3px;">SHA-256: ${data.checksum}</div>
                 `;
+                showRoleToast(`
+                    <div style="font-weight: 800; color: #ffffff; margin-bottom: 2px;">&#10003; RECORD PRESERVED</div>
+                    <div>Manuscript #${data.document_id} ingested by <strong>${currentUser.name}</strong> (${currentUser.roleLabel}).</div>
+                `, 3500);
             } catch (err) {
                 resultBox.innerHTML = `INGESTION FAILED: ${err.message}`;
             }
@@ -1620,8 +1732,14 @@
                 const res = await fetch('/api/queries/run', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query_key: key })
+                    body: JSON.stringify({ query_key: key, user_id: currentUser.id })
                 });
+
+                if (!res.ok) {
+                    const errJson = await res.json();
+                    throw new Error(errJson.detail || `HTTP Error ${res.status}`);
+                }
+
                 const data = await res.json();
                 const elapsed = (performance.now() - startT).toFixed(2);
 
@@ -1630,7 +1748,7 @@
                 runtimeElem.textContent = `${elapsed} MS`;
 
                 const rows = data.results || [];
-                metaElem.textContent = `${rows.length} ROWS RETURNED ${data.rows_affected ? `(${data.rows_affected} AFFECTED)` : ''}`;
+                metaElem.textContent = `${rows.length} ROWS RETURNED ${data.rows_affected ? `(${data.rows_affected} AFFECTED)` : ''} · OPERATOR: ${currentUser.name.toUpperCase()}`;
 
                 if (rows.length === 0) {
                     tableContainer.innerHTML = '<div style="padding: 3.5rem; text-align: center; color: var(--text-white-muted); font-size: 12px; font-family: var(--font-mono);">OPERATION EXECUTED SUCCESSFULLY.</div>';
@@ -1654,7 +1772,27 @@
                 `;
                 tableContainer.innerHTML = tableHtml;
             } catch (err) {
-                tableContainer.innerHTML = `<div style="padding: 3.5rem; text-align: center; color: #ffffff; font-size: 12px; font-family: var(--font-mono);">QUERY ERROR: ${err.message}</div>`;
+                const isRbac = err.message.includes('RBAC Permission Denied');
+                titleElem.textContent = isRbac ? `ACCESS DENIED: QUERY ${key}` : `QUERY ERROR`;
+                runtimeElem.textContent = isRbac ? 'RBAC BLOCKED (403)' : 'ERROR';
+                metaElem.textContent = isRbac ? 'REQUIRES HEAD ARCHIVIST PRIVILEGES' : 'EXECUTION FAILED';
+                tableContainer.innerHTML = `
+                    <div style="padding: 3.5rem; text-align: center; color: #ffffff; font-size: 12px; font-family: var(--font-mono);">
+                        <div style="font-weight: 800; font-size: 13px; margin-bottom: 8px; color: #ffffff;">
+                            ${isRbac ? '[SECURITY / RBAC ENFORCED]: MUTATION RESTRICTED' : 'EXECUTION ERROR'}
+                        </div>
+                        <div style="color: var(--text-white-muted); margin-bottom: 18px; max-width: 550px; margin-left: auto; margin-right: auto; line-height: 1.5;">
+                            ${err.message}
+                        </div>
+                        ${isRbac ? `
+                            <button class="btn-box" onclick="elevateRoleToArchivist()" style="margin: 0 auto;">
+                                <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
+                                <span>Switch Role to Demo Teacher (Head Archivist) & Execute</span>
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                lucide.createIcons();
             }
         }
 

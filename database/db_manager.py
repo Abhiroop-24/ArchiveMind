@@ -147,6 +147,7 @@ class ArchiveMindDB:
         CREATE TABLE IF NOT EXISTS citation (
             citation_id INTEGER PRIMARY KEY AUTOINCREMENT,
             document_id INTEGER NOT NULL REFERENCES document(document_id) ON DELETE CASCADE,
+            user_id INTEGER REFERENCES app_user(user_id) ON DELETE SET NULL,
             citation_text TEXT NOT NULL,
             citation_style TEXT DEFAULT 'Chicago-Archival',
             generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -160,6 +161,12 @@ class ArchiveMindDB:
             content=''
         );
         """)
+
+        # Ensure user_id column exists if table was previously created
+        try:
+            cur.execute("ALTER TABLE citation ADD COLUMN user_id INTEGER REFERENCES app_user(user_id) ON DELETE SET NULL;")
+        except Exception:
+            pass
 
         # Trigger for Document View Logging, Checksum Integrity & Citation Audit
         cur.executescript("""
@@ -179,7 +186,7 @@ class ArchiveMindDB:
             INSERT INTO document_view (document_id, user_id, ip_address, viewed_at)
             VALUES (
                 NEW.document_id,
-                3, -- Active researcher user_id (Abhiroop)
+                COALESCE(NEW.user_id, 3),
                 '127.0.0.1 [TRIGGER:CITATION_' || UPPER(NEW.citation_style) || ']',
                 CURRENT_TIMESTAMP
             );
@@ -511,7 +518,7 @@ class ArchiveMindDB:
     # -------------------------------------------------------------
     # STORED PROCEDURE EMULATION: Generate Archival Citation
     # -------------------------------------------------------------
-    def generate_citation(self, document_id: int, style: str = "Chicago-Archival") -> Dict[str, Any]:
+    def generate_citation(self, document_id: int, style: str = "Chicago-Archival", user_id: Optional[int] = 3) -> Dict[str, Any]:
         conn = self.get_connection()
         cur = conn.cursor()
 
@@ -546,11 +553,11 @@ class ArchiveMindDB:
         else: # Chicago-Archival
             citation_text = f'{author_str}, {title} ({date_w}), {col_name}, {arch_name}. Digitized preservation record.'
 
-        # Insert or update
+        # Insert with active user_id
         cur.execute("""
-            INSERT INTO citation (document_id, citation_text, citation_style, generated_at)
-            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-        """, (document_id, citation_text, style))
+            INSERT INTO citation (document_id, user_id, citation_text, citation_style, generated_at)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+        """, (document_id, user_id, citation_text, style))
         citation_id = cur.lastrowid
         conn.commit()
         conn.close()
@@ -558,6 +565,7 @@ class ArchiveMindDB:
         return {
             "citation_id": citation_id,
             "document_id": document_id,
+            "user_id": user_id,
             "citation_text": citation_text,
             "citation_style": style,
             "generated_at": datetime.now().isoformat()
@@ -577,6 +585,34 @@ class ArchiveMindDB:
         conn.commit()
         conn.close()
         return view_id
+
+    def get_all_users(self) -> List[Dict[str, Any]]:
+        conn = self.get_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT u.user_id, u.username, u.full_name, u.email, r.role_id, r.role_name
+            FROM app_user u
+            JOIN role r ON u.role_id = r.role_id
+            ORDER BY u.user_id ASC
+        """)
+        users = [dict(r) for r in cur.fetchall()]
+        conn.close()
+        return users
+
+    def get_user_role(self, user_id: Optional[int]) -> str:
+        if not user_id:
+            return "Guest"
+        conn = self.get_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT r.role_name
+            FROM app_user u
+            JOIN role r ON u.role_id = r.role_id
+            WHERE u.user_id = ?
+        """, (user_id,))
+        row = cur.fetchone()
+        conn.close()
+        return row['role_name'] if row else "Guest"
 
     # -------------------------------------------------------------
     # INGESTION WORKFLOW (Digital Document Preservation & Vector Indexing)

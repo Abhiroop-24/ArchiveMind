@@ -53,9 +53,11 @@ class IngestDocumentRequest(BaseModel):
 
 class CitationRequest(BaseModel):
     style: str = "Chicago-Archival"
+    user_id: Optional[int] = 3
 
 class QueryRunRequest(BaseModel):
     query_key: str
+    user_id: Optional[int] = 3
 
 # -------------------------------------------------------------
 # API Endpoints
@@ -131,7 +133,7 @@ def list_documents():
     return rows
 
 @app.get("/api/documents/{doc_id}")
-def get_document_details(doc_id: int, request: Request, user_id: Optional[int] = 2):
+def get_document_details(doc_id: int, request: Request, user_id: Optional[int] = 3):
     # Trigger view audit logging
     client_ip = request.client.host if request.client else "127.0.0.1"
     db.record_document_view(doc_id, user_id, client_ip)
@@ -205,7 +207,7 @@ def ingest_document(req: IngestDocumentRequest):
 @app.post("/api/documents/{doc_id}/citation")
 def generate_doc_citation(doc_id: int, req: CitationRequest):
     try:
-        res = db.generate_citation(doc_id, req.style)
+        res = db.generate_citation(doc_id, req.style, req.user_id)
         return res
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -213,6 +215,10 @@ def generate_doc_citation(doc_id: int, req: CitationRequest):
 @app.get("/api/provenance/{doc_id}")
 def get_provenance(doc_id: int):
     return db.get_provenance_graph(doc_id)
+
+@app.get("/api/users")
+def list_system_users():
+    return db.get_all_users()
 
 @app.get("/api/queries")
 def list_queries():
@@ -226,6 +232,13 @@ def list_queries():
 
 @app.post("/api/queries/run")
 def run_query(req: QueryRunRequest):
+    # Enforce Role-Based Access Control (RBAC) on database mutation operations
+    user_role = db.get_user_role(req.user_id)
+    if req.query_key in ["7.2", "7.3"] and user_role != "Head Archivist":
+        raise HTTPException(
+            status_code=403, 
+            detail=f"RBAC Permission Denied: Query {req.query_key} modifies relational records and requires 'Head Archivist' (Demo Teacher) privileges. Current role: '{user_role}'."
+        )
     try:
         res = db.run_evaluation_query(req.query_key)
         return res
