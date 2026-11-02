@@ -5,29 +5,50 @@ adaptive thresholding, and perspective alignment without mutating original captu
 """
 
 import os
-import cv2
-import numpy as np
-from PIL import Image
+try:
+    import cv2
+except ImportError:
+    cv2 = None
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
+
+try:
+    from PIL import Image, ImageOps, ImageFilter, ImageEnhance
+except ImportError:
+    Image = None
+
 from pathlib import Path
 from typing import Dict, Any, Tuple, Optional
 
 
 def validate_image(image_path: str) -> Tuple[bool, Optional[str]]:
-    """Checks that the image exists, is readable by OpenCV, and has valid dimensions."""
+    """Checks that the image exists and has valid dimensions."""
     if not os.path.exists(image_path):
         return False, "File does not exist"
     
     if os.path.getsize(image_path) < 1024:
         return False, "File too small or corrupted (< 1 KB)"
-        
-    img = cv2.imread(image_path)
-    if img is None:
-        return False, "OpenCV failed to decode image"
-        
-    h, w = img.shape[:2]
-    if h < 50 or w < 50:
-        return False, f"Image dimensions too small ({w}x{h})"
-        
+
+    if cv2 is not None:
+        img = cv2.imread(image_path)
+        if img is None:
+            return False, "OpenCV failed to decode image"
+        h, w = img.shape[:2]
+        if h < 50 or w < 50:
+            return False, f"Image dimensions too small ({w}x{h})"
+        return True, None
+    elif Image is not None:
+        try:
+            with Image.open(image_path) as im:
+                w, h = im.size
+                if h < 50 or w < 50:
+                    return False, f"Image dimensions too small ({w}x{h})"
+                return True, None
+        except Exception as e:
+            return False, f"PIL decode error: {e}"
     return True, None
 
 

@@ -1488,9 +1488,18 @@
                 if (piRes.ok) {
                     const piData = await piRes.json();
                     if (piData.is_reachable) {
-                        document.getElementById('stat-pi-status').textContent = '10.42.0.116';
+                        const route = piData.active_route || 'Dual Link Active';
+                        document.getElementById('stat-pi-status').textContent = piData.active_ip;
                         document.getElementById('stat-pi-status').style.color = 'var(--accent-green)';
-                        document.getElementById('stat-pi-sub').textContent = 'Direct Ethernet &middot; 5MP ov5647 Ready';
+                        document.getElementById('stat-pi-sub').textContent = `${route} &middot; ov5647 5MP Ready`;
+                        const pulseText = document.getElementById('pi-pulse-text');
+                        if (pulseText) pulseText.textContent = `PI 3B+ CONNECTED (${piData.active_ip})`;
+                    } else {
+                        document.getElementById('stat-pi-status').textContent = 'OFFLINE';
+                        document.getElementById('stat-pi-status').style.color = 'var(--accent-red)';
+                        document.getElementById('stat-pi-sub').textContent = 'Check Ethernet / Wi-Fi';
+                        const pulseText = document.getElementById('pi-pulse-text');
+                        if (pulseText) pulseText.textContent = 'PI 3B+ DISCONNECTED';
                     }
                 }
 
@@ -1522,7 +1531,7 @@
             const emptyMsg = document.getElementById('scanner-empty-msg');
             const statusBadge = document.getElementById('preview-status-badge');
 
-            emptyMsg.innerHTML = '<div style="color: var(--accent-green);">&#9881; DISPATCHING CAPTURE COMMAND TO RASPBERRY PI (10.42.0.116:8082)...</div>';
+            emptyMsg.innerHTML = '<div style="color: var(--accent-green);">&#9881; DISPATCHING CAPTURE COMMAND TO RASPBERRY PI (10.42.0.116 / 192.168.1.9:8082)...</div>';
             statusBadge.textContent = 'ACQUIRING FROM PI...';
 
             try {
@@ -1532,6 +1541,7 @@
                     body: JSON.stringify({
                         device_id: 'archivemind-pi-cam-01',
                         pi_ip: '10.42.0.116',
+                        backup_pi_ip: '192.168.1.9',
                         pi_port: 8082
                     })
                 });

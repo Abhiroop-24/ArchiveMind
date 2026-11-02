@@ -103,6 +103,7 @@ class RemoteCaptureRequest(BaseModel):
     device_id: str = "archivemind-pi-cam-01"
     pi_ip: str = "10.42.0.116"
     pi_port: int = 8082
+    backup_pi_ip: Optional[str] = "192.168.1.9"
 
 
 # -------------------------------------------------------------
@@ -188,52 +189,77 @@ def get_device_status_api(device_id: str):
     if not dev:
         raise HTTPException(status_code=404, detail="Device not found")
 
-    # Probe live ping
-    pi_ip = dev["ip_address"]
     import subprocess
-    is_live = False
+    eth_ip = "10.42.0.116"
+    wifi_ip = "192.168.1.9"
+
+    eth_live = False
+    wifi_live = False
     try:
-        res = subprocess.run(["ping", "-c", "1", "-W", "1", pi_ip], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        is_live = (res.returncode == 0)
+        eth_live = (subprocess.run(["ping", "-c", "1", "-W", "1", eth_ip], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0)
+    except Exception:
+        pass
+    try:
+        wifi_live = (subprocess.run(["ping", "-c", "1", "-W", "1", wifi_ip], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0)
     except Exception:
         pass
 
+    active_ip = eth_ip if eth_live else (wifi_ip if wifi_live else eth_ip)
+    active_route = "Direct Ethernet (10.42.0.116)" if eth_live else ("Campus/Home Wi-Fi (192.168.1.9)" if wifi_live else "Offline")
+
     return {
         "device": dict(dev),
-        "is_reachable": is_live,
-        "network_interface": "Ethernet Direct (eno1: 10.42.0.1 -> 10.42.0.116)",
+        "is_reachable": eth_live or wifi_live,
+        "ethernet_ip": eth_ip,
+        "ethernet_live": eth_live,
+        "wifi_ip": wifi_ip,
+        "wifi_live": wifi_live,
+        "active_ip": active_ip,
+        "active_route": active_route,
+        "network_interface": f"Dual-Homed: Ethernet ({eth_ip}) | Wi-Fi ({wifi_ip})",
         "camera_module": "Raspberry Pi Camera Module 5MP (ov5647)"
     }
 
 @app.post("/api/devices/trigger_capture")
 def trigger_remote_capture(req: RemoteCaptureRequest):
     """
-    Sends an HTTP capture command to the Raspberry Pi daemon listening at http://10.42.0.116:8082/capture.
-    The Pi captures an image and uploads it back to the laptop ingestion pipeline.
+    Sends an HTTP capture command to the Raspberry Pi daemon.
+    Tries primary Ethernet (10.42.0.116:8082) first, and falls back to Wi-Fi (192.168.1.9:8082).
     """
     import urllib.request
     import json
 
-    url = f"http://{req.pi_ip}:{req.pi_port}/capture"
-    try:
-        remote_req = urllib.request.Request(
-            url,
-            data=b"{}",
-            headers={"Content-Type": "application/json", "User-Agent": "ArchiveMind-Server/2.0"},
-            method="POST"
-        )
-        with urllib.request.urlopen(remote_req, timeout=12.0) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            return {
-                "success": True,
-                "message": "Capture command dispatched to Raspberry Pi camera",
-                "pi_response": data
-            }
-    except Exception as e:
-        raise HTTPException(
-            status_code=502,
-            detail=f"Failed to communicate with Raspberry Pi camera daemon at {url}: {str(e)}"
-        )
+    candidate_hosts = [req.pi_ip]
+    if req.backup_pi_ip and req.backup_pi_ip not in candidate_hosts:
+        candidate_hosts.append(req.backup_pi_ip)
+
+    last_error = None
+    for host in candidate_hosts:
+        url = f"http://{host}:{req.pi_port}/capture"
+        try:
+            remote_req = urllib.request.Request(
+                url,
+                data=b"{}",
+                headers={"Content-Type": "application/json", "User-Agent": "ArchiveMind-Server/2.0"},
+                method="POST"
+            )
+            with urllib.request.urlopen(remote_req, timeout=12.0) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return {
+                    "success": True,
+                    "active_endpoint": url,
+                    "target_host": host,
+                    "message": f"Capture command dispatched successfully to Pi via {host}",
+                    "pi_response": data
+                }
+        except Exception as e:
+            last_error = e
+            continue
+
+    raise HTTPException(
+        status_code=502,
+        detail=f"Failed to communicate with Raspberry Pi on endpoints {candidate_hosts}: {str(last_error)}"
+    )
 
 
 # -------------------------------------------------------------

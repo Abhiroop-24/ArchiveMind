@@ -8,10 +8,12 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 # Network Configuration
-# Default: Direct Ethernet to Laptop (10.42.0.1)
-LAPTOP_IP = os.getenv("LAPTOP_IP", "10.42.0.1")
+# Supports Dual-Homed connection: Direct Ethernet (10.42.0.1) and Local Wi-Fi (192.168.1.3)
+LAPTOP_PRIMARY_IP = os.getenv("LAPTOP_IP", "10.42.0.1")
+LAPTOP_WIFI_IP = os.getenv("LAPTOP_WIFI_IP", "192.168.1.3")
+LAPTOP_CANDIDATE_IPS = [LAPTOP_PRIMARY_IP, LAPTOP_WIFI_IP]
 LAPTOP_PORT = int(os.getenv("LAPTOP_PORT", 8000))
-LAPTOP_API_URL = f"http://{LAPTOP_IP}:{LAPTOP_PORT}"
+LAPTOP_API_URL = f"http://{LAPTOP_PRIMARY_IP}:{LAPTOP_PORT}"
 
 # Pi Service Configuration
 PI_HOST = "0.0.0.0"

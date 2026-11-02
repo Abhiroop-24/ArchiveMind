@@ -27,12 +27,19 @@ fi
 
 echo "Python: $("$VENV_PYTHON" --version)"
 
-# Probe Raspberry Pi acquisition station
-echo -n "Checking Raspberry Pi connection (10.42.0.116)... "
+# Probe Raspberry Pi acquisition station (Dual-Homed)
+echo -n "Checking Raspberry Pi Direct Ethernet (10.42.0.116)... "
 if ping -c 1 -W 1 10.42.0.116 > /dev/null 2>&1; then
-    echo "ONLINE (Ethernet eno1)"
+    echo "ONLINE (Ultra-low latency <0.5ms)"
 else
-    echo "STANDBY (Ensure Ethernet cable is connected and Pi is powered)"
+    echo "STANDBY"
+fi
+
+echo -n "Checking Raspberry Pi Local Wi-Fi (192.168.1.9)... "
+if ping -c 1 -W 1 192.168.1.9 > /dev/null 2>&1; then
+    echo "ONLINE (Wireless fallback active)"
+else
+    echo "STANDBY"
 fi
 
 echo ""

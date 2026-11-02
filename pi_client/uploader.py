@@ -20,20 +20,39 @@ except ImportError:
     import queue_manager
 
 
-def check_laptop_online(timeout_sec: float = 2.0) -> bool:
-    """Checks if Laptop FastAPI server is reachable."""
-    url = f"{config.LAPTOP_API_URL}/api/health"
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": "ArchiveMind-PiClient/1.0"})
-        with urllib.request.urlopen(req, timeout=timeout_sec) as resp:
-            return resp.status == 200
-    except Exception:
-        return False
+def get_active_laptop_base(probe_timeout: float = 1.0) -> str:
+    """Finds an active laptop server address from candidate IPs (Ethernet or Wi-Fi)."""
+    for ip in getattr(config, "LAPTOP_CANDIDATE_IPS", [config.LAPTOP_PRIMARY_IP]):
+        url = f"http://{ip}:{config.LAPTOP_PORT}"
+        try:
+            req = urllib.request.Request(f"{url}/api/health", headers={"User-Agent": "ArchiveMind-PiClient/1.0"})
+            with urllib.request.urlopen(req, timeout=probe_timeout) as resp:
+                if resp.status == 200:
+                    return url
+        except Exception:
+            continue
+    # Default fallback to primary Ethernet
+    return f"http://{config.LAPTOP_PRIMARY_IP}:{config.LAPTOP_PORT}"
+
+
+def check_laptop_online(timeout_sec: float = 1.5) -> bool:
+    """Checks if Laptop FastAPI server is reachable over Ethernet or Wi-Fi."""
+    for ip in getattr(config, "LAPTOP_CANDIDATE_IPS", [config.LAPTOP_PRIMARY_IP]):
+        url = f"http://{ip}:{config.LAPTOP_PORT}/api/health"
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "ArchiveMind-PiClient/1.0"})
+            with urllib.request.urlopen(req, timeout=timeout_sec) as resp:
+                if resp.status == 200:
+                    return True
+        except Exception:
+            continue
+    return False
 
 
 def register_device() -> bool:
     """Registers this Pi device with the central ArchiveMind laptop registry."""
-    url = f"{config.LAPTOP_API_URL}/api/devices/register"
+    base_url = get_active_laptop_base()
+    url = f"{base_url}/api/devices/register"
     payload = json.dumps({
         "device_id": config.DEVICE_ID,
         "device_name": config.DEVICE_NAME,
@@ -96,7 +115,8 @@ def upload_scan(capture_meta: Dict[str, Any]) -> Dict[str, Any]:
     # Closing boundary
     body.extend(f"--{boundary}--\r\n".encode("utf-8"))
 
-    url = f"{config.LAPTOP_API_URL}/api/ingestion/upload"
+    base_url = get_active_laptop_base()
+    url = f"{base_url}/api/ingestion/upload"
     req = urllib.request.Request(
         url,
         data=bytes(body),
