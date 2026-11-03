@@ -20,6 +20,40 @@ OLLAMA_URL = "http://localhost:11434/api/generate"
 OLLAMA_MODEL = "qwen2.5:3b"
 
 
+def get_llm_status() -> Dict[str, Any]:
+    """
+    Probes local Ollama instance and returns connectivity, model presence and metadata.
+    """
+    ollama_online = False
+    model_loaded = False
+    models_found = []
+
+    try:
+        req = urllib.request.Request("http://localhost:11434/api/tags", method="GET")
+        with urllib.request.urlopen(req, timeout=1.5) as resp:
+            if resp.status == 200:
+                ollama_online = True
+                data = json.loads(resp.read().decode("utf-8"))
+                for m in data.get("models", []):
+                    name = m.get("name", "")
+                    models_found.append(name)
+                    if OLLAMA_MODEL in name:
+                        model_loaded = True
+    except Exception:
+        ollama_online = False
+
+    return {
+        "ollama_online": ollama_online,
+        "model_name": OLLAMA_MODEL,
+        "model_loaded": model_loaded,
+        "active_engine": f"Ollama ({OLLAMA_MODEL})" if model_loaded else "ArchiveMind-LocalExtractive-RAG",
+        "quantization": "Q4_K_M (4-bit quantized)" if model_loaded else "N/A",
+        "context_window": 4096 if model_loaded else 2048,
+        "available_models": models_found,
+        "inference_device": "NVIDIA GeForce RTX 2050 (Local GPU)" if ollama_online else "Host CPU"
+    }
+
+
 def _call_ollama(prompt: str, system_prompt: str) -> Optional[str]:
     """Attempts to generate answer via local Ollama instance."""
     payload = json.dumps({

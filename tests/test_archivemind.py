@@ -298,6 +298,23 @@ class TestArchiveMind:
         assert int(fts_row["rowid"]) == doc_id
         conn.close()
 
+    def test_ollama_qwen_status_and_rag_execution(self):
+        """Test 12: Verify Ollama status reporting and Qwen2.5:3b or Extractive RAG generation."""
+        status = rag_service.get_llm_status()
+        assert "ollama_online" in status
+        assert "model_name" in status
+        assert "active_engine" in status
+        assert status["model_name"] == "qwen2.5:3b"
+
+        # Test RAG query against seeded database
+        conn = self.db.get_connection()
+        response = rag_service.ask_archival_assistant(conn, "What did Isaac Newton discover regarding light and prisms?")
+        conn.close()
+        assert "answer" in response
+        assert "citations" in response
+        assert "llm_engine" in response
+        assert len(response["answer"]) > 10
+
 
 if __name__ == "__main__":
     pytest.main(["-v", __file__])

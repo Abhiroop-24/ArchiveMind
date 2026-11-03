@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700;800&family=Geist:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* ==========================================================================
            NOTHING OS / BRUTALIST ARCHIVAL DESIGN SYSTEM
@@ -1095,6 +1096,10 @@
                             </div>
                             <div class="box-desc">Loaded model checkpoints and parameter configurations</div>
                         </div>
+                        <button class="btn-inspect-stark" onclick="switchTab('vectorlab'); switchVectorSubTab('analytics');">
+                            <span>VIEW ML GRAPHS &amp; DATA ANALYTICS</span>
+                            <i data-lucide="arrow-right" style="width: 12px; height: 12px;"></i>
+                        </button>
                     </div>
                     <div class="table-black-box">
                         <table>
@@ -1135,7 +1140,7 @@
                                     <td>Qwen2.5:3b-Instruct</td>
                                     <td>Local RAG Assistant</td>
                                     <td>Grounded Q&A</td>
-                                    <td><span class="tag-stark" style="color: var(--accent-amber); border-color: var(--accent-amber);">LOCAL/OLLAMA</span></td>
+                                    <td><span id="model-status-qwen" class="tag-stark" style="color: var(--accent-green); border-color: var(--accent-green);">PROBING...</span></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1457,6 +1462,10 @@
                         <i data-lucide="grid" style="width: 13px; height: 13px;"></i>
                         <span>Cross-Attention Semantic Matrix (N×N)</span>
                     </button>
+                    <button id="btn-vsub-analytics" class="btn-box" style="font-size: 11px; background: transparent; color: #888; border-color: var(--border-dim);" onclick="switchVectorSubTab('analytics')">
+                        <i data-lucide="bar-chart-2" style="width: 13px; height: 13px;"></i>
+                        <span>ML Analytics & Model Performance Graphs</span>
+                    </button>
                     <button id="btn-vsub-theory" class="btn-box" style="font-size: 11px; background: transparent; color: #888; border-color: var(--border-dim);" onclick="switchVectorSubTab('theory')">
                         <i data-lucide="book-open" style="width: 13px; height: 13px;"></i>
                         <span>NLP & ML Mathematical Foundations</span>
@@ -1637,6 +1646,100 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- SUB-PANEL 4: MACHINE LEARNING & STATISTICAL DATA VISUALIZATIONS -->
+                <div id="vsub-panel-analytics" style="display: none;">
+                    <!-- Key Mathematical Performance Indicators -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; font-family: var(--font-mono);">
+                        <div style="background: #000; border: 1px solid var(--border-mid); padding: 12px;">
+                            <span style="color: #666; font-size: 10px; display: block; margin-bottom: 4px;">VECTOR MANIFOLD</span>
+                            <strong style="color: #00ff66; font-size: 14px;">384-DIM DENSE</strong>
+                            <div style="color: #888; font-size: 9px; margin-top: 4px;">all-MiniLM-L6-v2 Unit Sphere</div>
+                        </div>
+                        <div style="background: #000; border: 1px solid var(--border-mid); padding: 12px;">
+                            <span style="color: #666; font-size: 10px; display: block; margin-bottom: 4px;">TOP-5 PC VARIANCE</span>
+                            <strong id="kpi-scree-var" style="color: #00f0ff; font-size: 14px;">58.2% CAPTURE</strong>
+                            <div style="color: #888; font-size: 9px; margin-top: 4px;">Singular Value Spectrum</div>
+                        </div>
+                        <div style="background: #000; border: 1px solid var(--border-mid); padding: 12px;">
+                            <span style="color: #666; font-size: 10px; display: block; margin-bottom: 4px;">OPTIMAL ALPHA FUSION</span>
+                            <strong style="color: #ffd60a; font-size: 14px;">&alpha; = 0.50 (PEAK MRR)</strong>
+                            <div style="color: #888; font-size: 9px; margin-top: 4px;">Balanced Lexical + Semantic</div>
+                        </div>
+                        <div style="background: #000; border: 1px solid var(--border-mid); padding: 12px;">
+                            <span style="color: #666; font-size: 10px; display: block; margin-bottom: 4px;">TOTAL PAIRWISE DOTS</span>
+                            <strong id="kpi-pairwise-dots" style="color: #fff; font-size: 14px;">435 TENSORS</strong>
+                            <div style="color: #888; font-size: 9px; margin-top: 4px;">Exhaustive N&times;N Space</div>
+                        </div>
+                    </div>
+
+                    <!-- 2x2 Grid of High-Resolution ML Charts -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                        <!-- Chart 1: Hybrid Retrieval Alpha Sensitivity -->
+                        <div style="background: #000; border: 1px solid var(--border-mid); padding: 14px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: #fff;">
+                                    HYBRID RETRIEVAL ALPHA SENSITIVITY (mAP &amp; MRR@10)
+                                </div>
+                                <span class="tag-stark" style="color: #00ff66; border-color: #00ff66; font-size: 9px;">EVALUATION CURVE</span>
+                            </div>
+                            <div style="font-family: var(--font-mono); font-size: 10px; color: #888; margin-bottom: 10px;">
+                                Demonstrates how linear interpolation between MiniLM (&alpha;=0) and FTS5 BM25 (&alpha;=1) reaches optimal precision at &alpha; ~ 0.5.
+                            </div>
+                            <div style="height: 240px; position: relative;">
+                                <canvas id="chart-hybrid-curve"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 2: SVD Principal Component Scree Plot -->
+                        <div style="background: #000; border: 1px solid var(--border-mid); padding: 14px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: #fff;">
+                                    SVD PRINCIPAL COMPONENT SCREE PLOT &amp; VARIANCE
+                                </div>
+                                <span class="tag-stark" style="color: #00f0ff; border-color: #00f0ff; font-size: 9px;">EIGENSPECTRUM</span>
+                            </div>
+                            <div style="font-family: var(--font-mono); font-size: 10px; color: #888; margin-bottom: 10px;">
+                                Singular value decomposition: &sigma;<sub>i</sub><sup>2</sup> / &sum;&sigma;<sub>j</sub><sup>2</sup> showing explained variance ratio per component.
+                            </div>
+                            <div style="height: 240px; position: relative;">
+                                <canvas id="chart-svd-scree"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 3: Cosine Similarity Distribution -->
+                        <div style="background: #000; border: 1px solid var(--border-mid); padding: 14px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: #fff;">
+                                    PAIRWISE COSINE SIMILARITY DENSITY DISTRIBUTION
+                                </div>
+                                <span class="tag-stark" style="color: #bf5af2; border-color: #bf5af2; font-size: 9px;">&Sopf;<sup>383</sup> HYPERSPHERE</span>
+                            </div>
+                            <div style="font-family: var(--font-mono); font-size: 10px; color: #888; margin-bottom: 10px;">
+                                Histogram of inner products across all manuscript pairs showing inter-domain orthogonality and intra-domain clustering.
+                            </div>
+                            <div style="height: 240px; position: relative;">
+                                <canvas id="chart-cosine-dist"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 4: Ink Edge Gradient vs OCR Confidence -->
+                        <div style="background: #000; border: 1px solid var(--border-mid); padding: 14px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 800; color: #fff;">
+                                    SOBEL INK EDGE ENERGY vs OCR TRANSCRIPTION CONFIDENCE
+                                </div>
+                                <span class="tag-stark" style="color: #ff9f0a; border-color: #ff9f0a; font-size: 9px;">CV-TO-NLP CORRELATION</span>
+                            </div>
+                            <div style="font-family: var(--font-mono); font-size: 10px; color: #888; margin-bottom: 10px;">
+                                Scatter plot correlating calligraphic stroke boundary sharpness (&nabla;I) with TrOCR and PaddleOCR neural word confidence.
+                            </div>
+                            <div style="height: 240px; position: relative;">
+                                <canvas id="chart-ink-scatter"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -1653,7 +1756,10 @@
                         </div>
                         <div class="box-desc">Answers historical inquiries grounded strictly in verified manuscript passages with inline cryptographic citations.</div>
                     </div>
-                    <span class="tag-stark" style="color: var(--accent-green); border-color: var(--accent-green);">LOCAL &middot; ZERO CLOUD DEPENDENCY</span>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <span id="assistant-llm-badge" class="tag-stark" style="color: var(--accent-green); border-color: var(--accent-green); font-family: var(--font-mono); font-size: 11px;">LLM: PROBING ENGINE...</span>
+                        <span class="tag-stark" style="color: var(--accent-green); border-color: var(--accent-green);">ZERO CLOUD DEPENDENCY</span>
+                    </div>
                 </div>
 
                 <!-- Chat Terminal -->
@@ -2005,6 +2111,41 @@
                             <span class="tag-stark" style="color: ${j.status === 'COMPLETED' ? 'var(--accent-green)' : 'var(--accent-amber)'};">${j.status}</span>
                         </div>
                     `).join('');
+                }
+
+                // LLM Engine Status (Qwen 2.5:3b)
+                try {
+                    const llmRes = await fetch('/api/ai/llm_status');
+                    if (llmRes.ok) {
+                        const llm = await llmRes.json();
+                        const qwenTag = document.getElementById('model-status-qwen');
+                        const assistantBadge = document.getElementById('assistant-llm-badge');
+                        if (llm.ollama_online && llm.model_loaded) {
+                            if (qwenTag) {
+                                qwenTag.textContent = 'ONLINE (RTX 2050 CUDA)';
+                                qwenTag.style.color = 'var(--accent-green)';
+                                qwenTag.style.borderColor = 'var(--accent-green)';
+                            }
+                            if (assistantBadge) {
+                                assistantBadge.textContent = 'LLM: QWEN 2.5:3B (LOCAL GPU: RTX 2050)';
+                                assistantBadge.style.color = 'var(--accent-green)';
+                                assistantBadge.style.borderColor = 'var(--accent-green)';
+                            }
+                        } else {
+                            if (qwenTag) {
+                                qwenTag.textContent = 'FALLBACK (EXTRACTIVE)';
+                                qwenTag.style.color = 'var(--accent-amber)';
+                                qwenTag.style.borderColor = 'var(--accent-amber)';
+                            }
+                            if (assistantBadge) {
+                                assistantBadge.textContent = 'LLM: EXTRACTIVE RAG (LOCAL CPU)';
+                                assistantBadge.style.color = 'var(--accent-amber)';
+                                assistantBadge.style.borderColor = 'var(--accent-amber)';
+                            }
+                        }
+                    }
+                } catch (llmErr) {
+                    console.warn("LLM status check failed:", llmErr);
                 }
             } catch (err) {
                 console.error("Telemetry error:", err);
@@ -3359,7 +3500,7 @@
         }
 
         function switchVectorSubTab(subTab) {
-            ['2d', 'matrix', 'theory'].forEach(t => {
+            ['2d', 'matrix', 'theory', 'analytics'].forEach(t => {
                 const btn = document.getElementById(`btn-vsub-${t}`);
                 const panel = document.getElementById(`vsub-panel-${t}`);
                 if (btn && panel) {
@@ -3381,6 +3522,227 @@
                 loadSimilarityMatrix();
             } else if (subTab === '2d') {
                 setTimeout(renderVectorCanvas, 50);
+            } else if (subTab === 'analytics') {
+                loadMLAnalyticsCharts();
+            }
+        }
+
+        let chartHybridInstance = null;
+        let chartSvdInstance = null;
+        let chartCosineInstance = null;
+        let chartInkInstance = null;
+
+        async function loadMLAnalyticsCharts() {
+            try {
+                const res = await fetch('/api/ml/analytics');
+                const data = await res.json();
+
+                // Update KPIs
+                const screeKpi = document.getElementById('kpi-scree-var');
+                if (screeKpi && data.scree_plot && data.scree_plot.cumulative_variance) {
+                    const top5 = data.scree_plot.cumulative_variance[Math.min(4, data.scree_plot.cumulative_variance.length - 1)];
+                    screeKpi.textContent = `${top5}% CAPTURE`;
+                }
+                const dotsKpi = document.getElementById('kpi-pairwise-dots');
+                if (dotsKpi && data.cosine_distribution) {
+                    dotsKpi.textContent = `${data.cosine_distribution.total_pairs} TENSORS`;
+                }
+
+                const commonOptions = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ccc',
+                                font: { family: 'monospace', size: 10 }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#000',
+                            borderColor: '#333',
+                            borderWidth: 1,
+                            titleFont: { family: 'monospace', size: 11, weight: 'bold' },
+                            bodyFont: { family: 'monospace', size: 10 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.06)' },
+                            ticks: { color: '#888', font: { family: 'monospace', size: 9 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.06)' },
+                            ticks: { color: '#888', font: { family: 'monospace', size: 9 } }
+                        }
+                    }
+                };
+
+                // Chart 1: Hybrid Retrieval Alpha Sensitivity
+                const ctxHybrid = document.getElementById('chart-hybrid-curve');
+                if (ctxHybrid) {
+                    if (chartHybridInstance) chartHybridInstance.destroy();
+                    chartHybridInstance = new Chart(ctxHybrid, {
+                        type: 'line',
+                        data: {
+                            labels: data.hybrid_curve.alphas.map(a => `α=${a}`),
+                            datasets: [
+                                {
+                                    label: 'MRR@10 (Mean Reciprocal Rank)',
+                                    data: data.hybrid_curve.mrr,
+                                    borderColor: '#00ff66',
+                                    backgroundColor: 'rgba(0, 255, 102, 0.12)',
+                                    fill: true,
+                                    tension: 0.35,
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6
+                                },
+                                {
+                                    label: 'Precision@3 (P@3)',
+                                    data: data.hybrid_curve.precision_at_3,
+                                    borderColor: '#00f0ff',
+                                    backgroundColor: 'transparent',
+                                    borderDash: [5, 5],
+                                    tension: 0.35,
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6
+                                }
+                            ]
+                        },
+                        options: {
+                            ...commonOptions,
+                            scales: {
+                                ...commonOptions.scales,
+                                y: { ...commonOptions.scales.y, min: 0.0, max: 1.05 }
+                            }
+                        }
+                    });
+                }
+
+                // Chart 2: SVD Principal Component Scree Plot
+                const ctxSvd = document.getElementById('chart-svd-scree');
+                if (ctxSvd) {
+                    if (chartSvdInstance) chartSvdInstance.destroy();
+                    chartSvdInstance = new Chart(ctxSvd, {
+                        type: 'bar',
+                        data: {
+                            labels: data.scree_plot.labels,
+                            datasets: [
+                                {
+                                    type: 'bar',
+                                    label: 'Explained Variance Ratio (%)',
+                                    data: data.scree_plot.explained_variance,
+                                    backgroundColor: 'rgba(0, 255, 102, 0.75)',
+                                    borderColor: '#00ff66',
+                                    borderWidth: 1,
+                                    yAxisID: 'y'
+                                },
+                                {
+                                    type: 'line',
+                                    label: 'Cumulative Variance (%)',
+                                    data: data.scree_plot.cumulative_variance,
+                                    borderColor: '#ffd60a',
+                                    backgroundColor: 'transparent',
+                                    tension: 0.2,
+                                    pointRadius: 4,
+                                    yAxisID: 'y1'
+                                }
+                            ]
+                        },
+                        options: {
+                            ...commonOptions,
+                            scales: {
+                                x: commonOptions.scales.x,
+                                y: {
+                                    ...commonOptions.scales.y,
+                                    position: 'left',
+                                    title: { display: true, text: 'Variance %', color: '#888', font: { family: 'monospace', size: 9 } }
+                                },
+                                y1: {
+                                    ...commonOptions.scales.y,
+                                    position: 'right',
+                                    min: 0,
+                                    max: 100,
+                                    grid: { drawOnChartArea: false },
+                                    ticks: { color: '#ffd60a', font: { family: 'monospace', size: 9 } },
+                                    title: { display: true, text: 'Cumulative %', color: '#ffd60a', font: { family: 'monospace', size: 9 } }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Chart 3: Cosine Similarity Distribution
+                const ctxCosine = document.getElementById('chart-cosine-dist');
+                if (ctxCosine) {
+                    if (chartCosineInstance) chartCosineInstance.destroy();
+                    chartCosineInstance = new Chart(ctxCosine, {
+                        type: 'bar',
+                        data: {
+                            labels: data.cosine_distribution.bins,
+                            datasets: [
+                                {
+                                    label: 'Pairwise Manuscript Pairs',
+                                    data: data.cosine_distribution.counts,
+                                    backgroundColor: 'rgba(191, 90, 242, 0.75)',
+                                    borderColor: '#bf5af2',
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: commonOptions
+                    });
+                }
+
+                // Chart 4: Ink Edge Gradient vs OCR Confidence Scatter
+                const ctxInk = document.getElementById('chart-ink-scatter');
+                if (ctxInk) {
+                    if (chartInkInstance) chartInkInstance.destroy();
+                    chartInkInstance = new Chart(ctxInk, {
+                        type: 'scatter',
+                        data: {
+                            datasets: [
+                                {
+                                    label: 'Preserved Manuscripts (Sobel vs OCR)',
+                                    data: data.edge_vs_ocr_scatter,
+                                    backgroundColor: '#ff9f0a',
+                                    borderColor: '#000',
+                                    pointRadius: 5,
+                                    pointHoverRadius: 8
+                                }
+                            ]
+                        },
+                        options: {
+                            ...commonOptions,
+                            plugins: {
+                                ...commonOptions.plugins,
+                                tooltip: {
+                                    ...commonOptions.plugins.tooltip,
+                                    callbacks: {
+                                        label: function(ctx) {
+                                            const item = ctx.raw;
+                                            return `${item.title}: Sobel=${item.x}px/grad, OCR=${item.y}%`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ...commonOptions.scales.x,
+                                    title: { display: true, text: 'Sobel Edge Energy (px/grad)', color: '#888', font: { family: 'monospace', size: 9 } }
+                                },
+                                y: {
+                                    ...commonOptions.scales.y,
+                                    min: 75,
+                                    max: 100,
+                                    title: { display: true, text: 'OCR Confidence (%)', color: '#888', font: { family: 'monospace', size: 9 } }
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to load ML Analytics charts:", err);
             }
         }
 

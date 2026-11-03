@@ -572,8 +572,17 @@ def get_models_status():
             "ram_percent": mem.percent,
             "gpu": gpu_info
         },
-        "embedding_service": embedding_service.get_model_info()
+        "embedding_service": embedding_service.get_model_info(),
+        "llm_service": rag_service.get_llm_status()
     }
+
+
+@app.get("/api/ai/llm_status")
+def get_ai_llm_status():
+    """
+    Returns live connectivity status of local Ollama Qwen2.5:3b LLM engine.
+    """
+    return rag_service.get_llm_status()
 
 
 # -------------------------------------------------------------
@@ -746,6 +755,12 @@ def project_ml_query_api(q: str):
 @app.get("/api/ml/similarity_matrix")
 def get_ml_similarity_matrix_api():
     return vector_viz.compute_similarity_matrix()
+
+
+@app.get("/api/ml/analytics")
+def get_ml_analytics_api():
+    """Computes real SVD Scree plot, Hybrid MRR/Precision vs Alpha curves, and cosine similarity distributions."""
+    return vector_viz.compute_ml_analytics()
 
 
 @app.get("/api/documents/{doc_id}/cnn_diagnostics")
