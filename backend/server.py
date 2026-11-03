@@ -13,13 +13,16 @@ import time
 import shutil
 import threading
 import re
+import urllib.request
+import urllib.parse
 import numpy as np
+import cv2
 from pathlib import Path
-from typing import Optional, List, Dict, Any
-from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form, BackgroundTasks
+from typing import Optional
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Form
 from fastapi.staticfiles import StaticFiles
 import io
-from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
 from pydantic import BaseModel
 
 # Ensure base dir is accessible
@@ -28,17 +31,12 @@ if BASE_DIR not in sys.path:
     sys.path.append(BASE_DIR)
 
 from database.db_manager import ArchiveMindDB, generate_deterministic_embedding
+from backend.services.image_processing import detect_a4_contour, four_point_perspective_transform
 from backend.services import (
-    image_processing,
-    ocr_service,
-    htr_service,
     embedding_service,
-    hybrid_search,
     classification_service,
-    handwriting_analysis,
     rag_service,
-    vector_viz,
-    asset_generator
+    vector_viz
 )
 from backend.workers.ingestion_worker import process_ingestion_pipeline
 
@@ -286,11 +284,6 @@ def get_pi_snapshot_proxy(pi_ip: str = "10.42.0.116", pi_port: int = 8082):
 @app.get("/api/devices/detect_a4")
 def detect_a4_live_api():
     """Fetches latest frame from Pi camera or recent capture and runs strict A4 detection."""
-    from backend.services.image_processing import detect_a4_contour
-    import urllib.request
-    import cv2
-    import numpy as np
-
     for host in ["10.42.0.116", "192.168.1.9"]:
         try:
             url = f"http://{host}:8082/snapshot.jpg"
@@ -318,10 +311,6 @@ async def perspective_correct_api(file: Optional[UploadFile] = File(None)):
     Performs 4-corner document detection and applies perspective homography transform,
     returning the rectified document dimensions, 4 corner coordinates, and status.
     """
-    from backend.services.image_processing import detect_a4_contour, four_point_perspective_transform
-    import cv2
-    import numpy as np
-
     if file:
         content = await file.read()
         arr = np.asarray(bytearray(content), dtype=np.uint8)
@@ -414,8 +403,7 @@ async def upload_manuscript_image(
     doc_type: str = Form("Manuscript"),
     date_written: str = Form("Circa 17th Century"),
     language: str = Form("English"),
-    ocr_mode: str = Form("auto"),
-    background_tasks: BackgroundTasks = None
+    ocr_mode: str = Form("auto")
 ):
     """
     Accepts raw image upload from Raspberry Pi or Web Client.
