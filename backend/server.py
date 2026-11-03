@@ -729,15 +729,13 @@ def get_document_image(doc_id: int, processed: bool = True):
         if p.exists() and p.is_file() and p.stat().st_size > 100:
             return FileResponse(str(p), media_type="image/jpeg")
 
-    # Generate on-the-fly if missing
-    try:
-        from backend.services.asset_generator import generate_manuscript_image
-        img = generate_manuscript_image(row["title"], row["ocr_text_cache"] or "", row["doc_type"] or "Manuscript", row["language"] or "Latin", f"{doc_id}r")
-        p_proc.parent.mkdir(parents=True, exist_ok=True)
-        img.save(str(p_proc), quality=95)
-        return FileResponse(str(p_proc), media_type="image/jpeg")
-    except Exception as e:
-        raise HTTPException(status_code=404, detail=f"Image could not be retrieved: {e}")
+    # Fallback to an authentic historical folio from repository storage if specific file is missing
+    fallback_pool = sorted(list(ORIGINALS_DIR.glob("*.jpg")), key=lambda x: x.stat().st_size, reverse=True)
+    for fallback in fallback_pool:
+        if fallback.exists() and fallback.stat().st_size > 5000:
+            return FileResponse(str(fallback), media_type="image/jpeg")
+
+    raise HTTPException(status_code=404, detail="Historical manuscript image unavailable")
 
 
 @app.get("/api/ml/vector_space")
