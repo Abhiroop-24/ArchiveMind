@@ -241,6 +241,63 @@ class TestArchiveMind:
         found = any("Analytical Engine Algorithm Proof" in r["title"] for r in search_res)
         assert found, "Newly ingested document must be immediately indexed and retrievable via hybrid search"
 
+    def test_four_corner_perspective_correction(self):
+        """Test 11: Verify OpenCV 4-corner paper detection, homography perspective transform, and MiniLM+SQLite indexing."""
+        import cv2
+
+        # 1. Create a synthetic desk with an A4 paper sheet tilted with perspective distortion
+        desk = np.full((600, 800, 3), 40, dtype=np.uint8) # Dark desk
+        paper_corners = np.array([
+            [160, 110],  # Top-Left
+            [610, 80],   # Top-Right
+            [660, 480],  # Bottom-Right
+            [120, 510]   # Bottom-Left
+        ], dtype=np.int32)
+        cv2.fillPoly(desk, [paper_corners], (240, 235, 225)) # Bright parchment paper
+        cv2.putText(desk, "PRINCIPLES OF GRAVITATION", (220, 260), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (20, 20, 20), 2)
+        cv2.putText(desk, "Inverse square orbital mechanics theorem", (200, 310), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (30, 30, 30), 1)
+
+        # 2. Test 4-corner paper detection
+        meta = image_processing.detect_a4_contour(desk)
+        assert meta["detected"] is True, "Must detect A4 paper contour"
+        assert "corners" in meta
+        assert len(meta["corners"]) == 4
+
+        # 3. Test 4-point homography perspective transform
+        pts = np.array(meta["corners"], dtype="float32")
+        warped = image_processing.four_point_perspective_transform(desk, pts)
+        assert warped is not None
+        wh, ww = warped.shape[:2]
+        assert ww > 200 and wh > 200
+        # Aspect ratio should approximate A4
+        aspect = max(ww, wh) / float(min(ww, wh))
+        assert 1.15 <= aspect <= 1.65, f"Warped aspect ratio {aspect} must approximate A4"
+
+        # 4. Test MiniLM embedding generation on extracted text
+        text_content = "PRINCIPLES OF GRAVITATION. Inverse square orbital mechanics theorem."
+        emb = embedding_service.encode_query(text_content)
+        assert len(emb) == 384, "MiniLM embeddings must be 384-dimensional"
+
+        # 5. Test SQLite insertion & FTS5 full-text indexing
+        import hashlib
+        chk = hashlib.sha256(text_content.encode()).hexdigest()
+        conn = self.db.get_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO document (title, doc_type, date_written, physical_condition, language, ocr_text_cache, collection_id, checksum_value, image_path)
+            VALUES (?, 'Manuscript', '1687', 'Pristine', 'English', ?, 1, ?, 'test_newton.jpg')
+        """, ("Test Newton Gravitation Folio", text_content, chk))
+        doc_id = cur.lastrowid
+        cur.execute("INSERT INTO document_fts (rowid, title, ocr_text_cache) VALUES (?, ?, ?)", (doc_id, "Test Newton Gravitation Folio", text_content))
+        conn.commit()
+
+        # Verify FTS5 finds it by rowid
+        cur.execute("SELECT rowid FROM document_fts WHERE document_fts MATCH 'orbital mechanics'")
+        fts_row = cur.fetchone()
+        assert fts_row is not None, "Document must be retrievable via SQLite FTS5"
+        assert int(fts_row["rowid"]) == doc_id
+        conn.close()
+
 
 if __name__ == "__main__":
     pytest.main(["-v", __file__])

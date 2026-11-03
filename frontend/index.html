@@ -1270,7 +1270,7 @@
                                 <!-- Real-time HUD tag -->
                                 <div id="scanner-hud-tag" class="camera-hud-badge">
                                     <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#00ff66; animation:pulse 1s infinite;"></span>
-                                    <span id="hud-model-title">YOLO-A4 PRECISION DETECTOR</span>
+                                    <span id="hud-model-title">OPENCV 4-CORNER & PERSPECTIVE DETECTOR</span>
                                     <span style="color:#666;">|</span>
                                     <span id="hud-conf-readout">SEARCHING...</span>
                                     <span style="color:#666;">|</span>
@@ -1334,7 +1334,7 @@
                                 <div class="storage-step-row">
                                     <div class="storage-step-tag">STAGE 3 &bull; CV</div>
                                     <div class="storage-step-body">
-                                        <strong>CV Enhanced & Deskewed (CLAHE + Bilateral Filtering)</strong>
+                                        <strong>4-Corner Homography Perspective Correction & CLAHE</strong>
                                         <span class="storage-step-path" id="readout-laptop-proc-path">/home/abhiroop/Documents/VDUI/ArchiveMind-HybridSearch/storage/processed/proc_scan_live_folio.jpg</span>
                                     </div>
                                 </div>
@@ -1349,7 +1349,7 @@
 
                             <!-- Live CV Metrics Readout -->
                             <div id="cv-metrics-readout" style="display: none; margin-top: 12px; font-family: var(--font-mono); font-size: 10px; color: #aaa; background: #050505; border: 1px solid #1a1a1a; padding: 10px;">
-                                <div>&bull; Filters: <span id="readout-filters" style="color: var(--accent-green);">Bilateral Denoising + CLAHE + MinAreaRect Deskew</span></div>
+                                <div>&bull; CV Pipeline: <span id="readout-filters" style="color: var(--accent-green);">4-Corner Homography Unwarp + Bilateral Denoise + CLAHE Equalization</span></div>
                                 <div>&bull; AI Condition: <strong id="readout-condition" style="color: var(--accent-amber);">Pristine / Preservation Grade</strong></div>
                                 <div>&bull; OCR Transcription: <span id="readout-ocr-snippet" style="color: #eee;">Transcribing text with TrOCR & PaddleOCR...</span></div>
                             </div>
@@ -2352,35 +2352,41 @@
                         confBadge.style.borderColor = 'var(--accent-green)';
                     }
 
-                    // 1. Glowing neon green bounding box
+                    // 1. Glowing neon green bounding polygon
                     ctx.save();
                     ctx.strokeStyle = '#00ff66';
-                    ctx.lineWidth = 3.0;
-                    ctx.shadowColor = '#00ff66';
-                    ctx.shadowBlur = 14;
-                    ctx.strokeRect(bx, by, bw, bh);
-                    ctx.restore();
-
-                    // 2. High-tech tactical corner L-brackets
-                    const cornerLen = Math.min(26, bw * 0.22);
-                    ctx.save();
-                    ctx.strokeStyle = '#00ff66';
-                    ctx.lineWidth = 4.0;
+                    ctx.lineWidth = 2.5;
                     ctx.shadowColor = '#00ff66';
                     ctx.shadowBlur = 12;
+                    ctx.strokeRect(bx, by, bw, bh);
 
-                    // Top-Left
-                    ctx.beginPath();
-                    ctx.moveTo(bx, by + cornerLen); ctx.lineTo(bx, by); ctx.lineTo(bx + cornerLen, by); ctx.stroke();
-                    // Top-Right
-                    ctx.beginPath();
-                    ctx.moveTo(bx + bw - cornerLen, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cornerLen); ctx.stroke();
-                    // Bottom-Left
-                    ctx.beginPath();
-                    ctx.moveTo(bx, by + bh - cornerLen); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + cornerLen, by + bh); ctx.stroke();
-                    // Bottom-Right
-                    ctx.beginPath();
-                    ctx.moveTo(bx + bw - cornerLen, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by + bh - cornerLen); ctx.stroke();
+                    // 2. High-tech tactical corner crosshairs & reticles [TL, TR, BR, BL]
+                    const cornerLen = Math.min(24, bw * 0.20);
+                    const corners = [
+                        { name: 'TL', x: bx, y: by, dx: 1, dy: 1, ox: -2, oy: -8 },
+                        { name: 'TR', x: bx + bw, y: by, dx: -1, dy: 1, ox: -18, oy: -8 },
+                        { name: 'BR', x: bx + bw, y: by + bh, dx: -1, dy: -1, ox: -18, oy: 18 },
+                        { name: 'BL', x: bx, y: by + bh, dx: 1, dy: -1, ox: -2, oy: 18 }
+                    ];
+
+                    corners.forEach(c => {
+                        // Corner L-bracket
+                        ctx.beginPath();
+                        ctx.moveTo(c.x, c.y + (c.dy * cornerLen));
+                        ctx.lineTo(c.x, c.y);
+                        ctx.lineTo(c.x + (c.dx * cornerLen), c.y);
+                        ctx.stroke();
+
+                        // Corner Target Reticle Circle
+                        ctx.beginPath();
+                        ctx.arc(c.x, c.y, 6, 0, Math.PI * 2);
+                        ctx.stroke();
+
+                        // Tactical Corner Label
+                        ctx.font = 'bold 9px monospace';
+                        ctx.fillStyle = '#00ff66';
+                        ctx.fillText(`[${c.name}]`, c.x + c.ox, c.y + c.oy);
+                    });
                     ctx.restore();
 
                     // 3. Center Crosshair Reticle (+)
@@ -2403,7 +2409,7 @@
                     // 4. Detected A4 Sheet Header Tag
                     ctx.save();
                     ctx.font = 'bold 11px monospace';
-                    const tagText = `[YOLO-A4: DETECTED · ${(yoloConfidence * 100).toFixed(1)}% CONF]`;
+                    const tagText = `[OPENCV 4-CORNER: LOCKED · ${(yoloConfidence * 100).toFixed(1)}% CONF]`;
                     const textWidth = ctx.measureText(tagText).width;
 
                     ctx.fillStyle = '#00ff66';
@@ -2415,7 +2421,7 @@
                     ctx.font = 'bold 10px monospace';
                     ctx.fillStyle = '#00ff66';
                     const orientText = (yoloAspect > 1.0) ? 'A4 PORTRAIT (210×297mm)' : 'A4 LANDSCAPE (297×210mm)';
-                    ctx.fillText(`${orientText} · ASPECT: ${yoloAspect.toFixed(2)} (IDEAL: 1.414) · ZERO HALLUCINATION`, bx, by + bh + 16);
+                    ctx.fillText(`${orientText} · ASPECT: ${yoloAspect.toFixed(2)} (IDEAL: 1.414) · HOMOGRAPHY PERSPECTIVE READY`, bx, by + bh + 16);
                     ctx.restore();
                 } else {
                     // ZERO HALLUCINATION: When no A4 paper is in view, DO NOT DRAW GREEN BOX
@@ -2581,7 +2587,7 @@
                 activeCapturedFile = new File([blob], `${scanId}.jpg`, { type: 'image/jpeg' });
             }, 'image/jpeg', 0.95);
 
-            showRoleToast("✓ Physical manuscript frame captured & frozen! Custody pipeline recorded.");
+            showRoleToast("[OK] Physical manuscript captured. 4-Corner perspective unwarp & custody pipeline active.");
 
             // Also fire trigger to physical Pi camera daemon
             try {

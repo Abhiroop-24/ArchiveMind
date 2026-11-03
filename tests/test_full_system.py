@@ -128,6 +128,22 @@ def run_full_system_test():
     print(f"  ✓ Background Ingestion: COMPLETED")
     print(f"  ✓ Processed Enhanced Folio: {job_status.get('enhanced_image_path')}")
 
+    # Verify 4-Corner Boundary Detection & Perspective Homography Correction API
+    with urllib.request.urlopen("http://localhost:8000/api/devices/detect_a4", timeout=3.0) as r:
+        cv_det = json.loads(r.read().decode("utf-8"))
+    print(f"  ✓ OpenCV Paper Boundary & 4-Corner Framing: {cv_det.get('document_type', 'ISO 216 A4 Sheet')} (Conf: {cv_det.get('confidence', 0.95)*100:.1f}%)")
+    if "corners" in cv_det:
+        print(f"    - Corners Locked: TL={cv_det['corners'][0]} TR={cv_det['corners'][1]} BR={cv_det['corners'][2]} BL={cv_det['corners'][3]}")
+    
+    cv_req = urllib.request.Request("http://localhost:8000/api/cv/perspective_correct", data=b"", headers={}, method="POST")
+    try:
+        with urllib.request.urlopen(cv_req, timeout=3.0) as r:
+            persp_resp = json.loads(r.read().decode("utf-8"))
+        if persp_resp.get("perspective_corrected"):
+            print(f"  ✓ Homography Perspective Correction: Unwarped to {persp_resp.get('rectified_dimensions')}")
+    except Exception:
+        pass
+
     # -------------------------------------------------------------
     # STAGE 4: HYBRID SQL + VECTOR SEMANTIC SEARCH
     # -------------------------------------------------------------

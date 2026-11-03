@@ -312,6 +312,55 @@ def detect_a4_live_api():
     return {"detected": False, "confidence": 0.0, "reason": "No camera frame available"}
 
 
+@app.post("/api/cv/perspective_correct")
+async def perspective_correct_api(file: Optional[UploadFile] = File(None)):
+    """
+    Performs 4-corner document detection and applies perspective homography transform,
+    returning the rectified document dimensions, 4 corner coordinates, and status.
+    """
+    from backend.services.image_processing import detect_a4_contour, four_point_perspective_transform
+    import cv2
+    import numpy as np
+
+    if file:
+        content = await file.read()
+        arr = np.asarray(bytearray(content), dtype=np.uint8)
+        img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    else:
+        latest_img = next(ORIGINALS_DIR.glob("*.jpg"), None)
+        if not latest_img:
+            raise HTTPException(status_code=404, detail="No manuscript image available")
+        img = cv2.imread(str(latest_img))
+
+    if img is None:
+        raise HTTPException(status_code=400, detail="Could not decode image")
+
+    meta = detect_a4_contour(img)
+    if not meta.get("detected") or "corners" not in meta:
+        return {
+            "perspective_corrected": False,
+            "message": "No four-corner paper boundary detected for perspective transform",
+            "original_dimensions": {"width": img.shape[1], "height": img.shape[0]}
+        }
+
+    corners = np.array(meta["corners"], dtype="float32")
+    warped = four_point_perspective_transform(img, corners)
+
+    rectified_name = f"rectified_{uuid.uuid4().hex[:8]}.jpg"
+    rectified_path = PROCESSED_DIR / rectified_name
+    cv2.imwrite(str(rectified_path), warped)
+
+    return {
+        "perspective_corrected": True,
+        "corners": meta["corners"],
+        "corners_norm": meta.get("corners_norm", []),
+        "aspect_ratio": meta.get("aspect_ratio", 1.414),
+        "original_dimensions": {"width": img.shape[1], "height": img.shape[0]},
+        "rectified_dimensions": {"width": warped.shape[1], "height": warped.shape[0]},
+        "rectified_image_url": f"/storage/processed/{rectified_name}"
+    }
+
+
 
 @app.get("/api/devices/pi_stream")
 async def get_pi_stream_proxy(request: Request, pi_ip: str = "10.42.0.116", pi_port: int = 8082):
