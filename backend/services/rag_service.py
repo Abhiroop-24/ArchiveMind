@@ -76,7 +76,7 @@ def _call_ollama(prompt: str, system_prompt: str) -> Optional[str]:
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=8.0) as resp:
+        with urllib.request.urlopen(req, timeout=25.0) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             return data.get("response")
     except Exception:

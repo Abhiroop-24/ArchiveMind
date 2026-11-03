@@ -116,6 +116,18 @@ echo "------------------------------------------------------------------"
 echo "  [3/4] PRE-WARMING ALL AI & ML SUBSYSTEMS"
 echo "------------------------------------------------------------------"
 
+# Auto-seed Kaggle/ICDAR historical benchmark corpus if repository has fewer than 50 folios
+"$VENV_PYTHON" -c "
+from database.db_manager import ArchiveMindDB
+db = ArchiveMindDB()
+conn = db.get_connection()
+count = conn.execute('SELECT COUNT(*) FROM document').fetchone()[0]
+conn.close()
+if count < 50:
+    from scripts.import_kaggle_manuscripts import run_kaggle_manuscript_import
+    run_kaggle_manuscript_import()
+"
+
 "$VENV_PYTHON" -c "
 import time
 t0 = time.time()
